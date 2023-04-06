@@ -8,6 +8,8 @@
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
   modifications = final: prev: {
+    fcitx-engines = prev.fcitx5;
+
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });

@@ -26,7 +26,8 @@
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
     let
-      outputs = self.outputs;
+      inherit (self) outputs;
+      # outputs = self.outputs;
       system = "x86_64-linux";
     in
     rec {
@@ -43,7 +44,9 @@
       #   in import ./shell.nix { inherit pkgs; };
 
       # Your custom packages and modifications, exported as overlays
-      overlays = import ./overlays { inherit inputs; };
+      overlays = import ./overlays {
+        inherit inputs;
+      };
       # Reusable nixos modules you might want to export
       # # These are usually stuff you would upstream into nixpkgs
       # nixosModules = import ./modules/nixos;
