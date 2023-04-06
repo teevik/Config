@@ -74,7 +74,28 @@
 
   networking.hostName = "nixos";
 
-  boot.loader.systemd-boot.enable = true;
+  # boot.loader.systemd-boot.enable = true;
+  boot = {
+    # supportedFilesystems = [ "ntfs" ];
+    kernelPackages = pkgs.linuxPackages_xanmod_latest;
+    loader = {
+      systemd-boot = {
+        enable = true;
+        consoleMode = "auto";
+      };
+      efi = {
+        canTouchEfiVariables = true;
+        efiSysMountPoint = "/boot/efi";
+      };
+      timeout = 3;
+    };
+    kernelParams = [
+      "quiet"
+      "splash"
+    ];
+    consoleLogLevel = 0;
+    initrd.verbose = false;
+  };
 
   # TODO: Configure your system-wide user settings (groups, etc), add more users as needed.
   users.users = {
