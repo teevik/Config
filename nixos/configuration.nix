@@ -24,7 +24,7 @@
     extraSpecialArgs = { inherit inputs; };
     users = {
       # Import your home-manager configuration
-      teevik = import ../home-manager/home;
+      teevik = import ../home-manager/home.nix;
     };
   };
 
