@@ -15,7 +15,11 @@
     # Home manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
+    
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # TODO: Add any other flake you might need
     # hardware.url = "github:nixos/nixos-hardware";
 
@@ -26,7 +30,7 @@
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
     let
-      inherit (self) outputs;
+      outputs = self.outputs;
       # outputs = self.outputs;
       system = "x86_64-linux";
     in

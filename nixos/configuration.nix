@@ -15,7 +15,7 @@
     # ./users.nix
 
     inputs.home-manager.nixosModules.home-manager
-
+    inputs.hyprland.nixosModules.default
     # Import your generated (nixos-generate-config) hardware configuration
     ./hardware-configuration.nix
   ];
@@ -67,12 +67,17 @@
       experimental-features = "nix-command flakes";
       # Deduplicate and optimize nix store
       auto-optimise-store = true;
+      substituters = ["https://hyprland.cachix.org"];
+      trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
+
     };
   };
 
   # FIXME: Add the rest of your current configuration
 
   networking.hostName = "nixos";
+  networking.wireless.enable = true;
+  networking.wireless.userControlled.enable = true;
 
   # boot.loader.systemd-boot.enable = true;
   boot = {
@@ -115,13 +120,28 @@
 
   # # This setups a SSH server. Very important if you're setting up a headless system.
   # # Feel free to remove if you don't need it.
-  # services.openssh = {
-  #   enable = true;
-  #   # Forbid root login through SSH.
-  #   permitRootLogin = "no";
-  #   # Use keys only. Remove if you want to SSH using password (not recommended)
-  #   passwordAuthentication = false;
-  # };
+  services.openssh = {
+    enable = true;
+    # Use keys only. Remove if you want to SSH using password (not recommended)
+    #passwordAuthentication = false;
+  };
+
+  hardware = {
+    bluetooth = {
+      enable = true;
+      package = pkgs.bluez5-experimental;
+    };
+
+    enableAllFirmware = true;
+  };
+
+  programs = {
+    # enable hyprland and required options
+    hyprland = {
+      enable = true;
+      xwayland.hidpi = true;
+    };
+  };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "22.11";

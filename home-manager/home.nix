@@ -4,6 +4,7 @@
 { inputs, outputs, lib, config, pkgs, ... }: {
   # You can import other home-manager modules here
   imports = [
+    inputs.hyprland.homeManagerModules.default
     # If you want to use modules your own flake exports (from modules/home-manager):
     # outputs.homeManagerModules.example
 
@@ -12,7 +13,11 @@
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
+  
+   "${fetchTarball {url = "https://github.com/msteen/nixos-vscode-server/tarball/master"; sha256 = "0ahgyd2swkapimvf70ah2y55wpn2hdh1wymfh6492xrkv5x91sqz";}}/modules/vscode-server/home.nix"
   ];
+
+  services.vscode-server.enable = true;
 
   nixpkgs = {
     # You can add overlays here
@@ -52,11 +57,29 @@
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
-  programs.git.enable = true;
+  programs.git = {
+    enable = true;
+    userEmail = "teemu.vikoren@gmail.com";
+    userName = "teevik";
+  };
+  wayland.windowManager.hyprland = {
+    enable = true;
+    systemdIntegration = true;
+  };
+
+  xdg = {
+    enable = true;
+    cacheHome = config.home.homeDirectory + "/.local/cache";
+
+    userDirs = {
+      enable = true;
+      createDirectories = true;
+    };
+  };
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
-
+  
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "22.11";
 }
