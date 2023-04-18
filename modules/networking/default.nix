@@ -1,7 +1,6 @@
 { ... }:
 {
   config = {
-      networking.hostName = "nixos";
       networking.networkmanager.enable = true;
 
       # Fixes an issue that normally causes nixos-rebuild to fail.

@@ -1,9 +1,26 @@
-{ lib,  ... }:
+{ config, lib,  ... }:
+
+let
+  cfg = config.pagman.user;
+in
 {
   options.pagman.user = with lib.types; {
-    extraGroups = mkOpt (listOf str) [ ] "Groups for the user to be assigned.";
+    extraGroups = lib.mkOption {
+      type = listOf str; 
+      default = [ ]; 
+      description = "Groups for the user to be assigned.";
+    };
   };
 
   config = {
+    users.users.teevik = {
+      isNormalUser = true;
+      home = "/home/teevik";
+      group = "users";
+
+      shell = pkgs.fish;
+
+      extraGroups = [ "wheel" ] ++ cfg.extraGroups;
+    };
   };
 }
