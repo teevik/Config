@@ -52,9 +52,9 @@
           userName = "teevik";
         };
 
-        alacritty = {
-          enable = true;
-        };
+        # alacritty = {
+        #   enable = true;
+        # };
       };
     };
 
