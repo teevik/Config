@@ -1,21 +1,21 @@
-{ lib, options, config, inputs, ... }:
+{ pkgs, lib, options, config, inputs, ... }:
 {
   imports = with inputs; [
     home-manager.nixosModules.home-manager
   ];
 
   options.pagman.home = with lib.types; {
-    file = lib.mkOption {
-      type = attrs;
-      default = { };
-      description = "A set of files to be managed by home-manager's <option>home.file</option>.";
-    };
+    # file = lib.mkOption {
+    #   type = attrs;
+    #   default = { };
+    #   description = "A set of files to be managed by home-manager's <option>home.file</option>.";
+    # };
 
-    configFile = lib.mkOption {
-      type = attrs;
-      default = { };
-      description = "A set of files to be managed by home-manager's <option>xdg.configFile</option>.";
-    };
+    # configFile = lib.mkOption {
+    #   type = attrs;
+    #   default = { };
+    #   description = "A set of files to be managed by home-manager's <option>xdg.configFile</option>.";
+    # };
 
     extraOptions = lib.mkOption {
       type = attrs;
@@ -26,10 +26,36 @@
 
   config = {
     pagman.home.extraOptions = {
+      home.packages = with pkgs; [ comma ];
+
       home.stateVersion = config.system.stateVersion;
-      home.file = lib.mkAliasDefinitions options.pagman.home.file;
-      xdg.enable = true;
-      xdg.configFile = lib.mkAliasDefinitions options.pagman.home.configFile;
+      # home.file = lib.mkAliasDefinitions options.pagman.home.file;
+      # xdg.enable = true;
+      # xdg.configFile = lib.mkAliasDefinitions options.pagman.home.configFile;
+      
+      # Nicely reload system units when changing configs
+      systemd.user.startServices = "sd-switch";      
+
+      xdg = {
+        enable = true;
+
+        userDirs = {
+          enable = true;
+          createDirectories = true;
+        };
+      };
+
+      programs = {
+        git = {
+          enable = true;
+          userEmail = "teemu.vikoren@gmail.com";
+          userName = "teevik";
+        };
+
+        alacritty = {
+          enable = true;
+        };
+      };
     };
 
     home-manager = {
