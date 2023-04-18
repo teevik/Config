@@ -136,11 +136,11 @@
   };
 
   programs = {
+    git.enable = true;
     # enable hyprland and required options
-    hyprland = {
-      enable = true;
-      xwayland.hidpi = true;
-    };
+    hyprland.enable = true;
+
+    light.enable = true;
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion

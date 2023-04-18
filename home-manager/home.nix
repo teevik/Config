@@ -53,15 +53,30 @@
 
   # Add stuff for your user as you see fit:
   # programs.neovim.enable = true;
-  # home.packages = with pkgs; [ steam ];
+  home.packages = with pkgs; [ comma ];
 
   # Enable home-manager and git
-  programs.home-manager.enable = true;
-  programs.git = {
-    enable = true;
-    userEmail = "teemu.vikoren@gmail.com";
-    userName = "teevik";
+
+  programs = {
+    home-manager.enable = true;
+
+    git = {
+      enable = true;
+      userEmail = "teemu.vikoren@gmail.com";
+      userName = "teevik";
+    };
+
+    alacritty = {
+      enable = true;
+    };
+
+    # wezterm = {
+    #   enable = true;
+    # };
   };
+
+
+
   wayland.windowManager.hyprland = {
     enable = true;
     systemdIntegration = true;
@@ -183,7 +198,7 @@
       $mainMod = SUPER
 
       # Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
-      bind = $mainMod, Q, exec, kitty
+      bind = $mainMod, Q, exec, alacritty
       bind = $mainMod, C, killactive,
       bind = $mainMod, M, exit,
       bind = $mainMod, E, exec, dolphin
