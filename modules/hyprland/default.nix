@@ -7,7 +7,7 @@
   config = {
     programs.hyprland.enable = true;
 
-    pagman.home.extraOptions = {
+    home = {
       imports = [
         inputs.hyprland.homeManagerModules.default
       ];

@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.pagman.user;
+  cfg = config.user;
 in
 {
-  options.pagman.user = with lib.types; {
+  options.user = with lib.types; {
     extraGroups = lib.mkOption {
       type = listOf str; 
       default = [ ]; 
@@ -13,8 +13,6 @@ in
   };
 
   config = {
-    programs.fish.enable = true;
-
     users.users.teevik = {
       isNormalUser = true;
       home = "/home/teevik";

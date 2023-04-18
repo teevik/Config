@@ -4,28 +4,14 @@
     home-manager.nixosModules.home-manager
   ];
 
-  options.pagman.home = with lib.types; {
-    # file = lib.mkOption {
-    #   type = attrs;
-    #   default = { };
-    #   description = "A set of files to be managed by home-manager's <option>home.file</option>.";
-    # };
-
-    # configFile = lib.mkOption {
-    #   type = attrs;
-    #   default = { };
-    #   description = "A set of files to be managed by home-manager's <option>xdg.configFile</option>.";
-    # };
-
-    extraOptions = lib.mkOption {
-      type = attrs;
-      default = { };
-      description = "Options to pass directly to home-manager.";
-    };
+  options.home = lib.mkOption {
+    type = lib.types.attrs;
+    default = { };
+    description = "Options to pass directly to home-manager.";
   };
 
   config = {
-    pagman.home.extraOptions = {
+    home = {
       home.packages = with pkgs; [ comma ];
 
       home.stateVersion = config.system.stateVersion;
@@ -60,9 +46,10 @@
 
     home-manager = {
       useUserPackages = true;
+      useGlobalPkgs = true;
 
       users.teevik =
-        lib.mkAliasDefinitions options.pagman.home.extraOptions;
+        lib.mkAliasDefinitions options.home;
     };
   };
 } 

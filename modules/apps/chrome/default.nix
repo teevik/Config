@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  config.pagman.home.extraOptions = {
+  config.home = {
     programs.google-chrome = {
       enable = true;
     };

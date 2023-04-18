@@ -17,27 +17,22 @@
   };
 
   outputs = inputs:
-    let
-      lib = inputs.snowfall-lib.mkLib {
-        inherit inputs;
-        src = ./.;
-      };
-    in
-    lib.mkFlake {
-      package-namespace = "pagman";
+    inputs.snowfall-lib.mkFlake {
+      inherit inputs;
+      src = ./.;
 
       channels-config.allowUnfree = true;
 
-      overlays = with inputs; [
-        # neovim.overlay
-        # flake.overlay
-        # cowsay.overlay
-        # icehouse.overlay
-      ];
+      # overlays = with inputs; [
+      #   # neovim.overlay
+      #   # flake.overlay
+      #   # cowsay.overlay
+      #   # icehouse.overlay
+      # ];
 
-      systems.modules = with inputs; [
-        # home-manager.nixosModules.home-manager
-        # nix-ld.nixosModules.nix-ld
-      ];
+      # systems.modules = with inputs; [
+      #   # home-manager.nixosModules.home-manager
+      #   # nix-ld.nixosModules.nix-ld
+      # ];
     };
 }

@@ -1,6 +1,6 @@
 { ... }:
 {
-  config = {
+  config = {    
     nix = {
       settings = {
         # Enable flakes and new 'nix' command
