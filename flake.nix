@@ -23,11 +23,7 @@
         src = ./.;
       };
     in
-    inputs.snowfall-lib.mkFlake {
-      inherit inputs;
-
-      src = ./.;
-
+    lib.mkFlake {
       package-namespace = "pagman";
 
       channels-config.allowUnfree = true;
