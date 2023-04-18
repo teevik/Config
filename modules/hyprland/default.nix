@@ -5,7 +5,7 @@
   ];
 
   config = {
-    # programs.hyprland.enable = true;
+    programs.hyprland.enable = true;
 
     pagman.home.extraOptions = {
       imports = [
