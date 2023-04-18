@@ -1,4 +1,4 @@
-{ config, lib,  ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.pagman.user;
@@ -13,6 +13,8 @@ in
   };
 
   config = {
+    programs.fish.enable = true;
+
     users.users.teevik = {
       isNormalUser = true;
       home = "/home/teevik";
