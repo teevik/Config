@@ -1,5 +1,5 @@
 { ... }:
 
 final: prev: {
-  fcitx-engines = prev.fcitx5;
+  # fcitx-engines = prev.fcitx5;
 }
