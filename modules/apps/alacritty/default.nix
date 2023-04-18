@@ -1,6 +1,8 @@
 { pkgs, ... }:
 {
-  config ={
-    environment.systemPackages = with pkgs; [ alacritty ]; 
+  config.pagman.home.extraOptions = {
+    programs.alacritty = {
+      enable = true;
+    };
   };
 }

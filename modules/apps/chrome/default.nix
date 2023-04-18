@@ -1,6 +1,8 @@
 { pkgs, ... }:
 {
-  config ={
-    environment.systemPackages = with pkgs; [ google-chrome ]; 
+  config.pagman.home.extraOptions = {
+    programs.google-chrome = {
+      enable = true;
+    };
   };
 }
