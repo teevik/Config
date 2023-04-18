@@ -16,7 +16,7 @@
         enable = true;
         systemdIntegration = true;
 
-        extraConfig = import ./config.nix;
+        extraConfig = builtins.readFile ./hyprland.conf;
       };
     };
   };
