@@ -18,7 +18,7 @@ in
       home = "/home/teevik";
       group = "users";
 
-      shell = pkgs.fish;
+      shell = pkgs.nushell;
 
       extraGroups = [ "wheel" ] ++ cfg.extraGroups;
     };
