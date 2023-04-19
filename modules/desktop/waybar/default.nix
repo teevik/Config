@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ pkgs, inputs, ... }:
 {
   config = {
     home = {
@@ -70,7 +70,7 @@
             format-disconnected = "<span color='#df8293'>睊</span> Disconnected";
             format-disabled = "<span color='#df8293'>睊</span> Disabled";
             tooltip-format = " {ifname} via {gwaddr}";
-            on-click = "[[ ! `pidof nm-connection-editor` ]] && nm-connection-editor || pkill nm-connection-editor";
+            on-click = "${nm-connection-editor}";
           };
 
           "pulseaudio" = {
@@ -90,8 +90,8 @@
               default = [ "" "" "" ];
             };
             scroll-step = 5.0;
-            on-click = "pulsemixer --toggle-mute";
-            on-click-right = "pulsemixer --toggle-mute";
+            on-click = "${pkgs.pulsemixer} --toggle-mute";
+            on-click-right = "${pkgs.pulsemixer} --toggle-mute";
             smooth-scrolling-threshold = 1;
           };
 
