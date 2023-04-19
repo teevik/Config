@@ -15,6 +15,7 @@
       wayland.windowManager.hyprland = {
         enable = true;
         systemdIntegration = true;
+        recommendedEnvironment = true;
 
         extraConfig = builtins.readFile ./hyprland.conf;
       };
