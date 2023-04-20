@@ -10,6 +10,12 @@ in
       default = [ ]; 
       description = "Groups for the user to be assigned.";
     };
+
+    extraOptions = lib.mkOption {
+      type = attrs;
+      default = { };
+      description = "Extra options passed to <option>users.users.teevik</option>.";
+    };
   };
 
   config = {
@@ -21,6 +27,6 @@ in
       shell = pkgs.fish;
 
       extraGroups = [ "wheel" ] ++ cfg.extraGroups;
-    };
+    } // cfg.extraOptions;
   };
 }

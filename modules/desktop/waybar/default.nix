@@ -70,7 +70,7 @@
             format-disconnected = "<span color='#df8293'>睊</span> Disconnected";
             format-disabled = "<span color='#df8293'>睊</span> Disabled";
             tooltip-format = " {ifname} via {gwaddr}";
-            on-click = "${nm-connection-editor}";
+            on-click = "${pkgs.networkmanagerapplet}";
           };
 
           "pulseaudio" = {
