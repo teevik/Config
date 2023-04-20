@@ -18,6 +18,11 @@
       url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -27,12 +32,9 @@
 
       channels-config.allowUnfree = true;
 
-      # overlays = with inputs; [
-      #   # neovim.overlay
-      #   # flake.overlay
-      #   # cowsay.overlay
-      #   # icehouse.overlay
-      # ];
+      overlays = with inputs; [
+        rust-overlay.overlays.default
+      ];
 
       # systems.modules = with inputs; [
       #   # home-manager.nixosModules.home-manager

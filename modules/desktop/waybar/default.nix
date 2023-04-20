@@ -1,5 +1,9 @@
 { pkgs, inputs, ... }:
-{
+
+let 
+  nmConnectionEditor = "${pkgs.networkmanagerapplet}/bin/nm-connection-editor";
+  pulsemixer = "${pkgs.pulsemixer}/bin/pulsemixer";
+in {
   config = {
     home = {
       programs.waybar = {
@@ -70,7 +74,7 @@
             format-disconnected = "<span color='#df8293'>睊</span> Disconnected";
             format-disabled = "<span color='#df8293'>睊</span> Disabled";
             tooltip-format = " {ifname} via {gwaddr}";
-            on-click = "${pkgs.networkmanagerapplet}";
+            on-click = "${nmConnectionEditor}";
           };
 
           "pulseaudio" = {
@@ -90,8 +94,8 @@
               default = [ "" "" "" ];
             };
             scroll-step = 5.0;
-            on-click = "${pkgs.pulsemixer} --toggle-mute";
-            on-click-right = "${pkgs.pulsemixer} --toggle-mute";
+            on-click = "${pulsemixer} --toggle-mute";
+            on-click-right = "${pulsemixer} --toggle-mute";
             smooth-scrolling-threshold = 1;
           };
 
