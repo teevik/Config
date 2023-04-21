@@ -5,8 +5,27 @@
   };
 
   config.home = {
-    programs.fish.enable = true;
+    programs.fish = {
+      enable = true;
 
-    xdg.configFile."fish/config.fish".source = ./config.fish;
+      shellInit = ''
+        set fish_greeting
+
+        bind \b backward-kill-word
+        bind \e\[3\;5~ kill-word
+      '';
+
+      shellAbbrs = {
+        cat = "bat";
+        ls = "exa";
+      };
+
+      functions = {
+        __fish_command_not_found_handler = {
+          body = "{} $argv";
+          onEvent = "fish_command_not_found";
+        };
+      };
+    };
   };
 }

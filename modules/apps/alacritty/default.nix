@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 let
   font = "JetBrainsMono Nerd Font";
   opacity = 0.2;
@@ -12,8 +12,8 @@ in {
           decorations = "none";
           dynamic_padding = true;
           padding = {
-            x = 5;
-            y = 5;
+            x = 16;
+            y = 16;
           };
           startup_mode = "Maximized";
         };
