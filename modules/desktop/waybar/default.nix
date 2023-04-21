@@ -3,6 +3,7 @@
 let 
   nmConnectionEditor = "${pkgs.networkmanagerapplet}/bin/nm-connection-editor";
   pulsemixer = "${pkgs.pulsemixer}/bin/pulsemixer";
+  light = "${pkgs.light}/bin/light";
 in {
   config = {
     home = {
@@ -32,8 +33,8 @@ in {
             format = "<span color='#e49186'>{icon}</span> {percent}%";
             format-icons = [ "" "" "" "" "" "" "" ];
 
-            on-scroll-up = "light -U 5%";
-            on-scroll-down = "light -A 5%";
+            on-scroll-up = "${light} -U 5%";
+            on-scroll-down = "${light} -A 5%";
             smooth-scrolling-threshold = 1;
           };
 

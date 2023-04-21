@@ -2,11 +2,7 @@
 {
   config = {
     environment.systemPackages = with pkgs; [
-      tofi
+      xdg-utils
     ];
-  };
-
-  config.home = {
-    xdg.configFile."tofi/config".source = ./config;
   };
 }
