@@ -19,13 +19,6 @@
         cat = "bat";
         ls = "exa";
       };
-
-      functions = {
-        __fish_command_not_found_handler = {
-          body = "{} $argv";
-          onEvent = "fish_command_not_found";
-        };
-      };
     };
   };
 }

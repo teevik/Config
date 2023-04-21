@@ -30,6 +30,8 @@
       inherit inputs;
       src = ./.;
 
+      package-namespace = "teevik";
+
       channels-config.allowUnfree = true;
 
       overlays = with inputs; [
