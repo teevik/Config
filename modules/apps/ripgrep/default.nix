@@ -2,7 +2,8 @@
 {
   config = {
     environment.systemPackages = with pkgs; [
-      trashy
+      ripgrep
+      ripgrep-all
     ];
   };
 }

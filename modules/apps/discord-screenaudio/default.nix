@@ -2,7 +2,7 @@
 {
   config = {
     environment.systemPackages = with pkgs; [
-      trashy
+      teevik.discord-screenaudio
     ];
   };
 }
