@@ -41,6 +41,7 @@
 
       overlays = with inputs; [
         rust-overlay.overlays.default
+        michael-belsanti-nur.overlays.default
       ];
 
       # systems.modules = with inputs; [

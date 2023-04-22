@@ -131,6 +131,26 @@
         "type": "github"
       }
     },
+    "michael-belsanti-nur": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1681865026,
+        "narHash": "sha256-djtyvfFyAoNHgYi7dvoZede9voJDW1tfhDX+mN9l5Qk=",
+        "owner": "michaelBelsanti",
+        "repo": "nur-packages",
+        "rev": "1c2887d8b9405aacd80d8228473c0960381f4531",
+        "type": "github"
+      },
+      "original": {
+        "owner": "michaelBelsanti",
+        "repo": "nur-packages",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1681737997,
@@ -151,6 +171,7 @@
       "inputs": {
         "home-manager": "home-manager",
         "hyprland": "hyprland",
+        "michael-belsanti-nur": "michael-belsanti-nur",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",
         "snowfall-lib": "snowfall-lib"
