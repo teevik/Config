@@ -1,4 +1,4 @@
-{ lib, fetchFromGitHub, rustPlatform }:
+{ fetchFromGitHub, rustPlatform }:
 
 rustPlatform.buildRustPackage {
   pname = "hyprland-scratchpad";
