@@ -2,7 +2,8 @@
 {
   config = {
     environment.systemPackages = [
-      pkgs.teevik.discord-screenaudio
+      pkgs.libsForQt5.callPackage ./package { }
+      # pkgs.teevik.discord-screenaudio
     ];
   };
 }
