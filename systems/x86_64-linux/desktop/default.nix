@@ -4,9 +4,12 @@ let
 in {
   imports = [ ./hardware.nix ];
 
-  services.xserver.enable = true;
+  # services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.opengl.enable = true;
+  hardware.opengl = {
+    enable = true;
+    driSupport32Bit = true;
+  };
 
   boot.kernelPackages = kernelPackages;
 
@@ -18,9 +21,9 @@ in {
 
   hardware.nvidia.package = kernelPackages.nvidiaPackages.stable;
   hardware.nvidia.modesetting.enable = true;
-
   programs.hyprland.nvidiaPatches = true;
   home.wayland.windowManager.hyprland.nvidiaPatches = true;
+
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "22.11";
 }
