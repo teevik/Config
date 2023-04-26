@@ -1,3 +1,4 @@
+
 { lib
 , stdenv
 , fetchFromGitHub
@@ -14,9 +15,9 @@ stdenv.mkDerivation rec {
 
   src = fetchFromGitHub {
     owner = "maltejur";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "sha256-PPP/+7x0dcQHowB7hUZu85LK/G+ohrPeRB0vv6e3PBg=";
+    repo = "discord-screenaudio";
+    rev = "6e86647c95f170acbcddf62ccf2557aeeda16785";
+    hash = "sha256-ZGm194l308epz1C4kRGuX/1bvm2ZjzmvIKsTMEjtGUE=";
     fetchSubmodules = true;
   };
 
