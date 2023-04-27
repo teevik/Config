@@ -24,8 +24,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    michael-belsanti-nur = {
-      url = "github:michaelBelsanti/nur-packages";
+    nix-ld = {
+      url = "github:Mic92/nix-ld";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -41,7 +41,7 @@
 
       overlays = with inputs; [
         rust-overlay.overlays.default
-        michael-belsanti-nur.overlays.default
+        nix-ld.nixosModules.nix-ld
       ];
 
       # systems.modules = with inputs; [
