@@ -23,11 +23,6 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nix-ld = {
-      url = "github:Mic92/nix-ld";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs:
@@ -41,12 +36,10 @@
 
       overlays = with inputs; [
         rust-overlay.overlays.default
-        nix-ld.nixosModules.nix-ld
       ];
 
       # systems.modules = with inputs; [
-      #   # home-manager.nixosModules.home-manager
-      #   # nix-ld.nixosModules.nix-ld
+      #   nix-ld.nixosModules.nix-ld
       # ];
     };
 }
