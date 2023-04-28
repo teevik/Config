@@ -13,7 +13,7 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     hyprland = {
       url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,6 +21,11 @@
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    flake-programs-sqlite = {
+      url = "github:wamserma/flake-programs-sqlite";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -38,8 +43,8 @@
         rust-overlay.overlays.default
       ];
 
-      # systems.modules = with inputs; [
-      #   nix-ld.nixosModules.nix-ld
-      # ];
+      systems.modules = with inputs; [
+        flake-programs-sqlite.nixosModules.programs-sqlite
+      ];
     };
 }
