@@ -34,6 +34,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    chaotic = {
+      url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
@@ -51,6 +56,7 @@
       ];
 
       systems.modules = with inputs; [
+        chaotic.nixosModules.default
         flake-programs-sqlite.nixosModules.programs-sqlite
       ];
     };
