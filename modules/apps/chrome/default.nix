@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   config.home = {
-    programs.google-chrome = {
+    programs.google-chrome-dev = {
       enable = true;
     };
   };
