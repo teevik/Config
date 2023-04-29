@@ -1,4 +1,3 @@
-
 { lib
 , stdenv
 , fetchFromGitHub
@@ -11,13 +10,13 @@
 
 stdenv.mkDerivation rec {
   pname = "discord-screenaudio";
-  version = "1.8.0";
+  version = "1.8.1";
 
   src = fetchFromGitHub {
     owner = "maltejur";
     repo = "discord-screenaudio";
-    rev = "6e86647c95f170acbcddf62ccf2557aeeda16785";
-    hash = "sha256-ZGm194l308epz1C4kRGuX/1bvm2ZjzmvIKsTMEjtGUE=";
+    rev = "8a6f49b949e4187bbe5151a6524fdf1dcc854f48";
+    hash = "sha256-JhTcOGLhcOliymadS0aMKe+89wzfcMi6exSK/cKr4eY=";
     fetchSubmodules = true;
   };
 
