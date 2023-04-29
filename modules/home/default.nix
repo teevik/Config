@@ -25,7 +25,7 @@
 
     home.stateVersion = config.system.stateVersion;
 
-    systemd.user.startServices = "sd-switch";      
+    systemd.user.startServices = "sd-switch";
 
     xdg = {
       enable = true;
@@ -36,4 +36,4 @@
       };
     };
   };
-} 
+}

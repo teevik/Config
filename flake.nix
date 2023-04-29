@@ -28,6 +28,13 @@
       url = "github:wamserma/flake-programs-sqlite";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nh = {
+      url = "github:viperML/nh";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
   outputs = inputs:
