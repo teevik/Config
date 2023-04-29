@@ -1,7 +1,5 @@
 { pkgs, ... }:
 {
-
-
   config = {
     programs.steam = {
       enable = true;
@@ -9,6 +7,6 @@
       dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
     };
 
-    chaotic.steam.extraCompatPackages = with pkgs; [ luxtorpeda proton-ge-custom ];
+    chaotic.steam.extraCompatPackages = with pkgs; [ proton-ge-custom ];
   };
 }
