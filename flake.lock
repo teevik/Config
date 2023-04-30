@@ -6,9 +6,7 @@
         "gamescope-git-src": "gamescope-git-src",
         "input-leap-git-src": "input-leap-git-src",
         "mesa-git-src": "mesa-git-src",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs-pinned": "nixpkgs-pinned",
         "sway-git-src": "sway-git-src",
         "swaylock-plugin-git-src": "swaylock-plugin-git-src",
         "waynergy-git-src": "waynergy-git-src",
@@ -16,11 +14,11 @@
         "yuzu-ea-git-src": "yuzu-ea-git-src"
       },
       "locked": {
-        "lastModified": 1682786489,
-        "narHash": "sha256-PDZmcdYx+PoFN7ICPC8xvL9sxwYzBIYqE7WvPaL1fzY=",
+        "lastModified": 1682847713,
+        "narHash": "sha256-08BFkK5E7Hw0JeT2aMqfkXR5F8dHY0co23gQUSSRLOg=",
         "owner": "chaotic-cx",
         "repo": "nyx",
-        "rev": "c02c522b3961bf4bc8cc59afd759f428819749a9",
+        "rev": "45c4312406623d79c77313bd86870ee0a4fd0fdb",
         "type": "github"
       },
       "original": {
@@ -87,11 +85,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1682751327,
-        "narHash": "sha256-ew0mtZ2Z+PZIcMu8eBahaEANhusejrJATZBoh/dnLP8=",
+        "lastModified": 1682835220,
+        "narHash": "sha256-5aXh23dkbVvMIHvQBQKA1o3MVRfxRmp7YXH2/ghQwiA=",
         "owner": "wamserma",
         "repo": "flake-programs-sqlite",
-        "rev": "b5f01701fb413a6130c6d33c49215dc7423318ea",
+        "rev": "04fa27919cdaf6c18d13ad7edec374984ae614ba",
         "type": "github"
       },
       "original": {
@@ -216,11 +214,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1682786504,
-        "narHash": "sha256-hrzO6Emkd/seq5IwPyPicX6yh5X50Vlv+vJmXZsGtpw=",
+        "lastModified": 1682813751,
+        "narHash": "sha256-gwR5vd1rVD6W/3BXbVohrfZKKOhPtp66vthGIG9758Y=",
         "owner": "hyprwm",
         "repo": "Hyprland",
-        "rev": "5c3684d0cce9b22364afd3515b9b42fb95417d84",
+        "rev": "02312cac59e8b22a823043ef64a34bc9cf0eef02",
         "type": "github"
       },
       "original": {
@@ -355,6 +353,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-pinned": {
+      "locked": {
+        "lastModified": 1682109806,
+        "narHash": "sha256-d9g7RKNShMLboTWwukM+RObDWWpHKaqTYXB48clBWXI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2362848adf8def2866fabbffc50462e929d7fffb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1682134069,
@@ -390,11 +404,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1682734733,
-        "narHash": "sha256-oAoNMgWQveSF1Vv16OJ2GVU+BGGdzazTHpPu/VKy/BQ=",
+        "lastModified": 1682821181,
+        "narHash": "sha256-7MYRqO9Ge46sULbQwJbcH/IMDNBdxCGUO9w7bEOc3CI=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "0bb45c519ebd64f6b4223e1bb6b4e08df80834ca",
+        "rev": "1be440e9119e69b68151cd9c84876ff3063a2e45",
         "type": "github"
       },
       "original": {
