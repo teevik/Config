@@ -6,7 +6,9 @@
         "gamescope-git-src": "gamescope-git-src",
         "input-leap-git-src": "input-leap-git-src",
         "mesa-git-src": "mesa-git-src",
-        "nixpkgs-pinned": "nixpkgs-pinned",
+        "nixpkgs-pinned": [
+          "nixpkgs"
+        ],
         "sway-git-src": "sway-git-src",
         "swaylock-plugin-git-src": "swaylock-plugin-git-src",
         "waynergy-git-src": "waynergy-git-src",
@@ -349,22 +351,6 @@
         "dir": "lib",
         "owner": "NixOS",
         "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-pinned": {
-      "locked": {
-        "lastModified": 1682109806,
-        "narHash": "sha256-d9g7RKNShMLboTWwukM+RObDWWpHKaqTYXB48clBWXI=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "2362848adf8def2866fabbffc50462e929d7fffb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
