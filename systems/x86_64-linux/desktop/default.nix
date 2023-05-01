@@ -1,7 +1,8 @@
 { pkgs, ... }:
 let
-  kernelPackages = pkgs.linuxPackages_zen;
-in {
+  kernelPackages = pkgs.linuxPackages_xanmod_latest;
+in
+{
   imports = [ ./hardware.nix ];
 
   # services.xserver.enable = true;
