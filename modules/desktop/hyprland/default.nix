@@ -1,10 +1,14 @@
-{ inputs, ... }:
+{ config, inputs, ... }:
 {
   imports = [
     inputs.hyprland.nixosModules.default
   ];
 
-  programs.hyprland.enable = true;
+  programs.hyprland = {
+    enable = true;
+
+    nvidiaPatches = config.teevik.hardware.nvidia.enable;
+  };
 
   teevik.home = {
     imports = [
@@ -17,7 +21,8 @@
       recommendedEnvironment = true;
 
       extraConfig = builtins.readFile ./hyprland.conf;
+
+      nvidiaPatches = config.teevik.hardware.nvidia.enable;
     };
   };
-
 }

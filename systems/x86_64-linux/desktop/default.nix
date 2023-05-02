@@ -1,28 +1,16 @@
 { pkgs, ... }:
-let
-  kernelPackages = pkgs.linuxPackages_xanmod_latest;
-in
 {
   imports = [ ./hardware.nix ];
 
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.opengl = {
-    enable = true;
-    driSupport32Bit = true;
-  };
+  teevik.hardware.nvidia.enable = true;
 
-  boot.kernelPackages = kernelPackages;
+  boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi = {
     canTouchEfiVariables = true;
     efiSysMountPoint = "/boot/efi";
   };
-
-  hardware.nvidia.package = kernelPackages.nvidiaPackages.stable;
-  hardware.nvidia.modesetting.enable = true;
-  programs.hyprland.nvidiaPatches = true;
-  teevik.home.wayland.windowManager.hyprland.nvidiaPatches = true;
 
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
