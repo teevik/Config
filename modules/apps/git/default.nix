@@ -1,6 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 {
-  config.home = {
+  teevik.home = {
     programs.git = {
       enable = true;
       userEmail = "teemu.vikoren@gmail.com";

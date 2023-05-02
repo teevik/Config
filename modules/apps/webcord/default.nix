@@ -1,12 +1,10 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      webcord
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    webcord
+  ];
 
-  config.home = {
+  teevik.home = {
     xdg.desktopEntries.webcord = {
       name = "WebCord";
       genericName = "discord";

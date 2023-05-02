@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  config.home = {
+  teevik.home = {
     gtk = {
       enable = true;
 

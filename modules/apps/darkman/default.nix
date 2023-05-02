@@ -7,7 +7,7 @@ let
   };
 in
 {
-  config.home = {
+  config.teevik.home = {
     home.packages = [ package ];
 
     xdg.configFile."darkman/config.yaml".source =

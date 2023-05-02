@@ -1,12 +1,10 @@
-{ pkgs, ... }: 
+{ pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      libnotify
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    libnotify
+  ];
 
-  config.home = {
+  teevik.home = {
     services.mako = {
       enable = true;
     };

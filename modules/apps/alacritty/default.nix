@@ -3,8 +3,9 @@ let
   font = "JetBrainsMono Nerd Font";
   opacity = 0.2;
   size = 13;
-in {
-  config.home = {
+in
+{
+  teevik.home = {
     programs.alacritty = {
       enable = true;
       settings = {

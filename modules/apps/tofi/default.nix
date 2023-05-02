@@ -1,12 +1,10 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      tofi
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    tofi
+  ];
 
-  config.home = {
+  teevik.home = {
     xdg.configFile."tofi/config".source = ./config;
   };
 }

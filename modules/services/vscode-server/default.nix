@@ -1,12 +1,10 @@
 { inputs, ... }:
 {
-  config = {
-    home = {
-      imports = [
-        inputs.vscode-server.homeModules.default
-      ];
+  teevik.home = {
+    imports = [
+      inputs.vscode-server.homeModules.default
+    ];
 
-      services.vscode-server.enable = true;
-    };
+    services.vscode-server.enable = true;
   };
 }

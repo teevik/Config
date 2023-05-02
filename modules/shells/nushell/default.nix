@@ -1,6 +1,6 @@
 { ... }:
 {
-  config.home = {
+  teevik.home = {
     programs.nushell.enable = true;
   };
 }

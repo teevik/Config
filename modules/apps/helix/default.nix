@@ -1,6 +1,6 @@
 { ... }:
 {
-  config.home = {
+  teevik.home = {
     programs.helix = {
       enable = true;
 
@@ -8,7 +8,7 @@
         theme = "base16_transparent";
 
         editor = {
-             line-number = "relative";
+          line-number = "relative";
           bufferline = "always";
           color-modes = true;
           auto-save = true;
@@ -19,12 +19,12 @@
           display-inlay-hints = true;
         };
 
-        editor.cursor-shape = { 
+        editor.cursor-shape = {
           insert = "bar";
         };
 
         keys.normal = {
-            esc = [ "collapse_selection" "keep_primary_selection" ];
+          esc = [ "collapse_selection" "keep_primary_selection" ];
         };
 
         keys.insert = {

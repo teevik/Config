@@ -1,6 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 {
-  config.home = {
+  teevik.home = {
     programs.exa = {
       enable = true;
 

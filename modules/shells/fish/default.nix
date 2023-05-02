@@ -1,10 +1,8 @@
 { ... }:
 {
-  config = {
-    programs.fish.enable = true;
-  };
+  programs.fish.enable = true;
 
-  config.home = {
+  teevik.home = {
     programs.fish = {
       enable = true;
 

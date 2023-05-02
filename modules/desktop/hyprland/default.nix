@@ -4,21 +4,20 @@
     inputs.hyprland.nixosModules.default
   ];
 
-  config = {
-    programs.hyprland.enable = true;
+  programs.hyprland.enable = true;
 
-    home = {
-      imports = [
-        inputs.hyprland.homeManagerModules.default
-      ];
+  teevik.home = {
+    imports = [
+      inputs.hyprland.homeManagerModules.default
+    ];
 
-      wayland.windowManager.hyprland = {
-        enable = true;
-        systemdIntegration = true;
-        recommendedEnvironment = true;
+    wayland.windowManager.hyprland = {
+      enable = true;
+      systemdIntegration = true;
+      recommendedEnvironment = true;
 
-        extraConfig = builtins.readFile ./hyprland.conf;
-      };
+      extraConfig = builtins.readFile ./hyprland.conf;
     };
   };
+
 }

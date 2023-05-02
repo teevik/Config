@@ -1,10 +1,10 @@
-{ pkgs, lib, options, config, inputs, ... }:
+{ lib, options, config, inputs, ... }:
 {
   imports = with inputs; [
     home-manager.nixosModules.home-manager
   ];
 
-  options.home = lib.mkOption {
+  options.teevik.home = lib.mkOption {
     type = lib.types.attrs;
     default = { };
     description = "Options to pass directly to home-manager.";
@@ -16,13 +16,11 @@
       useGlobalPkgs = true;
 
       users.teevik =
-        lib.mkAliasDefinitions options.home;
+        lib.mkAliasDefinitions options.teevik.home;
     };
   };
 
-  config.home = {
-    home.packages = with pkgs; [ comma ];
-
+  config.teevik.home = {
     home.stateVersion = config.system.stateVersion;
 
     systemd.user.startServices = "sd-switch";

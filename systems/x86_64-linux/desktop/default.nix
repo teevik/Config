@@ -5,7 +5,6 @@ in
 {
   imports = [ ./hardware.nix ];
 
-  # services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.opengl = {
     enable = true;
@@ -23,7 +22,7 @@ in
   hardware.nvidia.package = kernelPackages.nvidiaPackages.stable;
   hardware.nvidia.modesetting.enable = true;
   programs.hyprland.nvidiaPatches = true;
-  home.wayland.windowManager.hyprland.nvidiaPatches = true;
+  teevik.home.wayland.windowManager.hyprland.nvidiaPatches = true;
 
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
