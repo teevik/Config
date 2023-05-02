@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 
 let
   nmConnectionEditor = "${pkgs.networkmanagerapplet}/bin/nm-connection-editor";
