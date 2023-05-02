@@ -2,6 +2,8 @@
 {
   imports = [ ./hardware.nix ];
 
+  teevik.hardware.light.enable = true;
+
   boot.kernelPackages = pkgs.linuxPackages_zen;
 
   boot.loader.systemd-boot.enable = true;
