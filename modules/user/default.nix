@@ -1,13 +1,13 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.user;
+  cfg = config.teevik.user;
 in
 {
-  options.user = with lib.types; {
+  options.teevik.user = with lib.types; {
     extraGroups = lib.mkOption {
-      type = listOf str; 
-      default = [ ]; 
+      type = listOf str;
+      default = [ ];
       description = "Groups for the user to be assigned.";
     };
 

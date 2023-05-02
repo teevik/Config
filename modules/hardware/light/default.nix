@@ -17,6 +17,6 @@ in
   config = mkIf cfg.enable {
     programs.light.enable = true;
 
-    user.extraGroups = [ "video" ];
+    teevik.user.extraGroups = [ "video" ];
   };
 }
