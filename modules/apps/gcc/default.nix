@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      gcc
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    gcc
+  ];
 }

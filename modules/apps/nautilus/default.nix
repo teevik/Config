@@ -1,10 +1,8 @@
 { pkgs, ... }:
 {
-  config = {
-    services.gvfs.enable = true;
+  services.gvfs.enable = true;
 
-    environment.systemPackages = with pkgs; [
-      gnome.nautilus
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    gnome.nautilus
+  ];
 }

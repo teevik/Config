@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      jetbrains.pycharm-professional
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    jetbrains.pycharm-professional
+  ];
 }

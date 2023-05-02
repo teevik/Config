@@ -1,6 +1,4 @@
 { ... }:
 {
-  config = {
-    time.timeZone = "Europe/Oslo";
-  };
+  time.timeZone = "Europe/Oslo";
 }

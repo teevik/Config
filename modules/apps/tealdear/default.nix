@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      tealdeer
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    tealdeer
+  ];
 }

@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      nixpkgs-fmt
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    nixpkgs-fmt
+  ];
 }

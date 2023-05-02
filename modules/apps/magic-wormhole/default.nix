@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      magic-wormhole
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    magic-wormhole
+  ];
 }

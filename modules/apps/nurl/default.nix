@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      nurl
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    nurl
+  ];
 }

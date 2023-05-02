@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      erdtree
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    erdtree
+  ];
 }

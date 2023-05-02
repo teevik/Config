@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      bat
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    bat
+  ];
 }

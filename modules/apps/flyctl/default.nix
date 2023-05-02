@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  config = {
-    environment.systemPackages = with pkgs; [
-      flyctl
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    flyctl
+  ];
 }
