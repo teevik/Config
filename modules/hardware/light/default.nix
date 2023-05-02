@@ -1,6 +1,8 @@
 { ... }:
 {
-  programs.light.enable = true;
+  config = {
+    programs.light.enable = true;
 
-  user.extraGroups = [ "video" ];
+    user.extraGroups = [ "video" ];
+  };
 }
