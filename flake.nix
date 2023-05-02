@@ -40,6 +40,8 @@
     };
 
     vscode-server.url = "github:nix-community/nixos-vscode-server";
+
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
   outputs = inputs:
