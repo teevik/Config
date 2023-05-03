@@ -18,6 +18,9 @@
 
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
+  # powerManagement.cpuFreqGovernor = "powersave";
+  services.auto-cpufreq.enable = true;
+
   # boot.kernelParams = [ "amd_pstate=passive" ];
 
   # boot.kernelModules = [ "amd-pstate" ];
