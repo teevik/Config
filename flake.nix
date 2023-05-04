@@ -36,10 +36,12 @@
 
     chaotic = {
       url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-      inputs.nixpkgs-pinned.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     vscode-server.url = "github:nix-community/nixos-vscode-server";
+
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
   outputs = inputs:
