@@ -1,28 +1,54 @@
-{ config, inputs, ... }:
+{ lib, config, inputs, ... }:
+let
+  inherit (lib) types mkOption;
+  cfg = config.teevik.hyprland;
+in
 {
   imports = [
     inputs.hyprland.nixosModules.default
   ];
 
-  programs.hyprland = {
-    enable = true;
+  options.teevik.hyprland = {
+    enableMasterLayout = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable master layout
+      '';
+    };
 
-    nvidiaPatches = config.teevik.hardware.nvidia.enable;
+    enableVrr = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable vrr
+      '';
+    };
   };
 
-  teevik.home = {
-    imports = [
-      inputs.hyprland.homeManagerModules.default
-    ];
-
-    wayland.windowManager.hyprland = {
+  config = {
+    programs.hyprland = {
       enable = true;
-      systemdIntegration = true;
-      recommendedEnvironment = true;
-
-      extraConfig = builtins.readFile ./hyprland.conf;
 
       nvidiaPatches = config.teevik.hardware.nvidia.enable;
+    };
+
+    teevik.home = {
+      imports = [
+        inputs.hyprland.homeManagerModules.default
+      ];
+
+      wayland.windowManager.hyprland = {
+        enable = true;
+        systemdIntegration = true;
+        recommendedEnvironment = true;
+
+        extraConfig = import ./config.nix {
+          inherit (cfg) enableMasterLayout enableVrr;
+        };
+
+        nvidiaPatches = config.teevik.hardware.nvidia.enable;
+      };
     };
   };
 }

@@ -2,7 +2,13 @@
 {
   imports = [ ./hardware.nix ];
 
-  teevik.hardware.nvidia.enable = true;
+  teevik = {
+    hardware.nvidia.enable = true;
+    hyprland = {
+      enableMasterLayout = true;
+      enableVrr = true;
+    };
+  };
 
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
 
