@@ -5,7 +5,7 @@
   teevik = {
     hardware.nvidia.enable = true;
     hyprland = {
-      enableMasterLayout = true;
+      enableMasterLayout = false;
       enableVrr = true;
     };
   };
