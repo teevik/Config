@@ -15,6 +15,8 @@
 
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
 
+  powerManagement.cpuFreqGovernor = "performance";
+
   # Lanzaboote
   boot.bootspec.enable = true;
   environment.systemPackages = [

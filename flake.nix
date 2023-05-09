@@ -19,10 +19,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # rust-overlay = {
+    #   url = "github:oxalica/rust-overlay";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     flake-programs-sqlite = {
       url = "github:wamserma/flake-programs-sqlite";
@@ -60,9 +60,9 @@
 
       channels-config.allowUnfree = true;
 
-      overlays = with inputs; [
-        rust-overlay.overlays.default
-      ];
+      # overlays = with inputs; [
+      #   rust-overlay.overlays.default
+      # ];
 
       systems.modules = with inputs; [
         chaotic.nixosModules.default

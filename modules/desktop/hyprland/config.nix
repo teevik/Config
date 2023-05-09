@@ -7,13 +7,14 @@
   env = XCURSOR_SIZE,24
 
   misc {
-      vrr	= ${if enableVrr then "1" else "0"}
+      vrr = ${if enableVrr then "1" else "0"}
 
       enable_swallow = true
       swallow_regex = ^(Alacritty)$
       focus_on_activate = true
 
-      # no_direct_scanout = false
+    #   no_direct_scanout = false
+    #   render_ahead_of_time = true
   }
 
   input {
@@ -128,8 +129,6 @@
   # -- Screenshot --
   bind = , Print ,exec, shotman --copy --capture output
   bind = CTRL, Print, exec, shotman --copy --capture region
-
-  bind = , mouse:276, exec, playerctl play-pause
 
   # -- Hyprland --
   bind = SUPER, Q, killactive,
