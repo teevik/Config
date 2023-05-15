@@ -17,6 +17,9 @@
 
   powerManagement.cpuFreqGovernor = "performance";
 
+  networking.networkmanager.packages = [ pkgs.networkmanager-openvpn ];
+
+
   # Lanzaboote
   boot.bootspec.enable = true;
   environment.systemPackages = [
