@@ -6,7 +6,11 @@
   ];
 
   teevik = {
-    hardware.nvidia.enable = true;
+    hardware = {
+      nvidia.enable = true;
+      bluetooth.enable = true;
+    };
+
     hyprland = {
       enableMasterLayout = false;
       enableVrr = true;
