@@ -16,6 +16,8 @@
     efiSysMountPoint = "/boot/efi";
   };
 
+  boot.kernelParams = [ "amdgpu.dcdebugmask=0x10" ];
+
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
   # powerManagement.cpuFreqGovernor = "powersave";
