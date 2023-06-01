@@ -17,11 +17,17 @@
     };
   };
 
+  services.hardware.openrgb = {
+    enable = true;
+    motherboard = "amd";
+    package = pkgs.teevik.openrgb;
+  };
+
   boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
 
   powerManagement.cpuFreqGovernor = "performance";
 
-  networking.networkmanager.packages = [ pkgs.networkmanager-openvpn ];
+  networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
 
 
   # Lanzaboote

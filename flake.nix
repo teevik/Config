@@ -65,9 +65,9 @@
 
       channels-config.allowUnfree = true;
 
-      # overlays = with inputs; [
-      #   rust-overlay.overlays.default
-      # ];
+      overlays = with inputs; [
+        # rust-overlay.overlays.default
+      ];
 
       systems.modules = with inputs; [
         chaotic.nixosModules.default
