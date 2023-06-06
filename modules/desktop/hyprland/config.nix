@@ -100,6 +100,8 @@
       new_is_master = false
   }
 
+  windowrule = float, feh|MPlayer
+
   windowrule = float, yad|nm-connection-editor|pavucontrolk
   windowrule = float, xfce-polkit|kvantummanager|qt5ct
   windowrule = float, VirtualBox Manager|qemu|Qemu-system-x86_64
