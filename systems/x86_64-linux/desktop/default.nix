@@ -29,21 +29,15 @@
 
   networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
 
-
-  # Lanzaboote
-  boot.bootspec.enable = true;
-  environment.systemPackages = [
-    # For debugging and troubleshooting Secure Boot.
-    pkgs.sbctl
-  ];
-  boot.loader.systemd-boot.enable = lib.mkForce false;
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/etc/secureboot";
-  };
   time.hardwareClockInLocalTime = true;
 
-  # boot.loader.systemd-boot.enable = true;
+  boot.loader.grub = {
+    enable = true;
+    device = "nodev";
+    efiSupport = true;
+    useOSProber = true;
+  };
+
   boot.loader.efi = {
     canTouchEfiVariables = true;
     efiSysMountPoint = "/boot/efi";
