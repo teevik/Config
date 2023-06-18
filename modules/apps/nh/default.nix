@@ -1,8 +1,12 @@
 { inputs, ... }:
 {
-  environment.sessionVariables.FLAKE = "/home/teevik/Documents/Config";
-
-  environment.systemPackages = [
-    inputs.nh.packages.x86_64-linux.default
+  imports = [
+    inputs.nh.nixosModules.default
   ];
+
+  config = {
+    environment.sessionVariables.FLAKE = "/home/teevik/Documents/Config";
+
+    nh.enable = true;
+  };
 }
