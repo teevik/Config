@@ -1,5 +1,5 @@
 * {
-  font-family: "JetBrains Mono", sans-serif;
+  font-family: "JetBrainsMono Nerd Font", sans-serif;
   font-size: 14px;
 }
 
@@ -37,8 +37,7 @@ window#waybar {
 #memory,
 #pulseaudio,
 #network,
-#custom-power
- {
+#custom-power {
   margin-top: 7px;
   margin-bottom: 0px;
   padding: 0px 16px;

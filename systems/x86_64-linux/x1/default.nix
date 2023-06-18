@@ -2,7 +2,15 @@
 {
   imports = [ ./hardware.nix ];
 
-  teevik.hardware.light.enable = true;
+  teevik = {
+    hardware = {
+      light.enable = true;
+    };
+
+    services = {
+      autologin.enable = true;
+    };
+  };
 
   boot.kernelPackages = pkgs.linuxPackages_zen;
 

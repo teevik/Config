@@ -1,14 +1,17 @@
-{ inputs, pkgs, lib, ... }:
+{ pkgs, ... }:
 {
   imports = [
     ./hardware.nix
-    inputs.lanzaboote.nixosModules.lanzaboote
   ];
 
   teevik = {
     hardware = {
       nvidia.enable = true;
       bluetooth.enable = true;
+    };
+
+    services = {
+      autologin.enable = true;
     };
 
     hyprland = {

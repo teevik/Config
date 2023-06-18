@@ -4,7 +4,6 @@
     noto-fonts
     noto-fonts-cjk
     noto-fonts-emoji
-    nerdfonts
     jetbrains-mono
     liberation_ttf
     fira-code
@@ -12,5 +11,7 @@
     mplus-outline-fonts.githubRelease
     dina-font
     proggyfonts
+
+    (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
   ];
 }

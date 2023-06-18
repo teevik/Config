@@ -20,10 +20,6 @@ in
     hardware = {
       nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
       nvidia.modesetting.enable = true;
-
-      opengl.extraPackages = with pkgs; [
-        vaapiVdpau
-      ];
     };
   };
 }

@@ -6,7 +6,15 @@
     inputs.nixos-hardware.nixosModules.common-gpu-amd
   ];
 
-  teevik.hardware.light.enable = true;
+  teevik = {
+    hardware = {
+      light.enable = true;
+    };
+
+    services = {
+      autologin.enable = true;
+    };
+  };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
