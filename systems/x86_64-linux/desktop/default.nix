@@ -16,7 +16,7 @@
 
     hyprland = {
       enableMasterLayout = false;
-      enableVrr = true;
+      enableVrr = false;
     };
   };
 
