@@ -1,7 +1,7 @@
 { ... }:
 {
   teevik.home = {
-    programs.google-chrome-dev = {
+    programs.google-chrome = {
       enable = true;
     };
   };

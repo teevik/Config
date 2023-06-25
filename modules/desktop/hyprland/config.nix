@@ -111,7 +111,7 @@
 
   $terminal = alacritty
   $menu = tofi-drun --drun-launch=true
-  $browser = google-chrome-unstable
+  $browser = google-chrome-stable
   $discord = webcord
   $spotify = spotify
   $files = nautilus
