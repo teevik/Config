@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   teevik.home = {
     programs.helix = {
@@ -30,6 +30,15 @@
         keys.insert = {
           "C-s" = ":w";
         };
+      };
+
+      languages = {
+        language = [{
+          name = "nix";
+          language-server = {
+            command = "${pkgs.nixd}/bin/nixd";
+          };
+        }];
       };
     };
   };
