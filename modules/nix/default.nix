@@ -13,6 +13,7 @@
         "https://devenv.cachix.org/"
         "https://nyx.chaotic.cx"
         "https://viperml.cachix.org"
+        "https://neovim-flake.cachix.org/"
       ];
 
       trusted-public-keys = [
@@ -22,6 +23,7 @@
         "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="
         "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
         "viperml.cachix.org-1:qZhKBMTfmcLL+OG6fj/hzsMEedgKvZVFRRAhq7j8Vh8="
+        "neovim-flake.cachix.org-1:iyQ6lHFhnB5UkVpxhQqLJbneWBTzM8LBYOFPLNH4qZw="
       ];
     };
 

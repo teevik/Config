@@ -1,6 +1,8 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 {
-  imports = [ ./hardware.nix ];
+  imports = [
+    inputs.disko.nixosModules.disko
+  ];
 
   teevik = {
     hardware = {
@@ -12,7 +14,9 @@
     };
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_zen;
+  disko.devices = import ./disk-config.nix {
+    disks = [ "/dev/nvme0n1" ];
+  };
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
