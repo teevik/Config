@@ -1,10 +1,19 @@
-{ enableVrr, enableMasterLayout }:
+{ enableVrr, enableMasterLayout, enableHidpi }:
 ''
   monitor=desc:Samsung Electric Company Odyssey G8 H1AK500000,3440x1440@175,auto,1,bitdepth,10
-  monitor=,preferred,auto,1
 
-  # Some default env vars.
-  env = XCURSOR_SIZE,24
+  ${if enableHidpi then ''
+    monitor=,preferred,auto,2
+
+    exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE 32c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE 2
+
+    env = GDK_SCALE,2
+    env = XCURSOR_SIZE,48
+  '' else ''
+    monitor=,preferred,auto,1
+
+    env = XCURSOR_SIZE,24
+  ''}
 
   misc {
       vrr = ${if enableVrr then "1" else "0"}

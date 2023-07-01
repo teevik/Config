@@ -71,7 +71,7 @@ in
         nvidiaPatches = config.teevik.hardware.nvidia.enable;
 
         extraConfig = import ./config.nix {
-          inherit (cfg) enableMasterLayout enableVrr;
+          inherit (cfg) enableMasterLayout enableVrr enableHidpi;
         };
       };
     };
