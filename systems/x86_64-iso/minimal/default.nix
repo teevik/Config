@@ -12,13 +12,7 @@
     services = {
       autologin.enable = true;
     };
-
-    user.extraOptions = {
-      password = "shrekshrek";
-    };
   };
-
-  users.users.root.password = "shrekshrek";
 
   system.nixos.variant_id = "installer";
 
