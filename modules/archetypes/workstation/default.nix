@@ -16,6 +16,10 @@ in
 
   config = mkIf cfg.enable {
     teevik = {
+      hyprland = {
+        enable = true;
+      };
+
       development = {
         devenv.enable = true;
         direnv.enable = true;

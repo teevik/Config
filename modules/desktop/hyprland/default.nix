@@ -1,6 +1,6 @@
 { lib, config, inputs, ... }:
 let
-  inherit (lib) types mkOption;
+  inherit (lib) types mkOption mkIf;
   cfg = config.teevik.hyprland;
 in
 {
@@ -9,6 +9,14 @@ in
   ];
 
   options.teevik.hyprland = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable hyprland
+      '';
+    };
+
     enableMasterLayout = mkOption {
       type = types.bool;
       default = false;
@@ -34,7 +42,13 @@ in
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
+    environment.loginShellInit = ''
+      if [ "$(tty)" == /dev/tty1 ]; then
+        Hyprland
+      fi
+    '';
+
     programs.hyprland = {
       enable = true;
 
