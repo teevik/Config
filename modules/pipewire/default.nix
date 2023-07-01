@@ -1,14 +1,30 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.pipewire;
+in
 {
-  environment.systemPackages = with pkgs; [
-    pulseaudio
-  ];
+  options.teevik.pipewire = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable pipewire
+      '';
+    };
+  };
 
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
+  config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      pulseaudio
+    ];
+
+    security.rtkit.enable = true;
+    services.pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+    };
   };
 }

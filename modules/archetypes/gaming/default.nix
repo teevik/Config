@@ -1,22 +1,25 @@
 { config, lib, inputs, system, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.development.devenv;
+  cfg = config.teevik.archetypes.gaming;
 in
 {
-  options.teevik.development.devenv = {
+  options.teevik.archetypes.gaming = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable devenv
+        Whether to enable gaming archetype
       '';
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [
-      inputs.devenv.packages.${system}.devenv
-    ];
+    teevik = {
+      apps = {
+        lutris.enable = true;
+        steam.enable = true;
+      };
+    };
   };
 }

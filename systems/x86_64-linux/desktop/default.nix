@@ -5,13 +5,14 @@
   ];
 
   teevik = {
+    archetypes = {
+      workstation.enable = true;
+      gaming.enable = true;
+    };
+
     hardware = {
       nvidia.enable = true;
       bluetooth.enable = true;
-    };
-
-    services = {
-      autologin.enable = true;
     };
 
     hyprland = {

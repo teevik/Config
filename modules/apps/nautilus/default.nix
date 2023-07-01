@@ -1,10 +1,26 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.apps.nautilus;
+in
 {
-  services.gvfs.enable = true;
+  options.teevik.apps.nautilus = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable nautilus
+      '';
+    };
+  };
 
-  services.gnome.sushi.enable = true;
+  config = mkIf cfg.enable {
+    services.gvfs.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    gnome.nautilus
-  ];
+    services.gnome.sushi.enable = true;
+
+    environment.systemPackages = with pkgs; [
+      gnome.nautilus
+    ];
+  };
 }

@@ -1,22 +1,20 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.apps.lutris;
+  cfg = config.teevik.services.flatpak;
 in
 {
-  options.teevik.apps.lutris = {
+  options.teevik.services.flatpak = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable lutris
+        Whether to enable flatpak
       '';
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      lutris
-    ];
+    services.flatpak.enable = true;
   };
 }

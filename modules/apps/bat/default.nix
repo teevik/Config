@@ -1,6 +1,22 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.apps.bat;
+in
 {
-  environment.systemPackages = with pkgs; [
-    bat
-  ];
+  options.teevik.apps.bat = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable bat
+      '';
+    };
+  };
+
+  config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      bat
+    ];
+  };
 }

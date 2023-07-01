@@ -1,10 +1,26 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.apps.tofi;
+in
 {
-  environment.systemPackages = with pkgs; [
-    tofi
-  ];
+  options.teevik.apps.tofi = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable tofi
+      '';
+    };
+  };
 
-  teevik.home = {
-    xdg.configFile."tofi/config".source = ./config;
+  config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      tofi
+    ];
+
+    teevik.home = {
+      xdg.configFile."tofi/config".source = ./config;
+    };
   };
 }

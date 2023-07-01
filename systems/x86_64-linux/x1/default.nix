@@ -6,16 +6,16 @@
   ];
 
   teevik = {
+    archetypes = {
+      workstation.enable = true;
+    };
+
     hyprland = {
       enableHidpi = true;
     };
 
     hardware = {
       light.enable = true;
-    };
-
-    services = {
-      autologin.enable = true;
     };
   };
 

@@ -1,6 +1,22 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.development.nix.nil;
+in
 {
-  environment.systemPackages = with pkgs; [
-    nil
-  ];
+  options.teevik.development.nix.nil = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable nil
+      '';
+    };
+  };
+
+  config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      nil
+    ];
+  };
 }

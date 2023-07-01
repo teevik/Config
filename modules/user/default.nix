@@ -24,8 +24,6 @@ in
       home = "/home/teevik";
       group = "users";
 
-      shell = pkgs.fish;
-
       extraGroups = [ "wheel" ] ++ cfg.extraGroups;
     } // cfg.extraOptions;
   };

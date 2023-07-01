@@ -1,41 +1,57 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.theming.gtk;
+in
 {
-  teevik.home = {
-    gtk = {
-      enable = true;
+  options.teevik.theming.gtk = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable gtk theming
+      '';
+    };
+  };
 
-      cursorTheme = {
-        name = "Catppuccin-Mocha-Dark-Cursors";
-        package = pkgs.catppuccin-cursors.mochaDark;
-      };
+  config = mkIf cfg.enable {
+    teevik.home = {
+      gtk = {
+        enable = true;
 
-      theme = {
-        name = "Catppuccin-Mocha-Standard-Pink-dark";
-        package = pkgs.catppuccin-gtk.override {
-          accents = [ "pink" ];
-          size = "standard";
-          tweaks = [ "rimless" ];
-          variant = "mocha";
+        cursorTheme = {
+          name = "Catppuccin-Mocha-Dark-Cursors";
+          package = pkgs.catppuccin-cursors.mochaDark;
+        };
+
+        theme = {
+          name = "Catppuccin-Mocha-Standard-Pink-dark";
+          package = pkgs.catppuccin-gtk.override {
+            accents = [ "pink" ];
+            size = "standard";
+            tweaks = [ "rimless" ];
+            variant = "mocha";
+          };
+        };
+
+        iconTheme = {
+          name = "Adwaita";
+          package = pkgs.gnome.adwaita-icon-theme;
+        };
+
+        gtk3.extraConfig = {
+          gtk-application-prefer-dark-theme = true;
+        };
+
+        gtk4.extraConfig = {
+          gtk-application-prefer-dark-theme = true;
         };
       };
 
-      iconTheme = {
-        name = "Adwaita";
-        package = pkgs.gnome.adwaita-icon-theme;
-      };
-
-      gtk3.extraConfig = {
-        gtk-application-prefer-dark-theme = true;
-      };
-
-      gtk4.extraConfig = {
-        gtk-application-prefer-dark-theme = true;
-      };
-    };
-
-    dconf.settings = {
-      "org/gnome/desktop/interface" = {
-        color-scheme = "prefer-dark";
+      dconf.settings = {
+        "org/gnome/desktop/interface" = {
+          color-scheme = "prefer-dark";
+        };
       };
     };
   };

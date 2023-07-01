@@ -1,6 +1,22 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.development.nix.nixd;
+in
 {
-  environment.systemPackages = with pkgs; [
-    nixd
-  ];
+  options.teevik.development.nix.nixd = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable nixd
+      '';
+    };
+  };
+
+  config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      nixd
+    ];
+  };
 }

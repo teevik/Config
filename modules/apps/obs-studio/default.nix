@@ -1,6 +1,22 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.apps.obs-studio;
+in
 {
-  environment.systemPackages = with pkgs; [
-    obs-studio
-  ];
+  options.teevik.apps.obs-studio = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable obs-studio
+      '';
+    };
+  };
+
+  config = mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      obs-studio
+    ];
+  };
 }

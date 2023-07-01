@@ -1,13 +1,29 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.theming.qt;
+in
 {
-  teevik.home = {
-    qt = {
-      enable = true;
+  options.teevik.theming.qt = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable qt theme
+      '';
+    };
+  };
 
-      platformTheme = "gnome";
-      style = {
-        name = "adwaita-dark";
-        package = pkgs.adwaita-qt;
+  config = mkIf cfg.enable {
+    teevik.home = {
+      qt = {
+        enable = true;
+
+        platformTheme = "gnome";
+        style = {
+          name = "adwaita-dark";
+          package = pkgs.adwaita-qt;
+        };
       };
     };
   };

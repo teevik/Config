@@ -1,12 +1,28 @@
-{ ... }:
+{ config, lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption mkIf;
+  cfg = config.teevik.apps.exa;
+in
 {
-  teevik.home = {
-    programs.exa = {
-      enable = true;
+  options.teevik.apps.exa = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable exa
+      '';
+    };
+  };
 
-      git = true;
+  config = mkIf cfg.enable {
+    teevik.home = {
+      programs.exa = {
+        enable = true;
 
-      icons = true;
+        git = true;
+
+        icons = true;
+      };
     };
   };
 }
