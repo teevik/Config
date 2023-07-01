@@ -2,9 +2,14 @@
 {
   imports = [
     inputs.disko.nixosModules.disko
+    ./hardware.nix
   ];
 
   teevik = {
+    hyprland = {
+      enableHidpi = true;
+    };
+
     hardware = {
       light.enable = true;
     };

@@ -24,12 +24,21 @@ in
         Whether to enable vrr
       '';
     };
+
+    enableHidpi = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to enable hidpi
+      '';
+    };
   };
 
   config = {
     programs.hyprland = {
       enable = true;
 
+      xwayland.hidpi = cfg.enableHidpi;
       nvidiaPatches = config.teevik.hardware.nvidia.enable;
     };
 
@@ -43,11 +52,13 @@ in
         systemdIntegration = true;
         recommendedEnvironment = true;
 
+        xwayland.hidpi = cfg.enableHidpi;
+
+        nvidiaPatches = config.teevik.hardware.nvidia.enable;
+
         extraConfig = import ./config.nix {
           inherit (cfg) enableMasterLayout enableVrr;
         };
-
-        nvidiaPatches = config.teevik.hardware.nvidia.enable;
       };
     };
   };

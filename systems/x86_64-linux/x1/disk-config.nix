@@ -1,4 +1,3 @@
-# Example to create a bios compatible gpt partition
 { disks, ... }: {
   disk = {
     disk0 = {
@@ -8,22 +7,30 @@
       content = {
         type = "table";
         format = "gpt";
+
         partitions = [
           {
             name = "ESP";
-            start = "1M";
-            end = "512M";
+            start = "1MiB";
+            end = "512MiB";
+
             bootable = true;
+
             content = {
               type = "filesystem";
               format = "vfat";
               mountpoint = "/boot";
             };
           }
+
           {
             name = "root";
-            start = "512M";
+            start = "512MiB";
             end = "100%";
+
+            part-type = "primary";
+            bootable = true;
+
             content = {
               type = "filesystem";
               format = "ext4";

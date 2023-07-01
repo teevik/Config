@@ -2,6 +2,11 @@
 {
   nix = {
     settings = {
+      trusted-users = [
+        "root"
+        "teevik"
+      ];
+
       # Enable flakes and new 'nix' command
       experimental-features = "nix-command flakes";
       # Deduplicate and optimize nix store
