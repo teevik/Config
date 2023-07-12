@@ -27,7 +27,11 @@ in
       dina-font
       proggyfonts
 
-      (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      (nerdfonts.override {
+        fonts = [
+          "JetBrainsMono"
+        ];
+      })
     ];
   };
 }

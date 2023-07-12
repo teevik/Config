@@ -25,7 +25,7 @@ in
         direnv.enable = true;
         haskell.enable = false;
         javascript.enable = true;
-        neovim.enable = false;
+        neovim.enable = true;
 
         nix = {
           nil.enable = true;

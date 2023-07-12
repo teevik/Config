@@ -37,8 +37,6 @@ in
 
           font = {
             normal.family = font;
-            bold.family = font;
-            italic.family = font;
             inherit size;
           };
 

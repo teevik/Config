@@ -42,7 +42,7 @@
     };
 
     neovim-flake = {
-      url = github:notashelf/neovim-flake/release/v0.4;
+      url = github:notashelf/neovim-flake;
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

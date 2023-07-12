@@ -23,7 +23,7 @@ in
       programs.neovim-flake = {
         enable = true;
 
-        settings = {
+        settings = let isMaximal = false; in {
           vim = {
             viAlias = true;
             vimAlias = true;
@@ -44,13 +44,6 @@ in
             lspSignature.enable = true;
           };
 
-          vim.debugger = {
-            nvim-dap = {
-              enable = true;
-              ui.enable = true;
-            };
-          };
-
           vim.languages = {
             enableLSP = true;
             enableFormat = true;
@@ -58,20 +51,19 @@ in
             enableExtraDiagnostics = true;
 
             nix.enable = true;
-            html.enable = true;
-            clang.enable = true;
-            sql.enable = false;
+            html.enable = isMaximal;
+            clang.enable = isMaximal;
+            sql.enable = isMaximal;
             rust = {
-              enable = true;
+              enable = isMaximal;
               crates.enable = true;
             };
-            ts.enable = true;
-            svelte.enable = true;
-            go.enable = true;
-            zig.enable = true;
-            python.enable = true;
-            dart.enable = false;
-            elixir.enable = false;
+            ts.enable = isMaximal;
+            go.enable = isMaximal;
+            zig.enable = isMaximal;
+            python.enable = isMaximal;
+            dart.enable = isMaximal;
+            elixir.enable = isMaximal;
           };
 
           vim.visuals = {
@@ -104,7 +96,7 @@ in
             enable = true;
             name = "catppuccin";
             style = "mocha";
-            transparent = true;
+            transparent = false;
           };
           vim.autopairs.enable = true;
 
@@ -121,7 +113,6 @@ in
               };
               view = {
                 width = 25;
-                cursorline = false;
               };
             };
           };
@@ -152,7 +143,7 @@ in
 
           vim.dashboard = {
             dashboard-nvim.enable = false;
-            # alpha.enable = true;
+            alpha.enable = true;
           };
 
           vim.notify = {
@@ -164,10 +155,8 @@ in
           };
 
           vim.utility = {
-            ccc.enable = true;
-            vim-wakatime.enable = false;
+            colorizer.enable = true;
             icon-picker.enable = true;
-            surround.enable = true;
             diffview-nvim.enable = true;
             motion = {
               hop.enable = true;
@@ -191,27 +180,16 @@ in
 
           vim.ui = {
             noice.enable = true;
-            colorizer.enable = true;
-            modes-nvim.enable = false; # the theme looks terrible with catppuccin
-            illuminate.enable = true;
-            smartcolumn = {
-              enable = true;
-              columnAt.languages = {
-                # this is a freeform module, it's `buftype = int;` for configuring column position
-                nix = 110;
-                ruby = 120;
-                java = 130;
-                go = [ 90 130 ];
-              };
-            };
+            smartcolumn.enable = true;
           };
 
           vim.assistant = {
-            copilot.enable = true;
+            copilot.enable = isMaximal;
+            #tabnine.enable = false; # FIXME: this is not working because the plugin depends on an internal script to be ran by the package manager
           };
 
           vim.session = {
-            nvim-session-manager.enable = false;
+            nvim-session-manager.enable = true;
           };
 
           vim.gestures = {
@@ -229,7 +207,6 @@ in
               image_text = "The Superior Text Editor";
               client_id = "793271441293967371";
               main_image = "neovim";
-              show_time = true;
               rich_presence = {
                 editing_text = "Editing %s";
               };
