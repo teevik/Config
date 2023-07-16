@@ -18,9 +18,10 @@
   misc {
       vrr = ${if enableVrr then "1" else "0"}
 
-      enable_swallow = true
-      swallow_regex = ^(Alacritty)$
+      # enable_swallow = true
+      # swallow_regex = ^(org.wezfurlong.wezterm)$
       focus_on_activate = true
+      animate_manual_resizes = true
 
     #   no_direct_scanout = false
     #   render_ahead_of_time = true
@@ -55,6 +56,7 @@
 
   gestures {
       workspace_swipe = true
+    #   workspace_swipe_use_r = true # TODO
   }
 
   general {
@@ -118,7 +120,7 @@
   # windowrulev2 = tile, class:^(Spotify)$
   # windowrulev2 = workspace special:spotify, class:^(Spotify)$
 
-  $terminal = alacritty
+  $terminal = wezterm
   $menu = tofi-drun --drun-launch=true
   $browser = google-chrome-stable
   $discord = webcord
@@ -128,7 +130,7 @@
 
   # -- Apps --
   bind = SUPER_SHIFT, Return, exec, $terminal
-  bind = SUPER, Return, exec, hyprland-scratchpad toggle-exec --name terminal --exec '$terminal'
+  bind = SUPER, Return, exec, hyprland-scratchpad toggle-exec --name terminal --exec 'alacritty'
 
   bind = SUPER, D, exec, $menu
   bind = SUPER, W, exec, $browser

@@ -9,7 +9,7 @@
   teevik = {
     archetypes = {
       workstation.enable = true;
-      gaming.enable = true;
+      # gaming.enable = true;
     };
 
     hardware = {

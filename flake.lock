@@ -227,11 +227,11 @@
     "colorizer": {
       "flake": false,
       "locked": {
-        "lastModified": 1686587775,
-        "narHash": "sha256-T1ryyTdbU/335MpD184PSnBLgj4S2Kzf9hZnwc9to+I=",
+        "lastModified": 1681750992,
+        "narHash": "sha256-TXKYJY4+ozr54jBa3rUuJuO1Y4nrHfsX0yrQs3wtMDQ=",
         "owner": "uga-rosa",
         "repo": "ccc.nvim",
-        "rev": "4a0ddaf787cc82796e84ab8a7f70d086f250aeb6",
+        "rev": "a4a79302c2389f6852b1a655b47ea2edecccb081",
         "type": "github"
       },
       "original": {
@@ -1182,17 +1182,14 @@
         "zig": "zig"
       },
       "locked": {
-        "lastModified": 1686490155,
-        "narHash": "sha256-Ap15d/ak/Y4hOfVEFvlZydNDqIoXskW7UrxGMEOSl7U=",
-        "owner": "notashelf",
-        "repo": "neovim-flake",
-        "rev": "37a3f5b3734240444fcd7c64959ac1335e11eed0",
-        "type": "github"
+        "lastModified": 1689284638,
+        "narHash": "sha256-soC9Mg+yiLuCnsgfIo1C3Tm4CBIS46RWkYpJ0/d2unw=",
+        "type": "git",
+        "url": "file:///home/teevik/Documents/Config/neovim-flake"
       },
       "original": {
-        "owner": "notashelf",
-        "repo": "neovim-flake",
-        "type": "github"
+        "type": "git",
+        "url": "file:///home/teevik/Documents/Config/neovim-flake"
       }
     },
     "nh": {
@@ -1778,11 +1775,11 @@
     "nvim-web-devicons": {
       "flake": false,
       "locked": {
-        "lastModified": 1687651460,
-        "narHash": "sha256-lN8LUgQ0sJDMByFkUmfVy6h2EVPAP3hqrwqE0++XgMQ=",
+        "lastModified": 1681235235,
+        "narHash": "sha256-lAjk2Kpyxabe21ut7xCvhE2+we8hsEZWpcJrYLbhWqM=",
         "owner": "kyazdani42",
         "repo": "nvim-web-devicons",
-        "rev": "9ab9b0b894b2388a9dbcdee5f00ce72e25d85bf9",
+        "rev": "4ec26d67d419c12a4abaea02f1b6c57b40c08d7e",
         "type": "github"
       },
       "original": {

@@ -36,7 +36,10 @@ in
 
           vim.lsp = {
             formatOnSave = true;
-            lspkind.enable = false;
+            lspkind = {
+              enable = true;
+              preset = "codicons";
+            };
             lightbulb.enable = true;
             lspsaga.enable = false;
             nvimCodeActionMenu.enable = true;
@@ -51,19 +54,20 @@ in
             enableExtraDiagnostics = true;
 
             nix.enable = true;
-            html.enable = isMaximal;
-            clang.enable = isMaximal;
-            sql.enable = isMaximal;
+            html.enable = true;
+            clang.enable = true;
+            sql.enable = true;
             rust = {
-              enable = isMaximal;
+              enable = true;
               crates.enable = true;
             };
-            ts.enable = isMaximal;
-            go.enable = isMaximal;
-            zig.enable = isMaximal;
-            python.enable = isMaximal;
-            dart.enable = isMaximal;
-            elixir.enable = isMaximal;
+            ts.enable = true;
+            go.enable = true;
+            zig.enable = false;
+            python.enable = true;
+            dart.enable = false;
+            elixir.enable = false;
+            markdown.enable = true;
           };
 
           vim.visuals = {
@@ -73,15 +77,15 @@ in
             smoothScroll.enable = true;
             cellularAutomaton.enable = true;
             fidget-nvim.enable = true;
+            cursorWordline = {
+              enable = true;
+              lineTimeout = 0;
+            };
             indentBlankline = {
               enable = true;
               fillChar = null;
               eolChar = null;
               showCurrContext = true;
-            };
-            cursorWordline = {
-              enable = true;
-              lineTimeout = 0;
             };
           };
 
@@ -96,7 +100,7 @@ in
             enable = true;
             name = "catppuccin";
             style = "mocha";
-            transparent = false;
+            transparent = true;
           };
           vim.autopairs.enable = true;
 
@@ -108,12 +112,16 @@ in
           vim.filetree = {
             nvimTreeLua = {
               enable = true;
+              
               renderer = {
                 rootFolderLabel = null;
               };
+
               view = {
                 width = 25;
               };
+
+              git.enable = true;
             };
           };
 
@@ -184,7 +192,7 @@ in
           };
 
           vim.assistant = {
-            copilot.enable = isMaximal;
+            copilot.enable = true;
             #tabnine.enable = false; # FIXME: this is not working because the plugin depends on an internal script to be ran by the package manager
           };
 
@@ -198,19 +206,6 @@ in
 
           vim.comments = {
             comment-nvim.enable = true;
-          };
-
-          vim.presence = {
-            presence-nvim = {
-              enable = true;
-              auto_update = true;
-              image_text = "The Superior Text Editor";
-              client_id = "793271441293967371";
-              main_image = "neovim";
-              rich_presence = {
-                editing_text = "Editing %s";
-              };
-            };
           };
         };
       };

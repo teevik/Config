@@ -33,6 +33,7 @@ in
         shellAbbrs = {
           cat = "bat";
           ls = "exa";
+          wezterm = "wezterm start --cwd .";
         };
       };
     };

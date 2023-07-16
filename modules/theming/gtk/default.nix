@@ -15,6 +15,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.sessionVariables.XCURSOR_THEME = "Catppuccin-Mocha-Dark-Cursors";
+
     teevik.home = {
       gtk = {
         enable = true;

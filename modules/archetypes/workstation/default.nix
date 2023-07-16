@@ -66,6 +66,7 @@ in
 
       apps = {
         alacritty.enable = true;
+        wezterm.enable = true;
         bat.enable = true;
         chrome.enable = true;
         clion.enable = true;
