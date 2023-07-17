@@ -42,7 +42,7 @@
     };
 
     neovim-flake = {
-      url = "/home/teevik/Documents/Config/neovim-flake";
+      url = "github:NotAShelf/neovim-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

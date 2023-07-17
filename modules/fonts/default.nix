@@ -20,12 +20,6 @@ in
       noto-fonts-cjk
       noto-fonts-emoji
       jetbrains-mono
-      liberation_ttf
-      fira-code
-      fira-code-symbols
-      mplus-outline-fonts.githubRelease
-      dina-font
-      proggyfonts
 
       (nerdfonts.override {
         fonts = [

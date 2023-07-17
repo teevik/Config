@@ -31,7 +31,7 @@ in
         "backlight" = {
           interval = 2;
           format = "<span color='#e49186'>{icon}</span> {percent}%";
-          format-icons = [ "" "" "" "" "" "" "" ];
+          format-icons = [ "󰃞" "󰃝" "󰃟" "󰃠" ];
 
           on-scroll-up = "${light} -U 5%";
           on-scroll-down = "${light} -A 5%";
@@ -49,13 +49,13 @@ in
             critical = 15;
           };
           format = "<span color='#b4a1db'>{icon}</span> {capacity}%";
-          format-charging = "<span color='#b4a1db'></span> {capacity}%";
-          format-plugged = "<span color='#b4a1db'>ﮣ</span> {capacity}%";
+          format-charging = "<span color='#b4a1db'>󰂄</span> {capacity}%";
+          format-plugged = "<span color='#b4a1db'>󰂄</span> {capacity}%";
           format-critical = "<span color='#d66586'>{icon}</span> {capacity}%";
-          format-full = "<span color='#b4a1db'></span> Full";
+          format-full = "<span color='#b4a1db'>󱟢</span> Full";
           format-alt = "<span color='#b4a1db'>{icon}</span> {time}";
           format-time = "{H}h {M}min";
-          format-icons = [ "" "" "" "" "" "" "" "" "" ];
+          format-icons = [ "󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
           tooltip = true;
           tooltip-format = "Usage: {power:0.1f}W";
         };
@@ -69,11 +69,12 @@ in
 
         "network" = {
           interval = 5;
-          format-wifi = "<span color='#75dbe1'>直</span> {essid}";
-          format-ethernet = "<span color='#75dbe1'></span> {ipaddr}/{cidr}";
-          format-linked = "<span color='#75dbe1'></span> {ifname} (No IP)";
-          format-disconnected = "<span color='#df8293'>睊</span> Disconnected";
-          format-disabled = "<span color='#df8293'>睊</span> Disabled";
+          format-wifi = "<span color='#75dbe1'>{icon}</span> {essid}";
+          format-ethernet = "<span color='#75dbe1'>󰈀</span> {ipaddr}/{cidr}";
+          format-linked = "<span color='#75dbe1'>󰈀</span> {ifname} (No IP)";
+          format-disconnected = "<span color='#df8293'></span> Disconnected";
+          format-disabled = "<span color='#df8293'></span> Disabled";
+          format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
           tooltip-format = " {ifname} via {gwaddr}";
           on-click = "${nmConnectionEditor}";
         };
