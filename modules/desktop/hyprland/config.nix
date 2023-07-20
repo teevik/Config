@@ -1,22 +1,33 @@
-{ enableVrr, enableMasterLayout, enableHidpi }:
-''
+{ enableVrr
+, enableMasterLayout
+, enableHidpi
+,
+}: ''
   monitor=desc:Samsung Electric Company Odyssey G8 H1AK500000,3440x1440@175,auto,1,bitdepth,10
 
-  ${if enableHidpi then ''
-    monitor=,preferred,auto,2
+  ${
+    if enableHidpi
+    then ''
+      monitor=,preferred,auto,2
 
-    exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE 32c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE 2
+      exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE 32c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE 2
 
-    env = GDK_SCALE,2
-    env = XCURSOR_SIZE,48
-  '' else ''
-    monitor=,preferred,auto,1
+      env = GDK_SCALE,2
+      env = XCURSOR_SIZE,48
+    ''
+    else ''
+      monitor=,preferred,auto,1
 
-    env = XCURSOR_SIZE,24
-  ''}
+      env = XCURSOR_SIZE,24
+    ''
+  }
 
   misc {
-      vrr = ${if enableVrr then "1" else "0"}
+      vrr = ${
+    if enableVrr
+    then "1"
+    else "0"
+  }
 
       # enable_swallow = true
       # swallow_regex = ^(org.wezfurlong.wezterm)$
@@ -56,11 +67,15 @@
 
   gestures {
       workspace_swipe = true
-    #   workspace_swipe_use_r = true # TODO
+      #workspace_swipe_use_r = true
   }
 
   general {
-      layout = ${if enableMasterLayout then "master" else "dwindle"}
+      layout = ${
+    if enableMasterLayout
+    then "master"
+    else "dwindle"
+  }
 
       gaps_in=8
       gaps_out=12
@@ -140,8 +155,9 @@
   bind = SUPER, M ,exec, hyprland-scratchpad toggle-exec --name spotify --exec '$spotify'
 
   # -- Screenshot --
-  bind = , Print ,exec, shotman --copy --capture output
-  bind = CTRL, Print, exec, shotman --copy --capture region
+  $XDG_SCREENSHOTS_DIR = /home/teevik/Pictures/Screenshots
+  bind = , Print ,exec, XDG_SCREENSHOTS_DIR=$XDG_SCREENSHOTS_DIR shotman --copy --capture output
+  bind = CTRL, Print, exec, XDG_SCREENSHOTS_DIR=$XDG_SCREENSHOTS_DIR shotman --copy --capture region
 
   # -- Hyprland --
   bind = SUPER, Q, killactive,

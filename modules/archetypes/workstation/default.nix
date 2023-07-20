@@ -108,6 +108,7 @@ in
         webcord.enable = true;
         xdg-utils.enable = true;
         zellij.enable = true;
+        neofetch.enable = true;
       };
     };
   };

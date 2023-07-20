@@ -1,9 +1,12 @@
-{ config, lib, pkgs, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.shells.fish;
-in
-{
+in {
   options.teevik.shells.fish = {
     enable = mkOption {
       type = types.bool;
@@ -33,7 +36,6 @@ in
         shellAbbrs = {
           cat = "bat";
           ls = "exa";
-          wezterm = "wezterm start --cwd .";
         };
       };
     };

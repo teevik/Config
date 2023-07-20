@@ -1,9 +1,12 @@
-{ config, lib, inputs, ... }:
-let
+{
+  config,
+  lib,
+  inputs,
+  ...
+}: let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.development.neovim;
-in
-{
+in {
   options.teevik.development.neovim = {
     enable = mkOption {
       type = types.bool;
@@ -23,7 +26,9 @@ in
       programs.neovim-flake = {
         enable = true;
 
-        settings = let isMaximal = false; in {
+        settings = let
+          isMaximal = false;
+        in {
           vim = {
             viAlias = true;
             vimAlias = true;
@@ -109,7 +114,7 @@ in
           vim.filetree = {
             nvimTreeLua = {
               enable = true;
-              
+
               renderer = {
                 rootFolderLabel = null;
               };
@@ -152,7 +157,7 @@ in
           };
 
           vim.notify = {
-            nvim-notify.enable = true;
+            nvim-notify.enable = false;
           };
 
           vim.projects = {

@@ -1,15 +1,58 @@
-{ inputs, pkgs, ... }:
-{
+{ inputs
+, pkgs
+, ...
+}: {
   imports = [
     ./hardware.nix
     inputs.nixos-hardware.nixosModules.common-cpu-amd-pstate
     inputs.nixos-hardware.nixosModules.common-gpu-amd
   ];
 
+  swapDevices = [{
+    device = "/var/lib/swapfile";
+    size = 34 * 1024;
+  }];
+
+  boot.resumeDevice = "/dev/disk/by-uuid/7c5b49de-9b7b-44d9-a8fa-e0ed6d2a23bd";
+  boot.kernelParams = [ "amdgpu.dcdebugmask=0x10" "resume_offset=104239104" ];
+
+  systemd.services = {
+    ath11k-suspend = {
+      enable = true;
+
+      description = "Suspend: rmmod ath11k_pci";
+      before = [ "sleep.target" ];
+
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "/run/current-system/sw/bin/rmmod ath11k_pci";
+      };
+
+      wantedBy = [ "sleep.target" ];
+    };
+
+    ath11k-resume = {
+      enable = true;
+
+      description = "Resume: modprobe ath11k_pci";
+      after = [ "post-resume.target" ];
+
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "/run/current-system/sw/bin/modprobe ath11k_pci";
+      };
+
+      wantedBy = [ "post-resume.target" ];
+    };
+  };
+
+  services.logind.lidSwitch = "suspend-then-hibernate";
+  systemd.sleep.extraConfig = "HibernateDelaySec=2h";
+
   teevik = {
     archetypes = {
       workstation.enable = true;
-      # gaming.enable = true;
+      gaming.enable = true;
     };
 
     hardware = {
@@ -21,7 +64,6 @@
     };
   };
 
-
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   boot.loader.systemd-boot.enable = true;
@@ -30,12 +72,13 @@
     efiSysMountPoint = "/boot/efi";
   };
 
-  boot.kernelParams = [ "amdgpu.dcdebugmask=0x10" ];
 
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
   # powerManagement.cpuFreqGovernor = "powersave";
   services.auto-cpufreq.enable = true;
+
+  services.fwupd.enable = true;
 
   # boot.kernelParams = [ "amd_pstate=passive" ];
 

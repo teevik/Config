@@ -31,6 +31,10 @@
       userDirs = {
         enable = true;
         createDirectories = true;
+
+        extraConfig = {
+          XDG_SCREENSHOTS_DIR = "${config.users.users.teevik.home}/Pictures/Screenshots";
+        };
       };
     };
   };
