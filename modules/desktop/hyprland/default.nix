@@ -4,10 +4,6 @@ let
   cfg = config.teevik.desktop.hyprland;
 in
 {
-  imports = [
-    inputs.hyprland.nixosModules.default
-  ];
-
   options.teevik.desktop.hyprland = {
     enable = mkOption {
       type = types.bool;
@@ -57,22 +53,33 @@ in
     };
 
     teevik.home = {
-      imports = [
-        inputs.hyprland.homeManagerModules.default
-      ];
-
       wayland.windowManager.hyprland = {
         enable = true;
         systemdIntegration = true;
-        recommendedEnvironment = true;
 
         xwayland.hidpi = cfg.enableHidpi;
+        enableNvidiaPatches = config.teevik.hardware.nvidia.enable;
 
-        nvidiaPatches = config.teevik.hardware.nvidia.enable;
-
-        extraConfig = import ./config.nix {
+        settings = import ./settings.nix {
+          inherit lib config;
           inherit (cfg) enableMasterLayout enableVrr enableHidpi;
         };
+
+        # FIXME Manage animations in nix settings if posisble
+        extraConfig = ''
+          animations {
+            enabled = true
+
+            bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+
+            animation = windows, 1, 7, myBezier
+            animation = windowsOut, 1, 7, default, popin 80%
+            animation = border, 1, 10, default
+            animation = borderangle, 1, 8, default
+            animation = fade, 1, 7, default
+            animation = workspaces, 1, 6, default
+          }
+        '';
       };
     };
   };
