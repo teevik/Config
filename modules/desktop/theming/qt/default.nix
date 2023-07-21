@@ -1,25 +1,29 @@
 { config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.apps.chrome;
+  cfg = config.teevik.desktop.theming.qt;
 in
 {
-  options.teevik.apps.chrome = {
+  options.teevik.desktop.theming.qt = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable chrome
+        Whether to enable qt theming
       '';
     };
   };
 
   config = mkIf cfg.enable {
     teevik.home = {
-      programs.google-chrome = {
+      qt = {
         enable = true;
 
-        commandLineArgs = [ "--enable-features=TouchpadOverscrollHistoryNavigation" ];
+        platformTheme = "gnome";
+        style = {
+          name = "adwaita-dark";
+          package = pkgs.adwaita-qt;
+        };
       };
     };
   };

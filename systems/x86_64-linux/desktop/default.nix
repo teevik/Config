@@ -5,8 +5,8 @@
   ];
 
   teevik = {
-    archetypes = {
-      workstation.enable = true;
+    suites = {
+      standard.enable = true;
       gaming.enable = true;
     };
 
@@ -15,7 +15,7 @@
       bluetooth.enable = true;
     };
 
-    hyprland = {
+    desktop.hyprland = {
       enableMasterLayout = false;
       enableVrr = false;
     };

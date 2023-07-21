@@ -1,14 +1,14 @@
 { lib, config, inputs, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.hyprland;
+  cfg = config.teevik.desktop.hyprland;
 in
 {
   imports = [
     inputs.hyprland.nixosModules.default
   ];
 
-  options.teevik.hyprland = {
+  options.teevik.desktop.hyprland = {
     enable = mkOption {
       type = types.bool;
       default = false;

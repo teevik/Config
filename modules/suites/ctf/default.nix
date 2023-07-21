@@ -1,28 +1,22 @@
-{ pkgs, lib, config, inputs, ... }:
+{ pkgs, config, lib, inputs, system, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.desktop.mako;
+  cfg = config.teevik.suites.ctf;
 in
 {
-  options.teevik.desktop.mako = {
+  options.teevik.suites.ctf = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable mako
+        Whether to enable ctf suite
       '';
     };
   };
 
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      libnotify
+      teevik.rsa-cracker
     ];
-
-    teevik.home = {
-      services.mako = {
-        enable = true;
-      };
-    };
   };
 }

@@ -1,9 +1,10 @@
 { ... }:
 {
   teevik = {
-    networking.enable = true;
-
-    hardware.firmware.enableAllFirmware = true;
+    hardware = {
+      networking.enable = true;
+      firmware.enableAllFirmware = true;
+    };
 
     apps = {
       git.enable = true;

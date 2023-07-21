@@ -50,9 +50,10 @@
   systemd.sleep.extraConfig = "HibernateDelaySec=2h";
 
   teevik = {
-    archetypes = {
-      workstation.enable = true;
+    suites = {
+      standard.enable = true;
       gaming.enable = true;
+      ctf.enable = true;
     };
 
     hardware = {

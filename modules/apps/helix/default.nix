@@ -51,7 +51,7 @@ in
           language = [{
             name = "nix";
             language-server = {
-              command = "${pkgs.nixd}/bin/nixd";
+              command = lib.getExe pkgs.nixd;
             };
           }];
         };

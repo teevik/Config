@@ -3,7 +3,6 @@ let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.darkman;
 
-  package = pkgs.darkman;
   yamlFormat = pkgs.formats.yaml { };
   settings = {
     usegeoclue = false;
@@ -22,7 +21,7 @@ in
 
   config = mkIf cfg.enable {
     teevik.home = {
-      home.packages = [ package ];
+      home.packages = [ pkgs.darkman ];
 
       xdg.configFile."darkman/config.yaml".source =
         (yamlFormat.generate "darkman-config.yaml" settings);
@@ -38,7 +37,7 @@ in
         Service = {
           Type = "dbus";
           BusName = "nl.whynothugo.darkman";
-          ExecStart = "${package}/bin/darkman run";
+          ExecStart = "${lib.getExe pkgs.darkman} run";
           # Scripts are started with `bash` instead of just `sh`
           Environment = "PATH=${lib.makeBinPath [ pkgs.bash ]}";
           Restart = "on-failure";

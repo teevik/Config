@@ -6,11 +6,11 @@
   ];
 
   teevik = {
-    archetypes = {
-      workstation.enable = true;
+    suites = {
+      standard.enable = true;
     };
 
-    hyprland = {
+    desktop.hyprland = {
       enableHidpi = true;
     };
 

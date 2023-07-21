@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
+  initialHashedPassword = "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
   cfg = config.teevik.user;
 in
 {
@@ -25,6 +26,12 @@ in
       group = "users";
 
       extraGroups = [ "wheel" ] ++ cfg.extraGroups;
+
+      inherit initialHashedPassword;
     } // cfg.extraOptions;
+
+    users.users.root = {
+      inherit initialHashedPassword;
+    };
   };
 }
