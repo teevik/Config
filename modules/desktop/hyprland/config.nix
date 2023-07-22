@@ -1,8 +1,5 @@
-{ enableVrr
-, enableMasterLayout
-, enableHidpi
-,
-}: ''
+{ enableVrr, enableMasterLayout, enableHidpi }:
+''
   monitor=desc:Samsung Electric Company Odyssey G8 H1AK500000,3440x1440@175,auto,1,bitdepth,10
 
   ${

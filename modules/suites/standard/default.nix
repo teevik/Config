@@ -66,6 +66,7 @@ in
       };
 
       apps = {
+        nh.enable = true;
         alacritty.enable = true;
         wezterm.enable = true;
         chrome.enable = true;
