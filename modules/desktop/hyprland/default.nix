@@ -53,12 +53,17 @@ in
     };
 
     teevik.home = {
+      imports = [ inputs.hyprland.homeManagerModules.default ];
+
+      # home.sessionVariables.NIXOS_OZONE_WL = "1";
+
       wayland.windowManager.hyprland = {
         enable = true;
         systemdIntegration = true;
+        recommendedEnvironment = true;
 
         xwayland.hidpi = cfg.enableHidpi;
-        enableNvidiaPatches = config.teevik.hardware.nvidia.enable;
+        nvidiaPatches = config.teevik.hardware.nvidia.enable;
 
         # settings = import ./settings.nix {
         #   inherit lib config;
