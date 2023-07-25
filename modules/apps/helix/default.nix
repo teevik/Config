@@ -47,14 +47,14 @@ in
           };
         };
 
-        languages = {
-          language = [{
-            name = "nix";
-            language-server = {
-              command = lib.getExe pkgs.nixd;
-            };
-          }];
-        };
+        # languages = {
+        #   language = [{
+        #     name = "nix";
+        #     language-server = {
+        #       command = lib.getExe pkgs.nixd;
+        #     };
+        #   }];
+        # };
       };
     };
   };

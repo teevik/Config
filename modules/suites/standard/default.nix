@@ -26,6 +26,8 @@ in
         theming = {
           gtk.enable = true;
           qt.enable = true;
+
+          themes.death-stranding.enable = true;
         };
       };
 

@@ -1,9 +1,8 @@
-{
-  enableVrr,
-  enableMasterLayout,
-  enableHidpi,
-}: ''
+{ enableVrr, enableMasterLayout, enableHidpi }:
+''
   monitor=desc:Samsung Electric Company Odyssey G8 H1AK500000,3440x1440@175,auto,1,bitdepth,10
+
+  # env = NIXOS_OZONE_WL,1
 
   ${
     if enableHidpi
@@ -88,8 +87,8 @@
       rounding=4
 
       blur = true
-      blur_size = 8
-      blur_passes = 4
+      blur_size = 10
+      blur_passes = 3
       blur_new_optimizations = true
       blur_xray = true
 

@@ -45,6 +45,8 @@ in
       fi
     '';
 
+    environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
     programs.hyprland = {
       enable = true;
 
@@ -60,7 +62,6 @@ in
       wayland.windowManager.hyprland = {
         enable = true;
         systemdIntegration = true;
-        recommendedEnvironment = true;
 
         xwayland.hidpi = cfg.enableHidpi;
         nvidiaPatches = config.teevik.hardware.nvidia.enable;
