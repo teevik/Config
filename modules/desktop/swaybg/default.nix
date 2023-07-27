@@ -15,11 +15,20 @@ in
   };
 
   config = mkIf cfg.enable {
-    systemd.user.services.swaybg = {
-      description = "Wayland wallpaper daemon";
-      partOf = [ "graphical-session.target" ];
-      script = "${lib.getExe pkgs.swaybg} -i ${./wallpaper.jpg} -m fill";
-      wantedBy = [ "graphical-session.target" ];
+    teevik.home.systemd.user.services.swaybg = {
+      Unit = {
+        Description = "Wayland wallpaper daemon";
+        PartOf = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        Type = "simple";
+        ExecStart = "${lib.getExe pkgs.swaybg} -i ${config.teevik.theme.background} -m fill";
+      };
+
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
     };
   };
 }

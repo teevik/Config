@@ -47,13 +47,25 @@
     };
 
     disko = {
-      url = github:nix-community/disko;
+      url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    base16.url = "github:SenchoPens/base16.nix";
+
+    base16-fish = {
+      url = "github:tomyun/base16-fish";
+      flake = false;
+    };
+
+    base16-zathura = {
+      url = "github:haozeke/base16-zathura";
+      flake = false;
     };
   };
 

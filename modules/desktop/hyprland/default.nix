@@ -57,8 +57,6 @@ in
     teevik.home = {
       imports = [ inputs.hyprland.homeManagerModules.default ];
 
-      # home.sessionVariables.NIXOS_OZONE_WL = "1";
-
       wayland.windowManager.hyprland = {
         enable = true;
         systemdIntegration = true;
@@ -89,6 +87,7 @@ in
 
         extraConfig = import ./config.nix {
           inherit (cfg) enableMasterLayout enableVrr enableHidpi;
+          theme = config.teevik.theme;
         };
       };
     };

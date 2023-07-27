@@ -41,6 +41,10 @@
     efiSysMountPoint = "/boot/efi";
   };
 
+  environment.systemPackages = with pkgs; [
+    jetbrains.clion
+  ];
+
   services.udev.packages = with pkgs; [
     vial
     via

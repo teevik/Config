@@ -1,12 +1,9 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ inputs, config, lib, pkgs, ... }:
+let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.shells.fish;
-in {
+in
+{
   options.teevik.shells.fish = {
     enable = mkOption {
       type = types.bool;
@@ -26,12 +23,20 @@ in {
       programs.fish = {
         enable = true;
 
-        shellInit = ''
-          set fish_greeting
+        shellInit =
+          let
+            theme = config.teevik.theme.colors inputs.base16-fish;
+            slug = config.teevik.theme.colors.slug;
+          in
+          ''
+            set fish_greeting
 
-          bind \b backward-kill-word
-          bind \e\[3\;5~ kill-word
-        '';
+            bind \b backward-kill-word
+            bind \e\[3\;5~ kill-word
+
+            source ${theme}
+            base16-${slug}
+          '';
 
         shellAbbrs = {
           cat = "bat";

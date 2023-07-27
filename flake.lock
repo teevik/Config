@@ -16,6 +16,56 @@
         "type": "github"
       }
     },
+    "base16": {
+      "inputs": {
+        "fromYaml": "fromYaml"
+      },
+      "locked": {
+        "lastModified": 1689633990,
+        "narHash": "sha256-iwvQg2Vx0IIDWZaKo8Xmzxlv1YPHg+Kp/QSv8dRv0RY=",
+        "owner": "SenchoPens",
+        "repo": "base16.nix",
+        "rev": "dddf2e1c04845d43c89a8e9e37d574519649a404",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SenchoPens",
+        "repo": "base16.nix",
+        "type": "github"
+      }
+    },
+    "base16-fish": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1622559957,
+        "narHash": "sha256-PebymhVYbL8trDVVXxCvZgc0S5VxI7I1Hv4RMSquTpA=",
+        "owner": "tomyun",
+        "repo": "base16-fish",
+        "rev": "2f6dd973a9075dabccd26f1cded09508180bf5fe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tomyun",
+        "repo": "base16-fish",
+        "type": "github"
+      }
+    },
+    "base16-zathura": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1643130739,
+        "narHash": "sha256-nVJoygnytYN40VHXpAFwO7ruVbaSydeR547MU45VSuY=",
+        "owner": "haozeke",
+        "repo": "base16-zathura",
+        "rev": "9f148b4001dc67d399e645919225943d47e50125",
+        "type": "github"
+      },
+      "original": {
+        "owner": "haozeke",
+        "repo": "base16-zathura",
+        "type": "github"
+      }
+    },
     "bufdelete-nvim": {
       "flake": false,
       "locked": {
@@ -652,6 +702,22 @@
       "original": {
         "owner": "akinsho",
         "repo": "flutter-tools.nvim",
+        "type": "github"
+      }
+    },
+    "fromYaml": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1689549921,
+        "narHash": "sha256-iX0pk/uB019TdBGlaJEWvBCfydT6sRq+eDcGPifVsCM=",
+        "owner": "SenchoPens",
+        "repo": "fromYaml",
+        "rev": "11fbbbfb32e3289d3c631e0134a23854e7865c84",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SenchoPens",
+        "repo": "fromYaml",
         "type": "github"
       }
     },
@@ -2111,6 +2177,9 @@
     },
     "root": {
       "inputs": {
+        "base16": "base16",
+        "base16-fish": "base16-fish",
+        "base16-zathura": "base16-zathura",
         "chaotic": "chaotic",
         "devenv": "devenv",
         "disko": "disko",

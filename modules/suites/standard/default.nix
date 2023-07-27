@@ -1,4 +1,4 @@
-{ pkgs, config, lib, inputs, system, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.suites.standard;
@@ -16,6 +16,9 @@ in
 
   config = mkIf cfg.enable {
     teevik = {
+      # themes.catppuccin.enable = true;
+      themes.everforest.enable = true;
+
       desktop = {
         fonts.enable = true;
         hyprland.enable = true;
@@ -26,11 +29,8 @@ in
         theming = {
           gtk.enable = true;
           qt.enable = true;
-
-          themes.death-stranding.enable = true;
         };
       };
-
 
       development = {
         devenv.enable = true;
@@ -41,7 +41,7 @@ in
 
         nix = {
           nil.enable = true;
-          nixd.enable = true;
+          nixd.enable = false;
           nixpkgs-fmt.enable = true;
         };
 
@@ -83,12 +83,14 @@ in
         vscode.enable = true;
         zellij.enable = true;
         tofi.enable = true;
+        zathura.enable = true;
+        firefox.enable = true;
+        neofetch.enable = true;
       };
     };
 
     environment.systemPackages = with pkgs; [
       bat
-      jetbrains.clion
       erdtree
       ffmpegthumbnailer
       flyctl
@@ -98,7 +100,6 @@ in
       just
       magic-wormhole
       mplayer
-      teevik.neofetch
       networkmanagerapplet
       nurl
       obs-studio
@@ -107,7 +108,6 @@ in
       pulsemixer
       # jetbrains.pycharm-professional
       ripgrep
-      ripgrep-all
       sd
       shotman
       spotify

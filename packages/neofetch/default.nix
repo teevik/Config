@@ -1,4 +1,8 @@
-{ writeShellApplication, neofetch, imagemagick }:
+{ writeShellApplication
+, neofetch
+, imagemagick
+, neofetchImage ? ./hyprchan.png
+}:
 
 writeShellApplication {
   name = "neofetch";
@@ -7,8 +11,8 @@ writeShellApplication {
 
   text = ''
     neofetch \
-      --iterm2 ${./hyprchan.png} \
-      --disable wm theme \
+      --iterm2 ${neofetchImage} \
+      --disable wm theme icons \
       --distro_shorthand on
   '';
 }

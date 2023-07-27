@@ -1,4 +1,4 @@
-{ enableVrr, enableMasterLayout, enableHidpi }:
+{ enableVrr, enableMasterLayout, enableHidpi, theme }:
 ''
   monitor=desc:Samsung Electric Company Odyssey G8 H1AK500000,3440x1440@175,auto,1,bitdepth,10
 
@@ -79,8 +79,8 @@
       gaps_in=8
       gaps_out=12
       border_size = 2
-      col.active_border=0xFFc6a0f6
-      col.inactive_border=0x30c6a0f6
+      col.active_border=rgb(${theme.borderColor})
+      col.inactive_border=rgba(${theme.borderColor}30)
   }
 
   decoration {
@@ -96,10 +96,11 @@
       dim_strength = 0
       dim_special	= 0.5
 
-      # drop_shadow = true
-      # shadow_range = 4
-      # shadow_render_power = 3
-      # col.shadow = rgba(1a1a1aee)
+      drop_shadow = true
+      shadow_offset = 0 5
+      shadow_range = 50
+      shadow_render_power = 3
+      col.shadow = rgba(1a1a1a1a)
   }
 
   animations {
@@ -131,10 +132,9 @@
   windowrule = float, xfce-polkit|kvantummanager|qt5ct
   windowrule = float, VirtualBox Manager|qemu|Qemu-system-x86_64
 
-  # windowrulev2 = tile, class:^(Spotify)$
   # windowrulev2 = workspace special:spotify, class:^(Spotify)$
 
-  $terminal = wezterm
+  $terminal = wezterm start --always-new-process
   $menu = tofi-drun --drun-launch=true
   $browser = google-chrome-stable
   $discord = webcord
@@ -144,7 +144,7 @@
 
   # -- Apps --
   bind = SUPER_SHIFT, Return, exec, $terminal
-  bind = SUPER, Return, exec, hyprland-scratchpad toggle-exec --name terminal --exec 'alacritty'
+  bind = SUPER, Return, exec, hyprland-scratchpad toggle-exec --name terminal --exec '$terminal'
 
   bind = SUPER, D, exec, $menu
   bind = SUPER, W, exec, $browser
