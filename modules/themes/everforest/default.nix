@@ -39,23 +39,6 @@ in
         base0E = "#e67e80"; # red,       palette2 dark
         base0F = "#eaedc8"; # bg_visual, palette1 dark (medium)
       };
-      # "#35a77c",
-      # "#3a94c5",
-      # "#4b565c",
-      # "#5c6a72",
-      # "#7fbbb3",
-      # "#83c092",
-      # "#8da101",
-      # "#a7c080",
-      # "#d3c6aa",
-      # "#d699b6",
-      # "#dbbc7f",
-      # "#df69ba",
-      # "#dfa000",
-      # "#dfddc8",
-      # "#e67e80",
-      # "#f85552"
-
 
       # name: 'Everforest Dark'
 

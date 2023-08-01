@@ -10,6 +10,11 @@
       gaming.enable = true;
     };
 
+    boot = {
+      enable = true;
+      efiSysMountPoint = "/boot/efi";
+    };
+
     hardware = {
       nvidia.enable = true;
       bluetooth.enable = true;
@@ -34,12 +39,6 @@
   networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
 
   time.hardwareClockInLocalTime = true;
-
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi = {
-    canTouchEfiVariables = true;
-    efiSysMountPoint = "/boot/efi";
-  };
 
   environment.systemPackages = with pkgs; [
     jetbrains.clion

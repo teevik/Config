@@ -67,6 +67,8 @@
       url = "github:haozeke/base16-zathura";
       flake = false;
     };
+
+    nix-super.url = "github:privatevoid-net/nix-super";
   };
 
   outputs = inputs:

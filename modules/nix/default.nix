@@ -1,6 +1,8 @@
-{ ... }:
+{ inputs, pkgs, ... }:
 {
   nix = {
+    package = inputs.nix-super.packages.${pkgs.system}.default;
+
     settings = {
       trusted-users = [
         "root"
@@ -19,6 +21,7 @@
         "https://nyx.chaotic.cx"
         "https://viperml.cachix.org"
         "https://neovim-flake.cachix.org/"
+        "https://cache.privatevoid.net"
       ];
 
       trusted-public-keys = [
@@ -29,6 +32,7 @@
         "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="
         "viperml.cachix.org-1:qZhKBMTfmcLL+OG6fj/hzsMEedgKvZVFRRAhq7j8Vh8="
         "neovim-flake.cachix.org-1:iyQ6lHFhnB5UkVpxhQqLJbneWBTzM8LBYOFPLNH4qZw="
+        "cache.privatevoid.net:SErQ8bvNWANeAvtsOESUwVYr2VJynfuc9JRwlzTTkVg="
       ];
     };
 
@@ -37,6 +41,8 @@
       dates = "weekly";
       options = "--delete-older-than 30d";
     };
+
+    registry.default.flake = inputs.nixpkgs;
 
     # flake-utils-plus
     generateRegistryFromInputs = true;

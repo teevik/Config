@@ -14,36 +14,49 @@
   }];
 
   boot.resumeDevice = "/dev/disk/by-uuid/7c5b49de-9b7b-44d9-a8fa-e0ed6d2a23bd";
-  boot.kernelParams = [ "amdgpu.dcdebugmask=0x10" "resume_offset=104239104" ];
+  boot.kernelParams = [
+    "amdgpu.dcdebugmask=0x10"
+    "resume_offset=104239104"
+
+    # https://gitlab.freedesktop.org/drm/amd/-/issues/2539
+    "acpi_mask_gpe=0x0e"
+    "gpiolib_acpi.ignore_interrupt=AMDI0030:00@18"
+  ];
 
   systemd.services = {
-    ath11k-suspend = {
+    ath11k-fix = {
       enable = true;
 
-      description = "Suspend: rmmod ath11k_pci";
+      description = "Suspend fix for ath11k_pci";
       before = [ "sleep.target" ];
 
+      unitConfig = {
+        StopWhenUnneeded = "yes";
+      };
+
       serviceConfig = {
-        Type = "simple";
-        ExecStart = "/run/current-system/sw/bin/rmmod ath11k_pci";
+        Type = "oneshot";
+        RemainAfterExit = "yes";
+        ExecStart = "/run/current-system/sw/bin/modprobe -r ath11k_pci";
+        ExecStop = "/run/current-system/sw/bin/modprobe ath11k_pci";
       };
 
       wantedBy = [ "sleep.target" ];
     };
 
-    ath11k-resume = {
-      enable = true;
+    # ath11k-resume = {
+    #   enable = true;
 
-      description = "Resume: modprobe ath11k_pci";
-      after = [ "post-resume.target" ];
+    #   description = "Resume: modprobe ath11k_pci";
+    #   after = [ "post-resume.target" ];
 
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "/run/current-system/sw/bin/modprobe ath11k_pci";
-      };
+    #   serviceConfig = {
+    #     Type = "simple";
+    #     ExecStart = "/run/current-system/sw/bin/modprobe ath11k_pci";
+    #   };
 
-      wantedBy = [ "post-resume.target" ];
-    };
+    #   wantedBy = [ "post-resume.target" ];
+    # };
   };
 
   services.logind.lidSwitch = "suspend-then-hibernate";
@@ -56,6 +69,11 @@
       ctf.enable = true;
     };
 
+    boot = {
+      enable = true;
+      efiSysMountPoint = "/boot/efi";
+    };
+
     hardware = {
       bluetooth.enable = true;
     };
@@ -66,13 +84,6 @@
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi = {
-    canTouchEfiVariables = true;
-    efiSysMountPoint = "/boot/efi";
-  };
-
 
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
