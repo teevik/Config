@@ -1,4 +1,4 @@
-{ pkgs, config, lib, inputs, system, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.suites.ctf;

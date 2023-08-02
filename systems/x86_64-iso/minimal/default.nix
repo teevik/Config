@@ -1,10 +1,5 @@
-{ config, pkgs, modulesPath, ... }:
+{ config, pkgs, ... }:
 {
-  imports = [
-    "${modulesPath}/profiles/all-hardware.nix"
-    "${modulesPath}/profiles/base.nix"
-  ];
-
   config = {
     teevik = {
       hardware = {
@@ -14,14 +9,13 @@
 
       apps = {
         git.enable = true;
+        comma.enable = true;
       };
 
       services = {
         autologin.enable = true;
       };
     };
-
-    # boot.loader.grub.memtest86.enable = true;
 
     system.nixos.variant_id = "installer";
     isoImage.isoName = "nixos-minimal-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.system}.iso";

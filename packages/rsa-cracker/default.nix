@@ -8,7 +8,7 @@
 , darwin
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage {
   pname = "rsa-cracker";
   version = "unstable-2023-07-20";
 
@@ -38,6 +38,5 @@ rustPlatform.buildRustPackage rec {
     description = "Powerful RSA cracker for CTFs. Supports RSA, X509, OPENSSH in PEM and DER formats";
     homepage = "https://github.com/skyf0l/RsaCracker";
     license = with licenses; [ mit asl20 ];
-    maintainers = with maintainers; [ ];
   };
 }

@@ -84,7 +84,7 @@ in
         zellij.enable = true;
         tofi.enable = true;
         zathura.enable = true;
-        firefox.enable = true;
+        firefox.enable = false;
         neofetch.enable = true;
       };
     };

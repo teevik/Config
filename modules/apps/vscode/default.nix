@@ -1,8 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.vscode;
-  extensionFromVscodeMarketplace = pkgs.vscode-utils.extensionFromVscodeMarketplace;
+  # extensionFromVscodeMarketplace = pkgs.vscode-utils.extensionFromVscodeMarketplace;
 in
 {
   options.teevik.apps.vscode = {
