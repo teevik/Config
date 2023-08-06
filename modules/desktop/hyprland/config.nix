@@ -1,6 +1,6 @@
 { enableVrr, enableMasterLayout, enableHidpi, theme }:
 ''
-  monitor=desc:Samsung Electric Company Odyssey G8 H1AK500000,3440x1440@175,auto,1,bitdepth,10
+  monitor=desc:Samsung Electric Company Odyssey G85SB H1AK500000,3440x1440@175,auto,1,bitdepth,10
 
   # env = NIXOS_OZONE_WL,1
 
