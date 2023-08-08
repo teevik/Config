@@ -114,7 +114,7 @@ in
       tealdeer
       trashy
       watchexec
-      webcord
+      webcord-vencord
       xdg-utils
     ];
   };
