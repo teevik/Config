@@ -5,8 +5,7 @@
 
 {
   imports =
-    [
-      (modulesPath + "/installer/scan/not-detected.nix")
+    [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" ];
@@ -15,14 +14,12 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    {
-      device = "/dev/disk/by-uuid/de42b053-f284-4371-ba39-98d6893f62cb";
+    { device = "/dev/disk/by-uuid/de42b053-f284-4371-ba39-98d6893f62cb";
       fsType = "ext4";
     };
 
   fileSystems."/boot/efi" =
-    {
-      device = "/dev/disk/by-uuid/8097-A557";
+    { device = "/dev/disk/by-uuid/8097-A557";
       fsType = "vfat";
     };
 
@@ -33,9 +30,9 @@
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.eno1.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp7s0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.wlp6s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

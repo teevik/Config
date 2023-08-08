@@ -32,7 +32,7 @@
     package = pkgs.teevik.openrgb;
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   powerManagement.cpuFreqGovernor = "performance";
 
