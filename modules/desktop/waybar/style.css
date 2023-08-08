@@ -36,8 +36,7 @@ window#waybar {
 #disk,
 #memory,
 #pulseaudio,
-#network,
-#custom-power {
+#network {
   margin-top: 7px;
   margin-bottom: 0px;
   padding: 0px 16px;
@@ -46,8 +45,8 @@ window#waybar {
   font-weight: bold;
 }
 
-#custom-power {
+/* #custom-power {
   color: #b4a1db;
   font-size: 16px;
   padding: 0px 16px;
-}
+} */

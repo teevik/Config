@@ -2,9 +2,8 @@
   description = "teevik's NixOS configuration";
 
   inputs = {
-    # TODO: Switch back once https://github.com/NixOS/nixpkgs/pull/246441 is merged
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end";
 
     snowfall-lib = {
       url = "github:snowfallorg/lib/dev";

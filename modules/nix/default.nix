@@ -22,6 +22,7 @@
         "https://viperml.cachix.org"
         "https://neovim-flake.cachix.org/"
         "https://cache.privatevoid.net"
+        "https://jakestanger.cachix.org"
       ];
 
       trusted-public-keys = [
@@ -33,6 +34,7 @@
         "viperml.cachix.org-1:qZhKBMTfmcLL+OG6fj/hzsMEedgKvZVFRRAhq7j8Vh8="
         "neovim-flake.cachix.org-1:iyQ6lHFhnB5UkVpxhQqLJbneWBTzM8LBYOFPLNH4qZw="
         "cache.privatevoid.net:SErQ8bvNWANeAvtsOESUwVYr2VJynfuc9JRwlzTTkVg="
+        "jakestanger.cachix.org-1:VWJE7AWNe5/KOEvCQRxoE8UsI2Xs2nHULJ7TEjYm7mM="
       ];
     };
 

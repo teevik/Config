@@ -86,12 +86,6 @@
   decoration {
       rounding=4
 
-      blur = true
-      blur_size = 10
-      blur_passes = 3
-      blur_new_optimizations = true
-      blur_xray = true
-
       dim_inactive = true
       dim_strength = 0
       dim_special	= 0.5
@@ -101,6 +95,14 @@
       shadow_range = 50
       shadow_render_power = 3
       col.shadow = rgba(1a1a1a1a)
+
+      blur {
+        enabled = true
+        size = 10
+        passes = 3
+        new_optimizations = true
+        xray = true
+      }
   }
 
   animations {
