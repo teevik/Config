@@ -60,7 +60,7 @@
   };
 
   services.logind.lidSwitch = "suspend-then-hibernate";
-  systemd.sleep.extraConfig = "HibernateDelaySec=2h";
+  systemd.sleep.extraConfig = "HibernateDelaySec=1h";
 
   teevik = {
     suites = {
