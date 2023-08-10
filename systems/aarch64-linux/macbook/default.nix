@@ -12,23 +12,11 @@
         canTouchEfiVariables = false;
       };
 
-      hardware = {
-        networking.enable = true;
-        firmware.enableAllFirmware = true;
+      suites = {
+        standard.enable = true;
+        # gaming.enable = true;
+        # ctf.enable = true;
       };
-
-      apps = {
-        git.enable = true;
-        comma.enable = true;
-      };
-
-      # suites = {
-      #   standard.enable = true;
-      # };
-
-      # boot = {
-      #   enable = true;
-      # };
 
       # desktop.hyprland = {
       #   enableHidpi = true;
