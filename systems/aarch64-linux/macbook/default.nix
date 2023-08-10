@@ -1,7 +1,10 @@
 { inputs, ... }:
 {
   config = {
-    imports = [ inputs.nixos-apple-silicon.nixosModules.default ];
+    imports = [
+      inputs.nixos-apple-silicon.nixosModules.default
+      ./hardware.nix
+    ];
 
     teevik = {
       boot = {
