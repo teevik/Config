@@ -120,6 +120,5 @@ stdenv.mkDerivation rec {
     description = "The most intuitive cross-platform REST API Client";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = licenses.mit;
-    platforms = [ "x86_64-linux" ];
   };
 }
