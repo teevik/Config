@@ -82,6 +82,7 @@
       package-namespace = "teevik";
 
       channels-config.allowUnfree = true;
+      channels-config.allowUnsupportedSystem = true;
 
       overlays = with inputs; [
         # rust-overlay.overlays.default

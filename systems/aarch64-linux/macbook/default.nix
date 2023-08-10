@@ -6,8 +6,6 @@
   ];
 
   config = {
-    nixpkgs.config.allowUnsupportedSystem = true;
-
     teevik = {
       boot = {
         enable = true;
