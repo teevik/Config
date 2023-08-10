@@ -71,7 +71,7 @@
 
     nix-super.url = "github:privatevoid-net/nix-super";
 
-    nixos-apple-silicon = "github:tpwrules/nixos-apple-silicon";
+    nixos-apple-silicon.url = "github:tpwrules/nixos-apple-silicon";
   };
 
   outputs = inputs:
