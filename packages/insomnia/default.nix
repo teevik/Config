@@ -1,0 +1,125 @@
+{ lib
+, stdenv
+, makeWrapper
+, fetchurl
+, dpkg
+, alsa-lib
+, atk
+, cairo
+, cups
+, dbus
+, expat
+, fontconfig
+, freetype
+, gdk-pixbuf
+, glib
+, pango
+, mesa
+, nspr
+, nss
+, gtk3
+, at-spi2-atk
+, gsettings-desktop-schemas
+, gobject-introspection
+, wrapGAppsHook
+, xorg
+, nghttp2
+, libudev0-shim
+, glibc
+, curl
+, openssl
+, autoPatchelfHook
+}:
+
+let
+  runtimeLibs = lib.makeLibraryPath [
+    curl
+    glibc
+    libudev0-shim
+    nghttp2
+    openssl
+    stdenv.cc.cc.lib
+  ];
+in
+stdenv.mkDerivation rec {
+  pname = "insomnia";
+  version = "2023.2.0";
+
+  src = fetchurl {
+    url =
+      "https://github.com/Kong/insomnia/releases/download/core%40${version}/Insomnia.Core-${version}.deb";
+    sha256 = "sha256-RI7i/yfGfwmube3Utuidw9Y3OqC+5htsyx1Vi1730WQ=";
+  };
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+    dpkg
+    makeWrapper
+    gobject-introspection
+    wrapGAppsHook
+  ];
+
+  buildInputs = [
+    alsa-lib
+    at-spi2-atk
+    atk
+    cairo
+    cups
+    dbus
+    expat
+    fontconfig
+    freetype
+    gdk-pixbuf
+    glib
+    pango
+    gtk3
+    gsettings-desktop-schemas
+    xorg.libX11
+    xorg.libXScrnSaver
+    xorg.libXcomposite
+    xorg.libXcursor
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXfixes
+    xorg.libXi
+    xorg.libXrandr
+    xorg.libXrender
+    xorg.libXtst
+    xorg.libxcb
+    xorg.libxshmfence
+    mesa # for libgbm
+    nspr
+    nss
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontWrapGApps = true;
+
+  unpackPhase = "dpkg-deb -x $src .";
+
+  installPhase = ''
+    mkdir -p $out/share/insomnia $out/lib $out/bin
+
+    mv usr/share/* $out/share/
+    mv opt/Insomnia/* $out/share/insomnia
+
+    ln -s $out/share/insomnia/insomnia $out/bin/insomnia
+    sed -i 's|\/opt\/Insomnia|'$out'/bin|g' $out/share/applications/insomnia.desktop
+  '';
+
+  preFixup = ''
+    wrapProgram "$out/bin/insomnia" \
+      "''${gappsWrapperArgs[@]}" \
+      --add-flags "--enable-features=UseOzonePlatform --ozone-platform=wayland" \
+      --prefix LD_LIBRARY_PATH : ${runtimeLibs}
+  '';
+
+  meta = with lib; {
+    homepage = "https://insomnia.rest/";
+    description = "The most intuitive cross-platform REST API Client";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    license = licenses.mit;
+    platforms = [ "x86_64-linux" ];
+  };
+}

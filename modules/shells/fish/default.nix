@@ -19,6 +19,8 @@ in
 
     teevik.user.extraOptions.shell = pkgs.fish;
 
+    environment.sessionVariables.EDITOR = "nvim";
+
     teevik.home = {
       programs.fish = {
         enable = true;

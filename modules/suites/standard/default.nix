@@ -86,6 +86,7 @@ in
         zathura.enable = true;
         firefox.enable = false;
         neofetch.enable = true;
+        webcord.enable = true;
       };
     };
 
@@ -96,7 +97,7 @@ in
       flyctl
       gcc
       teevik.hyprland-scratchpad
-      insomnia
+      teevik.insomnia
       just
       magic-wormhole
       mplayer

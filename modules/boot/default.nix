@@ -13,10 +13,14 @@ in
       '';
     };
 
+    canTouchEfiVariables = mkOption {
+      default = true;
+      type = types.bool;
+    };
+
     efiSysMountPoint = mkOption {
       default = "/boot";
       type = types.str;
-      description = "Where the EFI System Partition is mounted.";
     };
   };
 
@@ -26,7 +30,7 @@ in
       timeout = 0;
 
       efi = {
-        canTouchEfiVariables = true;
+        canTouchEfiVariables = cfg.canTouchEfiVariables;
         efiSysMountPoint = cfg.efiSysMountPoint;
       };
     };
