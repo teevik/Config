@@ -24,6 +24,8 @@
 
       hardware = {
         light.enable = true;
+
+        opengl.driSupport32Bit = false;
       };
     };
 

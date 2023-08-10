@@ -12,12 +12,20 @@ in
         Whether to enable opengl
       '';
     };
+
+    driSupport32Bit = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Whether to enable driSupport32Bit
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
     hardware.opengl = {
       enable = true;
-      driSupport32Bit = true;
+      driSupport32Bit = cfg.driSupport32Bit;
     };
   };
 }
