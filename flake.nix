@@ -6,13 +6,13 @@
     # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end";
 
     snowfall-lib = {
-      url = "github:snowfallorg/lib/dev";
+      url = "github:snowfallorg/lib/feat/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      # inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     hyprland = {
@@ -52,6 +52,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    darwin = {
+      url = "github:lnl7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -79,15 +84,13 @@
 
       package-namespace = "teevik";
 
-      channels-config.allowUnfree = true;
-      channels-config.allowUnsupportedSystem = true;
+      channels-config = {
+        allowUnfree = true;
+        allowUnsupportedSystem = true;
+      };
 
       overlays = with inputs; [
         # rust-overlay.overlays.default
-      ];
-
-      systems.modules = with inputs; [
-        chaotic.nixosModules.default
       ];
     };
 }

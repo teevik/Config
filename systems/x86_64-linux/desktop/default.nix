@@ -19,11 +19,6 @@
       nvidia.enable = true;
       bluetooth.enable = true;
     };
-
-    desktop.hyprland = {
-      enableMasterLayout = false;
-      enableVrr = false;
-    };
   };
 
   services.hardware.openrgb = {
@@ -39,10 +34,6 @@
   networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
 
   time.hardwareClockInLocalTime = true;
-
-  environment.systemPackages = with pkgs; [
-    jetbrains.clion
-  ];
 
   services.udev.packages = with pkgs; [
     vial
