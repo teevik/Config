@@ -59,7 +59,6 @@ in
         firefox.enable = false;
         neofetch.enable = true;
         webcord.enable = true;
-        playerctl.enable = true;
       };
     };
 

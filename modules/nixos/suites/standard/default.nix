@@ -47,7 +47,6 @@ in
       networkmanagerapplet
       pavucontrol
       pulsemixer
-      shotman
     ];
   };
 }

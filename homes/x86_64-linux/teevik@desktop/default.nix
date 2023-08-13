@@ -4,7 +4,7 @@
   teevik = {
     suites = {
       standard.enable = true;
-      hyprland.enable = true;
+      linux.enable = true;
     };
   };
 

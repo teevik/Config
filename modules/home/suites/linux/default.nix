@@ -1,15 +1,15 @@
-{ config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.suites.hyprland;
+  cfg = config.teevik.suites.linux;
 in
 {
-  options.teevik.suites.hyprland = {
+  options.teevik.suites.linux = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable hyprland suite
+        Whether to enable linux suite
       '';
     };
   };
@@ -19,7 +19,7 @@ in
       desktop = {
         hyprland = {
           enable = true;
-          
+
           enableMasterLayout = false;
           enableVrr = false;
         };
@@ -33,6 +33,16 @@ in
           qt.enable = true;
         };
       };
+
+      apps = {
+        playerctl.enable = true;
+      };
+
+      xdg.enable = true;
     };
+
+    home.packages = with pkgs; [
+      shotman
+    ];
   };
 }

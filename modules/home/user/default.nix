@@ -13,17 +13,4 @@ in
   home.homeDirectory = home-directory;
 
   systemd.user.startServices = "sd-switch";
-
-  xdg = {
-    enable = true;
-
-    userDirs = {
-      enable = true;
-      createDirectories = true;
-
-      extraConfig = {
-        XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
-      };
-    };
-  };
 }
