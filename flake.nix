@@ -89,8 +89,12 @@
         allowUnsupportedSystem = true;
       };
 
-      overlays = with inputs; [
-        # rust-overlay.overlays.default
+      systems.modules.nixos = [
+        ./nix.nix
+      ];
+
+      systems.modules.darwin = [
+        ./nix.nix
       ];
     };
 }
