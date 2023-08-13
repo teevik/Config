@@ -35,6 +35,7 @@ in
       };
 
       apps = {
+        nh.enable = true;
         playerctl.enable = true;
       };
 

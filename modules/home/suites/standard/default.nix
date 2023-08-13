@@ -43,7 +43,6 @@ in
 
       apps = {
         home-manager.enable = true;
-        nh.enable = true;
         alacritty.enable = true;
         wezterm.enable = true;
         chrome.enable = true;
