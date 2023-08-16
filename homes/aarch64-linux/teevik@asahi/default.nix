@@ -4,11 +4,11 @@
   teevik = {
     suites = {
       standard.enable = true;
+      linux.enable = true;
     };
 
     apps = {
       home-manager.enable = true;
-      linux.enable = true;
     };
   };
 
