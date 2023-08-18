@@ -1,32 +1,31 @@
-{ enableVrr, enableMasterLayout, enableHidpi, theme }:
+{ config, enableVrr, enableMasterLayout, enableHidpi, scaling, monitor }:
+let
+  theme = config.teevik.theme;
+  cursorName = config.gtk.cursorTheme.name;
+in
 ''
-  monitor=desc:Samsung Electric Company Odyssey G85SB H1AK500000,3440x1440@175,auto,1,bitdepth,10
+  ${if monitor.enable then ''
+    monitor=,${monitor.resolution}@${toString monitor.refreshRate},auto,${toString scaling}${if monitor.bitDepth != null then ",bitdepth,10" else ""}
+  '' else ''
+    monitor=,preferred,auto,${toString scaling}
+  ''}
 
-  # env = NIXOS_OZONE_WL,1
+  env = XCURSOR_SIZE,${toString (24*scaling)}
 
   ${
     if enableHidpi
     then ''
-      monitor=,preferred,auto,2
 
-      exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE 32c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE 2
+      exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${toString (16 * scaling)}c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${toString scaling}
+      exec-once = hyprctl setcursor ${cursorName} ${toString (12 * scaling)}
 
-      env = GDK_SCALE,2
-      env = XCURSOR_SIZE,48
+      env = GDK_SCALE,${toString scaling}
     ''
-    else ''
-      monitor=,preferred,auto,1
-
-      env = XCURSOR_SIZE,24
-    ''
+    else ""
   }
 
   misc {
-      vrr = ${
-    if enableVrr
-    then "1"
-    else "0"
-  }
+      vrr = ${if enableVrr then "1" else "0" }
 
       # enable_swallow = true
       # swallow_regex = ^(org.wezfurlong.wezterm)$
@@ -74,7 +73,7 @@
     if enableMasterLayout
     then "master"
     else "dwindle"
-  }
+    }
 
       gaps_in=8
       gaps_out=12

@@ -10,10 +10,12 @@
     desktop.hyprland = {
       monitor = {
         enable = true;
-        resolution = "3440x1440";
-        refreshRate = 175;
-        bitDepth = 10;
+        resolution = "2560x1440";
+        refreshRate = 60;
       };
+
+      enableHidpi = true;
+      scaling = 1.5;
     };
   };
 
