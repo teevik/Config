@@ -11,6 +11,11 @@
     experimentalGPUInstallMode = "replace";
   };
 
+  swapDevices = [{
+    device = "/var/lib/swapfile";
+    size = 16 * 1024;
+  }];
+
   teevik = {
     boot = {
       enable = true;
