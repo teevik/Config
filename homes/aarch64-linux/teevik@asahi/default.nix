@@ -4,7 +4,7 @@
   teevik = {
     suites = {
       standard.enable = true;
-      linux.enable = true;
+      # linux.enable = true;
     };
 
     apps = {
