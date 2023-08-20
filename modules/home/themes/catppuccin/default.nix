@@ -71,6 +71,11 @@ in
           };
         in
         "${discord-catppuccin}/themes/frappe.theme.css";
+
+      spicetifyTheme = {
+        theme = "catppuccin-mocha";
+        colorScheme = "pink";
+      };
     };
   };
 }

@@ -3,7 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end";
+    # https://github.com/NixOS/nixpkgs/pull/246441
+    # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end"; 
 
     snowfall-lib = {
       url = "github:snowfallorg/lib/feat/home-manager";
@@ -37,16 +38,6 @@
       # inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-index-database = {
-      url = "github:Mic92/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    neovim-flake = {
-      url = "github:NotAShelf/neovim-flake";
-      # inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -62,6 +53,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-super.url = "github:privatevoid-net/nix-super";
+
+    # Home
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    spicetify = {
+      url = "github:the-argus/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     base16.url = "github:SenchoPens/base16.nix";
 
     base16-fish = {
@@ -74,11 +78,14 @@
       flake = false;
     };
 
-    nix-super.url = "github:privatevoid-net/nix-super";
-
-    nix-vscode-extensions = {
-      url = "github:nix-community/nix-vscode-extensions";
+    nix-index-database = {
+      url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    neovim-flake = {
+      url = "github:NotAShelf/neovim-flake";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 

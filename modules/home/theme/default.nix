@@ -1,6 +1,8 @@
-{ inputs, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption;
+  cfg = config.teevik.theme;
+
   themeType = types.submodule {
     options = {
       package = mkOption {
@@ -83,6 +85,26 @@ in
       description = ''
         Discord theme css file
       '';
+    };
+
+    spicetifyTheme = {
+      theme = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
+
+      colorScheme = mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default =
+          if cfg.customColorScheme != null
+          then "custom"
+          else null;
+      };
+
+      customColorScheme = mkOption {
+        type = lib.types.nullOr lib.types.attrs;
+        default = null;
+      };
     };
   };
 }

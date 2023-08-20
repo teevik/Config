@@ -7,11 +7,6 @@
         firmware.enableAllFirmware = true;
       };
 
-      apps = {
-        git.enable = true;
-        comma.enable = true;
-      };
-
       services = {
         autologin.enable = true;
       };

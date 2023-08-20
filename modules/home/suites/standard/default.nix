@@ -58,6 +58,7 @@ in
         firefox.enable = false;
         neofetch.enable = true;
         webcord.enable = true;
+        spotify.enable = true;
       };
     };
 
@@ -75,7 +76,6 @@ in
       obsidian
       ripgrep
       sd
-      spotify
       tealdeer
       trashy
       watchexec
