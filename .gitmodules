@@ -1,3 +1,0 @@
-[submodule "neovim-flake"]
-	path = neovim-flake
-	url = git@github.com:teevik/neovim-flake.git
