@@ -75,7 +75,7 @@ in
           smoothScroll.enable = true;
           cellularAutomaton.enable = true;
           fidget-nvim.enable = true;
-          cursorWordline = {
+          cursorline = {
             enable = true;
             lineTimeout = 0;
           };

@@ -68,5 +68,21 @@ in
         Specific neofetch image
       '';
     };
+
+    vscodeTheme = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        Vscode theme name
+      '';
+    };
+
+    discordTheme = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = ''
+        Discord theme css file
+      '';
+    };
   };
 }

@@ -2,6 +2,7 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.webcord;
+  discordTheme = config.teevik.theme.discordTheme;
 in
 {
   options.teevik.apps.webcord = {
@@ -19,18 +20,8 @@ in
       webcord-vencord
     ];
 
-    xdg.configFile =
-      let
-        theme = pkgs.fetchFromGitHub {
-          owner = "teevik";
-          repo = "EverforestDiscord";
-          rev = "98bfbdff4f51c1d2b13a9148d25404f698bda622";
-          hash = "sha256-iqWCQrj+z92WqrGeTEFvxc0N2jELazx8JiB305ChSkI=";
-        };
-      in
-      {
-        "WebCord/Themes/theme".source = "${theme}/everforest.theme.css";
-      };
+    xdg.configFile = mkIf (discordTheme != null) {
+      "WebCord/Themes/theme".source = discordTheme;
+    };
   };
 }
-# 

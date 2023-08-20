@@ -16,8 +16,8 @@ in
 
   config = mkIf cfg.enable {
     teevik = {
-      themes.catppuccin.enable = true;
-      # themes.everforest.enable = true;
+      # themes.catppuccin.enable = true;
+      themes.everforest.enable = true;
 
       development = {
         devenv.enable = true;

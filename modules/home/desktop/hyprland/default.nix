@@ -86,6 +86,7 @@ in
       package = null;
 
       systemdIntegration = true;
+      recommendedEnvironment = true;
 
       extraConfig = import ./config.nix {
         inherit config;

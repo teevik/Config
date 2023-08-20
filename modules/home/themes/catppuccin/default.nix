@@ -56,6 +56,21 @@ in
         name = "Adwaita";
         package = pkgs.gnome.adwaita-icon-theme;
       };
+
+      neofetchImage = ./neofetch.png;
+
+      vscodeTheme = "Catppuccin Frappé";
+
+      discordTheme =
+        let
+          discord-catppuccin = pkgs.fetchFromGitHub {
+            owner = "catppuccin";
+            repo = "discord";
+            rev = "c04f4bd43e571c19551e0e5da2d534408438564c";
+            hash = "sha256-3uEVrR2T39Pj0puUwUPuUfXcCPoOq2lNHL8UpppTOiU=";
+          };
+        in
+        "${discord-catppuccin}/themes/frappe.theme.css";
     };
   };
 }

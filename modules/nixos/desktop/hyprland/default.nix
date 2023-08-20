@@ -12,14 +12,6 @@ in
         Whether to enable hyprland
       '';
     };
-
-    enableHidpi = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Whether to enable hidpi
-      '';
-    };
   };
 
   imports = [ inputs.hyprland.nixosModules.default ];
@@ -40,7 +32,6 @@ in
     programs.hyprland = {
       enable = true;
 
-      xwayland.hidpi = cfg.enableHidpi;
       nvidiaPatches = config.teevik.hardware.nvidia.enable;
     };
   };

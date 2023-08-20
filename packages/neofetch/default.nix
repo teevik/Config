@@ -1,7 +1,7 @@
 { writeShellApplication
 , neofetch
 , imagemagick
-, neofetchImage ? ./hyprchan.png
+, neofetchImage ? null
 }:
 
 writeShellApplication {
@@ -11,7 +11,7 @@ writeShellApplication {
 
   text = ''
     neofetch \
-      --iterm2 ${neofetchImage} \
+      ${if neofetchImage != null then "--iterm2 ${neofetchImage}" else ""} \
       --disable wm theme icons \
       --distro_shorthand on
   '';
