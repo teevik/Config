@@ -1,7 +1,7 @@
 { inputs, pkgs, ... }:
 {
   nix = {
-    package = inputs.nix-super.packages.${pkgs.system}.default;
+    # package = inputs.nix-super.packages.${pkgs.system}.default;
 
     settings = {
       trusted-users = [

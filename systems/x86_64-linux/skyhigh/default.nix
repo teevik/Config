@@ -2,8 +2,6 @@
 {
   imports = [
     inputs.disko.nixosModules.disko
-    ./hardware.nix
-    inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-7th-gen
   ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
