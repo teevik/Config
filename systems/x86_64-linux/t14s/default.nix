@@ -43,20 +43,6 @@
 
       wantedBy = [ "sleep.target" ];
     };
-
-    # ath11k-resume = {
-    #   enable = true;
-
-    #   description = "Resume: modprobe ath11k_pci";
-    #   after = [ "post-resume.target" ];
-
-    #   serviceConfig = {
-    #     Type = "simple";
-    #     ExecStart = "/run/current-system/sw/bin/modprobe ath11k_pci";
-    #   };
-
-    #   wantedBy = [ "post-resume.target" ];
-    # };
   };
 
   services.logind.lidSwitch = "suspend-then-hibernate";
@@ -66,7 +52,6 @@
     suites = {
       standard.enable = true;
       gaming.enable = true;
-      ctf.enable = true;
     };
 
     boot = {
@@ -121,7 +106,6 @@
   programs.dconf.enable = true;
   environment.systemPackages = with pkgs; [
     virt-manager
-    jetbrains.clion
   ];
 
   security.polkit.enable = true;
