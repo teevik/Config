@@ -1,9 +1,11 @@
-{ config, lib, ... }:
-let
+{
+  config,
+  lib,
+  ...
+}: let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.git;
-in
-{
+in {
   options.teevik.apps.git = {
     enable = mkOption {
       type = types.bool;
@@ -19,6 +21,9 @@ in
       enable = true;
       userEmail = "teemu.vikoren@gmail.com";
       userName = "teevik";
+      ignores = [
+        ".DS_Store"
+      ];
     };
   };
 }

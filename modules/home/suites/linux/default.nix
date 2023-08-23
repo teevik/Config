@@ -37,6 +37,10 @@ in
       apps = {
         nh.enable = true;
         playerctl.enable = true;
+        tofi.enable = true;
+        chrome.enable = true;
+        webcord.enable = true;
+        spotify.enable = true;
       };
 
       xdg.enable = true;
@@ -44,6 +48,10 @@ in
 
     home.packages = with pkgs; [
       shotman
+      teevik.insomnia
+      mplayer
+      obs-studio
+      trashy
     ];
   };
 }

@@ -99,6 +99,7 @@
       channels-config = {
         allowUnfree = true;
         allowUnsupportedSystem = true;
+        allowBroken = true;
       };
 
       systems.modules.nixos = [

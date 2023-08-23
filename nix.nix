@@ -1,7 +1,11 @@
-{ inputs, pkgs, ... }:
+{ inputs, pkgs, lib, ... }:
+let
+  inherit (lib) mkIf;
+  isLinux = pkgs.stdenv.isLinux;
+in
 {
   nix = {
-    package = inputs.nix-super.packages.${pkgs.system}.default;
+    package = mkIf isLinux inputs.nix-super.packages.${pkgs.system}.default;
 
     settings = {
       trusted-users = [

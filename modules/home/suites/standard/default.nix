@@ -45,7 +45,6 @@ in
         home-manager.enable = true;
         alacritty.enable = true;
         wezterm.enable = true;
-        chrome.enable = true;
         comma.enable = true;
         exa.enable = true;
         feh.enable = true;
@@ -53,12 +52,9 @@ in
         helix.enable = true;
         vscode.enable = true;
         zellij.enable = true;
-        tofi.enable = true;
         zathura.enable = true;
         firefox.enable = false;
         neofetch.enable = true;
-        webcord.enable = true;
-        spotify.enable = true;
       };
     };
 
@@ -67,17 +63,13 @@ in
       erdtree
       flyctl
       gcc
-      teevik.insomnia
       just
       magic-wormhole
-      mplayer
       nurl
-      obs-studio
       obsidian
       ripgrep
       sd
       tealdeer
-      trashy
       watchexec
       xdg-utils
     ];

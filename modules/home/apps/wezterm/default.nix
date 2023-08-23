@@ -72,13 +72,15 @@ in
         config.hide_tab_bar_if_only_one_tab = true
         config.scrollback_lines = 10000
 
-        config.window_background_opacity = 0.6
-        -- config.color_scheme = "Catppuccin Mocha"
+        config.window_background_opacity = 0.7
+        config.macos_window_background_blur = 50
 
         config.underline_thickness = 3
         config.underline_position = -4
 
         config.alternate_buffer_wheel_scroll_speed = 1
+
+        config.window_close_confirmation = "NeverPrompt"
 
         return config
       '';
