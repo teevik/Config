@@ -54,6 +54,8 @@ in
         };
       };
 
+      mutableExtensionsDir = false;
+
       extensions = with extensions; [
         # Typescript/javascript
         ms-vscode.vscode-typescript-next
@@ -104,14 +106,6 @@ in
         # Themes
         catppuccin.catppuccin-vsc
         sainnhe.everforest
-
-
-        # (extensionFromVscodeMarketplace {
-        #   name = "cargo-crate-completer";
-        #   publisher = "chenxuan";
-        #   version = "1.0.2";
-        #   sha256 = "sha256-Kfx1GgPJiTSLYZOSe5R8g1EiyHdptwdog2D221zjQIg=";
-        # })
       ];
     };
   };
