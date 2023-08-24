@@ -93,6 +93,7 @@ in
         christian-kohler.path-intellisense
         esbenp.prettier-vscode
         pdconsec.vscode-print
+        mkhl.direnv
 
         # Remote
         ms-vscode-remote.remote-ssh
