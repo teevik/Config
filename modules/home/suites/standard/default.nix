@@ -59,6 +59,7 @@ in
     };
 
     home.packages = with pkgs; [
+      teevik.asciiquarium
       bat
       erdtree
       flyctl
