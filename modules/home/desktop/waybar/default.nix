@@ -52,7 +52,7 @@ in
 
         "battery" = {
           interval = 60;
-          bat = "BAT0";
+          # bat = "BAT0";
           full-at = 100;
           design-capacity = false;
           states = {

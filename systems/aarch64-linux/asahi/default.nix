@@ -4,6 +4,14 @@
     inputs.nixos-apple-silicon.nixosModules.default
   ];
 
+  boot.kernelParams = [
+    # Swap fn and ctrl
+    "hid_apple.swap_fn_leftctrl=1"
+
+    # Swap opt and cmd
+    "hid_apple.swap_opt_cmd=1"
+  ];
+
   hardware.asahi = {
     withRust = true;
     addEdgeKernelConfig = true;
@@ -29,6 +37,7 @@
 
     hardware = {
       networking.enable = true;
+      light.enable = true;
       pipewire.enable = true;
       firmware.enableAllFirmware = true;
       opengl = {

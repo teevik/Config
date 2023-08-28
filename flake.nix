@@ -55,6 +55,11 @@
 
     nix-super.url = "github:privatevoid-net/nix-super";
 
+    nixos-apple-silicon = {
+      url = "github:tpwrules/nixos-apple-silicon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Home
     nix-vscode-extensions = {
       url = "github:nix-community/nix-vscode-extensions";

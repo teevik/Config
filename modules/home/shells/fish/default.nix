@@ -20,7 +20,7 @@ in
     programs.fish = {
       enable = true;
 
-      shellInit =
+      interactiveShellInit =
         let
           theme = config.teevik.theme.colors inputs.base16-fish;
           slug = config.teevik.theme.colors.slug;

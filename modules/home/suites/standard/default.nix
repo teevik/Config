@@ -53,7 +53,7 @@ in
         vscode.enable = true;
         zellij.enable = true;
         zathura.enable = true;
-        firefox.enable = false;
+        firefox.enable = true;
         neofetch.enable = true;
       };
     };

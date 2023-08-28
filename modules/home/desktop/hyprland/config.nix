@@ -15,6 +15,9 @@ in
   ${
     if enableHidpi
     then ''
+      xwayland {
+        force_zero_scaling = true
+      }
 
       exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${toString (16 * scaling)}c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${toString scaling}
       exec-once = hyprctl setcursor ${cursorName} ${toString (12 * scaling)}

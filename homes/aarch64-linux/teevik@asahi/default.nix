@@ -7,6 +7,13 @@
       linux.enable = true;
     };
 
+    desktop = {
+      hyprland = {
+        enableHidpi = true;
+        scaling = 1.5;
+      };
+    };
+
     apps = {
       home-manager.enable = true;
     };

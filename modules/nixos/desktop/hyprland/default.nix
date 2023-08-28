@@ -32,7 +32,7 @@ in
     programs.hyprland = {
       enable = true;
 
-      nvidiaPatches = config.teevik.hardware.nvidia.enable;
+      enableNvidiaPatches = config.teevik.hardware.nvidia.enable;
     };
   };
 }
