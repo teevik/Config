@@ -60,6 +60,7 @@ in
 
     home.packages = with pkgs; [
       teevik.asciiquarium
+      teevik.asciiquarium-fullscreen
       bat
       erdtree
       flyctl
