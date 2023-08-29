@@ -4,8 +4,6 @@ let
   cfg = config.teevik.apps.steam;
 in
 {
-  imports = [ inputs.chaotic.nixosModules.default ];
-
   options.teevik.apps.steam = {
     enable = mkOption {
       type = types.bool;
@@ -15,6 +13,8 @@ in
       '';
     };
   };
+
+  imports = [ inputs.chaotic.nixosModules.default ];
 
   config = mkIf cfg.enable {
     programs.steam = {

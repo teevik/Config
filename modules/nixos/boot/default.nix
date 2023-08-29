@@ -27,7 +27,7 @@ in
   config = mkIf cfg.enable {
     boot.loader = {
       systemd-boot.enable = true;
-      timeout = 0;
+      # timeout = 0;
 
       efi = {
         canTouchEfiVariables = cfg.canTouchEfiVariables;

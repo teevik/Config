@@ -55,6 +55,7 @@ in
         zathura.enable = true;
         firefox.enable = true;
         neofetch.enable = true;
+        anyrun.enable = true;
       };
     };
 

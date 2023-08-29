@@ -15,10 +15,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    programs.google-chrome = {
+    programs.chromium = {
       enable = true;
 
       commandLineArgs = [ "--enable-features=TouchpadOverscrollHistoryNavigation" ];
+
+      extensions = [
+        { id = "cjpalhdlnbpafiamejdnhcphjbkeiagm"; } # ublock origin
+        { id = "aeblfdkhhhdcdjpifhhbdiojplfjncoa"; } # 1Password
+      ];
     };
   };
 }

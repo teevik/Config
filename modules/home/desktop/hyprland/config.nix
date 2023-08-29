@@ -139,8 +139,9 @@ in
   # windowrulev2 = workspace special:spotify, class:^(Spotify)$
 
   $terminal = wezterm start --always-new-process
-  $menu = tofi-drun --drun-launch=true
-  $browser = google-chrome-stable
+  # $menu = tofi-drun --drun-launch=true
+  $menu = anyrun
+  $browser = chromium
   $discord = webcord
   $spotify = spotify
   $files = nautilus

@@ -92,6 +92,9 @@
       url = "github:NotAShelf/neovim-flake";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    anyrun.url = "github:kirottu/anyrun";
+    anyrun-nixos-options.url = "github:n3oney/anyrun-nixos-options";
   };
 
   outputs = inputs:
