@@ -36,7 +36,7 @@ in
         # "margin-left": 0;
         # "margin-right": 0;
         fixed-center = true;
-        modules-left = [ "wlr/workspaces" ];
+        modules-left = [ "hyprland/workspaces" ];
         modules-center = [ ];
         modules-right = [ "pulseaudio" "backlight" "battery" "network" "clock" ];
 

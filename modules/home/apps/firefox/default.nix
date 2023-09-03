@@ -36,14 +36,14 @@ in
             meta = { };
           })
 
-          (buildFirefoxXpiAddon {
-            pname = "catppuccin-mocha-pink";
-            version = "old";
-            addonId = "{8446b178-c865-4f5c-8ccc-1d7887811ae3}";
-            url = "https://github.com/catppuccin/firefox/releases/download/old/catppuccin_mocha_pink.xpi";
-            sha256 = "";
-            meta = { };
-          })
+          # (buildFirefoxXpiAddon {
+          #   pname = "catppuccin-mocha-pink";
+          #   version = "old";
+          #   addonId = "{8446b178-c865-4f5c-8ccc-1d7887811ae3}";
+          #   url = "https://github.com/catppuccin/firefox/releases/download/old/catppuccin_mocha_pink.xpi";
+          #   sha256 = "sha256-MPaGVZMjqdqbDA7dbiSl5qQ2ji+aKyftLJiISY5ShQI=";
+          #   meta = { };
+          # })
         ];
 
         search.force = true;
