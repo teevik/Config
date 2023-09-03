@@ -52,6 +52,10 @@ in
         "[nix]" = {
           "editor.defaultFormatter" = "jnoortheen.nix-ide";
         };
+
+        "[rust]" = {
+          "editor.defaultFormatter" = "rust-lang.rust-analyzer";
+        };
       };
 
       mutableExtensionsDir = false;
@@ -62,6 +66,7 @@ in
         paulmolluzzo.convert-css-in-js
         sanity-io.vscode-sanity
         styled-components.vscode-styled-components
+        ritwickdey.liveserver
 
         # Nix
         jnoortheen.nix-ide
