@@ -29,7 +29,7 @@ in
       teevik.rsa-cracker
 
       # Broken
-      # teevik.ripgrep-all
+      ripgrep-all
 
       # A software reverse engineering (SRE) suite of tools developed by NSA's Research Directorate in support of the Cybersecurity mission
       # https://github.com/NationalSecurityAgency/ghidra
@@ -43,7 +43,34 @@ in
       # http://www.caesum.com/handbook/stego.htm
       stegsolve
 
+      # A tool to read, write and edit EXIF meta information
       exiftool
+
+      # Crunch is a wordlist generator where you can specify a standard character set or a character set you specify
+      # https://www.kali.org/tools/crunch/
+      crunch
+
+      # Fast password cracker
+      # https://hashcat.net/hashcat/
+      hashcat
+
+      # Hashcat-utils are a set of small utilities that are useful in advanced password cracking
+      # https://hashcat.net/wiki/doku.php?id=hashcat_utils
+      hashcat-utils
+
+      # Fast password cracker
+      # https://github.com/openwall/john
+      john
+
+      # OCR engine
+      # https://github.com/tesseract-ocr/tesseract
+      tesseract
+
+      # The Modern Hash Identification System
+      # https://github.com/HashPals/Name-That-Hash
+      nth
+
+      binwalk
     ];
   };
 }

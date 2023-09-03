@@ -5,6 +5,7 @@
     suites = {
       standard.enable = true;
       linux.enable = true;
+      ctf.enable = true;
     };
 
     desktop.hyprland = {
