@@ -38,7 +38,7 @@ in
         nh.enable = true;
         playerctl.enable = true;
         tofi.enable = true;
-        chrome.enable = true;
+        chrome.enable = false;
         webcord.enable = true;
         spotify.enable = true;
       };

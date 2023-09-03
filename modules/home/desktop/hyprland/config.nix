@@ -141,7 +141,7 @@ in
   $terminal = wezterm start --always-new-process
   # $menu = tofi-drun --drun-launch=true
   $menu = anyrun
-  $browser = chromium
+  $browser = firefox
   $discord = webcord
   $spotify = spotify
   $files = nautilus

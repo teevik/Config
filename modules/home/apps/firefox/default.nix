@@ -2,13 +2,6 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.firefox;
-
-  materialfox = pkgs.fetchFromGitHub {
-    owner = "typeling1578";
-    repo = "MaterialFox-Plus";
-    rev = "e12f95f0aa4e759dbf76567cfbad45450c675be1";
-    hash = "sha256-ir5qDQ0ewHCccpG71uTyUFANw/7W7kX2NfqCttOvxRc=";
-  };
 in
 {
   options.teevik.apps.firefox = {
@@ -27,33 +20,34 @@ in
 
       profiles.default = {
         settings = {
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-          "svg.context-properties.content.enabled" = true;
-          "browser.tabs.tabClipWidth" = 83;
-          "security.insecure_connection_text.enabled" = true;
+          browser.toolbars.bookmarks.visibility = "never";
         };
 
-        userChrome = ''
-          @import "${materialfox}/chrome/userChrome.css";
-        '';
+        extensions = with config.nur.repos.rycee.firefox-addons; [
+          onepassword-password-manager
+          ublock-origin
 
-        # userChrome =
-        #   let
-        #     includes = "${cascade}/chrome/includes";
-        #     integrations = "${cascade}/integrations";
-        #   in
-        #   lib.strings.concatStrings [
-        #     (builtins.readFile "${includes}/cascade-config-mouse.css")
-        #     # (builtins.readFile "${integrations}/catppuccin/cascade-mocha.css")
-        #     # (builtins.readFile "${includes}/cascade-colours.css")
-        #     (builtins.readFile "${includes}/cascade-layout.css")
-        #     (builtins.readFile "${includes}/cascade-responsive.css")
-        #     (builtins.readFile "${includes}/cascade-floating-panel.css")
-        #     (builtins.readFile "${includes}/cascade-nav-bar.css")
-        #     (builtins.readFile "${includes}/cascade-tabs.css")
-        #   ];
+          (buildFirefoxXpiAddon {
+            pname = "everforest-dark";
+            version = "2.0";
+            addonId = "{c0f86627-5243-4bf4-a522-a41ed12f1737}";
+            url = "https://addons.mozilla.org/firefox/downloads/file/4055905/everforest_dark_official-2.0.xpi";
+            sha256 = "sha256-xL55Gq9URihK0bS/oKyd/yrSoo4qNRpy2Kv+Vt0VL/g=";
+            meta = { };
+          })
+
+          (buildFirefoxXpiAddon {
+            pname = "catppuccin-mocha-pink";
+            version = "old";
+            addonId = "{8446b178-c865-4f5c-8ccc-1d7887811ae3}";
+            url = "https://github.com/catppuccin/firefox/releases/download/old/catppuccin_mocha_pink.xpi";
+            sha256 = "";
+            meta = { };
+          })
+        ];
 
         search.force = true;
+
         search.engines = {
           "Nix Packages" = {
             urls = [{

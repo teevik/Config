@@ -6,6 +6,8 @@
     # https://github.com/NixOS/nixpkgs/pull/246441
     # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end"; 
 
+    nur.url = "github:nix-community/NUR";
+
     snowfall-lib = {
       url = "github:snowfallorg/lib/feat/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
