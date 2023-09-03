@@ -22,12 +22,12 @@ in
         "https://hyprland.cachix.org"
         "https://nix-community.cachix.org/"
         "https://devenv.cachix.org/"
-        "https://nyx.chaotic.cx"
         "https://viperml.cachix.org"
         "https://neovim-flake.cachix.org/"
         "https://cache.privatevoid.net"
         "https://jakestanger.cachix.org"
         "https://anyrun.cachix.org"
+        "https://nix-gaming.cachix.org"
       ];
 
       trusted-public-keys = [
@@ -41,6 +41,7 @@ in
         "cache.privatevoid.net:SErQ8bvNWANeAvtsOESUwVYr2VJynfuc9JRwlzTTkVg="
         "jakestanger.cachix.org-1:VWJE7AWNe5/KOEvCQRxoE8UsI2Xs2nHULJ7TEjYm7mM="
         "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
+        "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="
       ];
     };
 

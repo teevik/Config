@@ -14,8 +14,6 @@ in
     };
   };
 
-  imports = [ inputs.chaotic.nixosModules.default ];
-
   config = mkIf cfg.enable {
     programs.steam = {
       enable = true;
@@ -23,6 +21,6 @@ in
       dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
     };
 
-    chaotic.steam.extraCompatPackages = [ inputs.chaotic.packages.${pkgs.system}.proton-ge-custom ];
+    environment.sessionVariables.STEAM_EXTRA_COMPAT_TOOLS_PATHS = "${inputs.nix-gaming.packages.${pkgs.system}.proton-ge}";
   };
 }
