@@ -51,6 +51,7 @@ in
     # };
 
     registry.default.flake = inputs.nixpkgs;
+    registry.teevik.flake = inputs.self;
 
     # flake-utils-plus
     generateRegistryFromInputs = true;

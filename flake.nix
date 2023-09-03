@@ -98,24 +98,30 @@
   };
 
   outputs = inputs:
-    inputs.snowfall-lib.mkFlake {
-      inherit inputs;
-      src = ./.;
+    inputs.snowfall-lib.mkFlake
+      {
+        inherit inputs;
+        src = ./.;
 
-      package-namespace = "teevik";
+        package-namespace = "teevik";
 
-      channels-config = {
-        allowUnfree = true;
-        allowUnsupportedSystem = true;
-        allowBroken = true;
+        channels-config = {
+          allowUnfree = true;
+          allowUnsupportedSystem = true;
+          allowBroken = true;
+        };
+
+        systems.modules.nixos = [
+          ./nix.nix
+        ];
+
+        systems.modules.darwin = [
+          ./nix.nix
+        ];
+      } // {
+      templates.devshell = {
+        path = ./template/devshell;
+        description = "Devshell using flake-parts";
       };
-
-      systems.modules.nixos = [
-        ./nix.nix
-      ];
-
-      systems.modules.darwin = [
-        ./nix.nix
-      ];
     };
 }
