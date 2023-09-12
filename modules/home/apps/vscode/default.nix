@@ -79,12 +79,12 @@ in
 
         # c/c++
         jeff-hykin.better-cpp-syntax
-        ms-vscode.cpptools-extension-pack
+        ms-vscode.cpptools
+        ms-vscode.cmake-tools
 
         # Python
         ms-python.python
         ms-python.vscode-pylance
-
 
         # Haskell
         haskell.haskell
@@ -95,7 +95,10 @@ in
         # Tools
         eamodio.gitlens
         ms-vscode.hexeditor
-        ms-toolsai.jupyter
+        ms-toolsai.jupyter-keymap
+        ms-toolsai.jupyter-renderers
+        ms-toolsai.vscode-jupyter-cell-tags
+        ms-toolsai.vscode-jupyter-slideshow
         skellock.just
         christian-kohler.path-intellisense
         esbenp.prettier-vscode
