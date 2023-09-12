@@ -61,6 +61,9 @@ in
       mutableExtensionsDir = false;
 
       extensions = with extensions; [
+        # OpenGL
+        slevesque.shader
+
         # Typescript/javascript
         ms-vscode.vscode-typescript-next
         paulmolluzzo.convert-css-in-js
