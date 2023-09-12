@@ -118,9 +118,21 @@
           ./nix.nix
         ];
       } // {
-      templates.devshell = {
-        path = ./template/devshell;
-        description = "Devshell using flake-parts";
+      templates = {
+        devshell = {
+          path = ./template/devshell;
+          description = "Devshell using flake-parts";
+        };
+
+        bevy = {
+          path = ./template/bevy;
+          description = "Devshell for bevy";
+        };
+
+        opengl = {
+          path = ./template/opengl;
+          description = "Devshell for opengl";
+        };
       };
     };
 }
