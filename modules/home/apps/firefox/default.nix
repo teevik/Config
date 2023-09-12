@@ -21,11 +21,22 @@ in
       profiles.default = {
         settings = {
           browser.toolbars.bookmarks.visibility = "never";
+
+          # Required for figma to be able to export to svg
+          "dom.events.asyncClipboard.clipboardItem" = true;
+
+          # Do not restore sessions after what looks like a "crash"
+          "browser.sessionstore.resume_from_crash" = false;
         };
 
+        # List of addons: https://github.com/nix-community/nur-combined/blob/master/repos/rycee/pkgs/firefox-addons/generated-firefox-addons.nix
         extensions = with config.nur.repos.rycee.firefox-addons; [
           onepassword-password-manager
           ublock-origin
+          wikiwand-wikipedia-modernized
+
+          translate-web-pages
+          search-by-image
 
           (buildFirefoxXpiAddon {
             pname = "everforest-dark";
@@ -48,27 +59,53 @@ in
 
         search.force = true;
 
-        search.engines = {
-          "Nix Packages" = {
-            urls = [{
-              template = "https://search.nixos.org/packages";
-              params = [
-                { name = "type"; value = "packages"; }
-                { name = "query"; value = "{searchTerms}"; }
-              ];
-            }];
+        search.engines =
+          let
+            mkBasicSearchEngine = { aliases, url, param, icon ? null }: {
+              urls = [{
+                template = url;
+                params = [
+                  { name = param; value = "{searchTerms}"; }
+                ];
+              }];
 
-            icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-            definedAliases = [ "@np" ];
-          };
+              definedAliases = aliases;
+            } // (if icon == null then { } else { inherit icon; });
+          in
+          {
 
-          "NixOS Wiki" = {
-            urls = [{ template = "https://nixos.wiki/index.php?search={searchTerms}"; }];
-            iconUpdateURL = "https://nixos.wiki/favicon.png";
-            updateInterval = 24 * 60 * 60 * 1000; # every day
-            definedAliases = [ "@nw" ];
+            "Nix Packages" = mkBasicSearchEngine {
+              aliases = [ "@np" "@nix-packages" ];
+              url = "https://search.nixos.org/packages";
+              param = "query";
+              icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+            };
+
+            "Nix Options" = mkBasicSearchEngine {
+              aliases = [ "@no" "@nix-options" ];
+              url = "https://search.nixos.org/options";
+              param = "query";
+              icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+            };
+
+            "NixOS Wiki" = mkBasicSearchEngine {
+              aliases = [ "@nw" "@nix-wiki" ];
+              url = "https://nixos.wiki/index.php";
+              param = "search";
+            };
+
+            "Youtube" = mkBasicSearchEngine {
+              url = "https://www.youtube.com/results";
+              param = "search_query";
+              aliases = [ "@yt" "@youtube" "youtube" ];
+            };
+
+            "Github" = mkBasicSearchEngine {
+              url = "https://github.com/search";
+              param = "q";
+              aliases = [ "@gh" "@github" "github" ];
+            };
           };
-        };
       };
     };
   };
