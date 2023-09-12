@@ -2,7 +2,7 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.neofetch;
-  neofetchImage = config.teevik.theme.neofetchImage;
+  themeNeofetchImage = config.teevik.theme.neofetchImage;
 in
 {
   options.teevik.apps.neofetch = {
@@ -13,12 +13,20 @@ in
         Whether to enable neofetch
       '';
     };
+
+    neofetchImage = mkOption {
+      type = types.nullOr types.path;
+      default = themeNeofetchImage;
+      description = ''
+        Specific neofetch image
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      (teevik.neofetch.override (lib.optionalAttrs (neofetchImage != null) {
-        inherit neofetchImage;
+      (teevik.neofetch.override (lib.optionalAttrs (cfg.neofetchImage != null) {
+        inherit (cfg) neofetchImage;
       }))
     ];
   };

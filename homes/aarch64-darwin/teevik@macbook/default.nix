@@ -9,6 +9,10 @@
     suites = {
       standard.enable = true;
     };
+
+    apps = {
+      neofetch.neofetchImage = null;
+    };
   };
 
   programs.fish.loginShellInit =
