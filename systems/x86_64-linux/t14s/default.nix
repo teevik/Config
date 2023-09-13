@@ -72,6 +72,8 @@
 
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
 
+  networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
+
   # powerManagement.cpuFreqGovernor = "powersave";
   services.auto-cpufreq.enable = true;
 
