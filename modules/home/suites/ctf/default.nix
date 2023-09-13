@@ -72,6 +72,8 @@ in
       nth
 
       binwalk
+
+      cutter
     ];
   };
 }
