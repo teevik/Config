@@ -73,7 +73,9 @@ in
 
       binwalk
 
-      cutter
+      (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec ]))
+
+      gdb
     ];
   };
 }
