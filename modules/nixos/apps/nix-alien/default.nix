@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.nix-alien;
@@ -17,7 +17,7 @@ in
   config = mkIf cfg.enable {
     programs.nix-ld.enable = true;
 
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = [
       inputs.nix-alien.packages.${pkgs.system}.nix-alien
     ];
   };
