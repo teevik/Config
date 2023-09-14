@@ -94,6 +94,12 @@
 
     anyrun.url = "github:kirottu/anyrun";
     anyrun-nixos-options.url = "github:n3oney/anyrun-nixos-options";
+
+    nix-alien = {
+      url = "github:thiagokokada/nix-alien";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-index-database.follows = "nix-index-database";
+    };
   };
 
   outputs = inputs:

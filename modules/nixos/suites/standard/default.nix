@@ -40,6 +40,7 @@ in
 
       apps = {
         nautilus.enable = true;
+        nix-alien.enable = true;
       };
     };
 
