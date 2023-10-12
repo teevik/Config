@@ -46,7 +46,7 @@ in
 
       extraConfigFiles."nixos-options.ron".text = ''
         Config(
-          options_path: "${osConfig.system.build.manual.optionsJSON}/share/doc/nixos/options.json"
+          options: {":nixos": ["${osConfig.system.build.manual.optionsJSON}/share/doc/nixos/options.json"]}
         )
       '';
 

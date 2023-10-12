@@ -9,7 +9,7 @@
     nur.url = "github:nix-community/NUR";
 
     snowfall-lib = {
-      url = "github:snowfallorg/lib/feat/home-manager";
+      url = "github:snowfallorg/lib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

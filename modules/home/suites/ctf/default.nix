@@ -20,6 +20,8 @@ in
     home.sessionVariables.SECLISTS = pkgs.teevik.seclists;
 
     home.packages = with pkgs; [
+      hexyl
+
       # A next-generation crawling and spidering framework
       # https://github.com/projectdiscovery/katana
       teevik.katana

@@ -17,7 +17,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      webcord-vencord
+      webcord
     ];
 
     xdg.configFile = mkIf (discordTheme != null) {
