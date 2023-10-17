@@ -30,13 +30,11 @@ in
   misc {
       vrr = ${if enableVrr then "1" else "0" }
 
-      # enable_swallow = true
-      # swallow_regex = ^(org.wezfurlong.wezterm)$
+      enable_swallow = true
+      swallow_regex = ^(org.wezfurlong.wezterm)$
       focus_on_activate = true
       animate_manual_resizes = true
-
-    #   no_direct_scanout = false
-    #   render_ahead_of_time = true
+      close_special_on_empty = false
   }
 
   input {
@@ -104,6 +102,7 @@ in
         passes = 3
         new_optimizations = true
         xray = true
+        special = true
       }
   }
 
