@@ -45,6 +45,7 @@ in
         home-manager.enable = true;
         alacritty.enable = true;
         wezterm.enable = true;
+        kitty.enable = true;
         comma.enable = true;
         exa.enable = true;
         feh.enable = true;
@@ -75,6 +76,7 @@ in
       tealdeer
       watchexec
       xdg-utils
+      yazi
     ];
   };
 }

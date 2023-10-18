@@ -1,8 +1,4 @@
-{ config
-, lib
-, inputs
-, ...
-}:
+{ config, lib, inputs, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.development.neovim;
@@ -24,18 +20,16 @@ in
     programs.neovim-flake = {
       enable = true;
 
-      settings = {
-        vim = {
-          viAlias = true;
-          vimAlias = true;
-          debugMode = {
-            enable = false;
-            level = 20;
-            logFile = "/tmp/nvim.log";
-          };
+      settings.vim = {
+        viAlias = true;
+        vimAlias = true;
+        debugMode = {
+          enable = false;
+          level = 20;
+          logFile = "/tmp/nvim.log";
         };
 
-        vim.lsp = {
+        lsp = {
           formatOnSave = true;
           lspkind.enable = true;
           lightbulb.enable = true;
@@ -45,7 +39,7 @@ in
           lspSignature.enable = true;
         };
 
-        vim.languages = {
+        languages = {
           enableLSP = true;
           enableFormat = true;
           enableTreesitter = true;
@@ -68,7 +62,7 @@ in
           markdown.enable = true;
         };
 
-        vim.visuals = {
+        visuals = {
           enable = true;
           nvimWebDevicons.enable = true;
           scrollBar.enable = true;
@@ -87,27 +81,37 @@ in
           };
         };
 
-        vim.statusline = {
+        statusline = {
           lualine = {
             enable = true;
-            theme = "catppuccin";
+            theme = "everforest";
           };
         };
 
-        vim.theme = {
-          enable = true;
-          name = "catppuccin";
-          style = "mocha";
-          transparent = false;
-        };
-        vim.autopairs.enable = true;
+        # theme = {
+        #   enable = false;
+        #   name = "catppuccin";
+        #   style = "mocha";
+        #   transparent = false;
+        # };
 
-        vim.autocomplete = {
+        extraPlugins = {
+          everforest = {
+            package = pkgs.vimPlugins.everforest;
+            setup = ''
+              vim.cmd.colorscheme "everforest"
+            '';
+          };
+        };
+
+        autopairs.enable = true;
+
+        autocomplete = {
           enable = true;
           type = "nvim-cmp";
         };
 
-        vim.filetree = {
+        filetree = {
           nvimTree = {
             enable = true;
 
@@ -119,44 +123,44 @@ in
           };
         };
 
-        vim.tabline = {
+        tabline = {
           nvimBufferline.enable = true;
         };
 
-        vim.treesitter.context.enable = true;
+        treesitter.context.enable = true;
 
-        vim.binds = {
+        binds = {
           whichKey.enable = true;
           cheatsheet.enable = true;
         };
 
-        vim.telescope.enable = true;
+        telescope.enable = true;
 
-        vim.git = {
+        git = {
           enable = true;
           gitsigns.enable = true;
           gitsigns.codeActions = false; # throws an annoying debug message
         };
 
-        vim.minimap = {
+        minimap = {
           minimap-vim.enable = false;
           codewindow.enable = true; # lighter, faster, and uses lua for configuration
         };
 
-        vim.dashboard = {
+        dashboard = {
           dashboard-nvim.enable = false;
           alpha.enable = true;
         };
 
-        vim.notify = {
+        notify = {
           nvim-notify.enable = false;
         };
 
-        vim.projects = {
+        projects = {
           project-nvim.enable = true;
         };
 
-        vim.utility = {
+        utility = {
           ccc.enable = true;
           icon-picker.enable = true;
           diffview-nvim.enable = true;
@@ -166,38 +170,34 @@ in
           };
         };
 
-        vim.notes = {
+        notes = {
           obsidian.enable = false; # FIXME neovim fails to build if obsidian is enabled
           orgmode.enable = false;
-          mind-nvim.enable = true;
+          mind-nvim.enable = false;
           todo-comments.enable = true;
         };
 
-        vim.terminal = {
+        terminal = {
           toggleterm = {
             enable = true;
             lazygit.enable = true;
           };
         };
 
-        vim.ui = {
+        ui = {
           noice.enable = true;
-          # smartcolumn.enable = true;
+          smartcolumn.enable = false;
         };
 
-        vim.assistant = {
+        assistant = {
           copilot.enable = true;
         };
 
-        vim.session = {
+        session = {
           nvim-session-manager.enable = true;
         };
 
-        vim.gestures = {
-          gesture-nvim.enable = false;
-        };
-
-        vim.comments = {
+        comments = {
           comment-nvim.enable = true;
         };
       };

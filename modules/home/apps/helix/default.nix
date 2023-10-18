@@ -19,13 +19,17 @@ in
       enable = true;
 
       settings = {
-        # theme = "base16_transparent";
+        theme = "everforest_dark";
 
         editor = {
           line-number = "relative";
           bufferline = "always";
           color-modes = true;
           auto-save = true;
+
+          scrolloff = 10;
+          completion-trigger-len = 1;
+          idle-timeout = 100;
         };
 
         editor.lsp = {
@@ -39,6 +43,7 @@ in
 
         keys.normal = {
           esc = [ "collapse_selection" "keep_primary_selection" ];
+          "C-/" = "toggle_comments";
         };
 
         keys.insert = {

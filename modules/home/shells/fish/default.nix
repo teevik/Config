@@ -31,8 +31,8 @@ in
           bind \b backward-kill-word
           bind \e\[3\;5~ kill-word
 
-          source ${theme}
-          base16-${slug}
+          # source ${theme}
+          # base16-${slug}
         '';
 
       shellAbbrs = {

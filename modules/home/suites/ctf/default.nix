@@ -78,6 +78,18 @@ in
       (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec ]))
 
       gdb
+
+      # A simple package that helps you find meaningful lines of any given input. Especially useful in CTFs.
+      # https://github.com/kamali-sina/meaningsearch
+      teevik.meaningsearch
+
+      # Nikto web server scanner
+      # https://github.com/sullo/nikto
+      nikito
+
+      # Zed Attack Proxy (ZAP)
+      # https://github.com/zaproxy/zaproxy
+      zap
     ];
   };
 }
