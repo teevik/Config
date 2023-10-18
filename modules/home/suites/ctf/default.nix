@@ -85,7 +85,7 @@ in
 
       # Nikto web server scanner
       # https://github.com/sullo/nikto
-      nikito
+      nikto
 
       # Zed Attack Proxy (ZAP)
       # https://github.com/zaproxy/zaproxy
