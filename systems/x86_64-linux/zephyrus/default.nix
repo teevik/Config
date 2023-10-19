@@ -30,10 +30,6 @@
 
     supergfxd = {
       enable = true;
-
-      settings = {
-        mode = "Integrated";
-      };
     };
   };
 
