@@ -28,7 +28,13 @@
       enableUserService = true;
     };
 
-    supergfxd.enable = true;
+    supergfxd = {
+      enable = true;
+
+      settings = {
+        mode = "Integrated";
+      };
+    };
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
