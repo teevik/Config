@@ -19,9 +19,6 @@ in
       desktop = {
         hyprland = {
           enable = true;
-
-          enableMasterLayout = false;
-          enableVrr = false;
         };
 
         mako.enable = true;
