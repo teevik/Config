@@ -1,5 +1,5 @@
-install TARGET-IP:
-  nix run github:numtide/nixos-anywhere -- --no-reboot --flake '.#x1' root@{{TARGET-IP}}
+install TARGET-IP FLAKE:
+  nix run github:numtide/nixos-anywhere -- --no-reboot --flake '.#{{FLAKE}}' root@{{TARGET-IP}}
 
   ssh teevik@{{TARGET-IP}} "mkdir /mnt/home/teevik/.ssh"
 
