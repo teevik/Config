@@ -20,8 +20,13 @@ in
       webcord
     ];
 
-    xdg.configFile = mkIf (discordTheme != null) {
-      "WebCord/Themes/theme".source = discordTheme;
-    };
+    xdg.configFile =
+      {
+        "WebCord/config.json".source = ./config.json;
+
+        "WebCord/Themes/theme" = mkIf (discordTheme != null) {
+          source = discordTheme;
+        };
+      };
   };
 }
