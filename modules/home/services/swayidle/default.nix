@@ -27,8 +27,8 @@ in
       timeouts = [
         {
           timeout = 2 * 60;
-          command = "${light} -U 30";
-          resumeCommand = "${light} -A 30";
+          command = "${light} -U 50";
+          resumeCommand = "${light} -A 50";
         }
 
         {
