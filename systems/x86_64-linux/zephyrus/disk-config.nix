@@ -25,6 +25,8 @@
 
           {
             name = "root";
+
+            start = "512MiB";
             end = "-32Gb";
 
             part-type = "primary";
@@ -40,6 +42,7 @@
           {
             name = "swap";
             start = "-32Gb";
+            end = "100%";
 
             content = {
               type = "swap";
