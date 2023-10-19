@@ -8,28 +8,37 @@
         type = "table";
         format = "gpt";
 
-        partitions = {
-          ESP = {
-            size = "512MiB";
+        partitions = [
+          {
+            start = "1MiB";
+            end = "512MiB";
+            name = "ESP";
+
+            bootable = true;
 
             content = {
               type = "filesystem";
               format = "vfat";
               mountpoint = "/boot";
             };
-          };
+          }
 
-          root = {
+          {
+            name = "root";
             end = "-32Gb";
+
+            part-type = "primary";
+            bootable = true;
 
             content = {
               type = "filesystem";
               format = "ext4";
               mountpoint = "/";
             };
-          };
+          }
 
-          swap = {
+          {
+            name = "swap";
             size = "100%";
 
             content = {
@@ -37,8 +46,8 @@
               randomEncryption = false;
               resumeDevice = true;
             };
-          };
-        };
+          }
+        ];
       };
     };
   };
