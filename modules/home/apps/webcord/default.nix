@@ -22,8 +22,6 @@ in
 
     xdg.configFile =
       {
-        "WebCord/config.json".source = ./config.json;
-
         "WebCord/Themes/theme" = mkIf (discordTheme != null) {
           source = discordTheme;
         };
