@@ -39,7 +39,7 @@
 
           {
             name = "swap";
-            size = "100%";
+            start = "-32Gb";
 
             content = {
               type = "swap";
