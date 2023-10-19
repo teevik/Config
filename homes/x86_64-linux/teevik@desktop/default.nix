@@ -9,6 +9,8 @@
     };
 
     desktop.hyprland = {
+      enableVrr = true;
+
       monitor = {
         enable = true;
         resolution = "3440x1440";
