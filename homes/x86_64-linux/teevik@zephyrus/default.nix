@@ -16,7 +16,7 @@
     desktop.hyprland = {
       enableVrr = true;
       enableHidpi = true;
-      scaling = 1.5;
+      scaling = 1.4;
     };
   };
 

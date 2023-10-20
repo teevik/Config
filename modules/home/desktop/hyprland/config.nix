@@ -2,15 +2,16 @@
 let
   theme = config.teevik.theme;
   cursorName = config.gtk.cursorTheme.name;
+  cursorSize = builtins.floor (16 * scaling);
 in
 ''
   ${if monitor.enable then ''
-    monitor=,${monitor.resolution}@${toString monitor.refreshRate},auto,${toString scaling}${if monitor.bitDepth != null then ",bitdepth,10" else ""}
+    monitor=,${monitor.resolution}@${builtins.toJSON monitor.refreshRate},auto,${builtins.toJSON scaling}${if monitor.bitDepth != null then ",bitdepth,10" else ""}
   '' else ''
-    monitor=,preferred,auto,${toString scaling}
+    monitor=,preferred,auto,${builtins.toJSON scaling}
   ''}
 
-  env = XCURSOR_SIZE,${toString (24*scaling)}
+  env = XCURSOR_SIZE,${builtins.toJSON (cursorSize * 2)}
 
   ${
     if enableHidpi
@@ -19,10 +20,10 @@ in
         force_zero_scaling = true
       }
 
-      exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${toString (16 * scaling)}c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${toString scaling}
-      exec-once = hyprctl setcursor ${cursorName} ${toString (12 * scaling)}
+      exec-once = xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON (builtins.floor (16 * scaling))}c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON scaling}
+      exec-once = hyprctl setcursor ${cursorName} ${builtins.toJSON cursorSize}
 
-      env = GDK_SCALE,${toString scaling}
+      env = GDK_SCALE,${builtins.toJSON scaling}
     ''
     else ""
   }
