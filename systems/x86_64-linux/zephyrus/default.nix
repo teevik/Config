@@ -36,8 +36,8 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
   services.auto-cpufreq.enable = true;
 
-  # services.logind.lidSwitch = "suspend-then-hibernate";
-  # systemd.sleep.extraConfig = "HibernateDelaySec=1h";
+  services.logind.lidSwitch = "suspend-then-hibernate";
+  systemd.sleep.extraConfig = "HibernateDelaySec=1h";
 
   disko.devices = import ./disk-config.nix {
     disks = [ "/dev/nvme0n1" ];
