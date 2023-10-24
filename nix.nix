@@ -1,7 +1,7 @@
 { inputs, pkgs, lib, ... }:
 let
   inherit (lib) mkIf;
-  isArm = pkgs.system == "aarch64-linux";
+  isArm = pkgs.system == "aarch64-linux" || pkgs.system == "aarch64-darwin";
 in
 {
   nix = {
