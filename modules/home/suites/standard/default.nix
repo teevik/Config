@@ -45,7 +45,7 @@ in
         home-manager.enable = true;
         alacritty.enable = false;
         wezterm.enable = true;
-        kitty.enable = false;
+        kitty.enable = true;
         comma.enable = true;
         exa.enable = true;
         feh.enable = true;
@@ -70,7 +70,7 @@ in
       just
       magic-wormhole
       nurl
-      obsidian
+      (obsidian.override { electron = electron_24; })
       ripgrep
       sd
       tealdeer

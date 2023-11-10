@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ inputs, pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.suites.linux;
@@ -44,7 +44,7 @@ in
     };
 
     home.packages = with pkgs; [
-      shotman
+      inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
       teevik.insomnia
       mplayer
       obs-studio

@@ -100,6 +100,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.nix-index-database.follows = "nix-index-database";
     };
+
+    hyprland-contrib = {
+      url = "github:hyprwm/contrib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -114,6 +119,10 @@
           allowUnfree = true;
           allowUnsupportedSystem = true;
           allowBroken = true;
+
+          permittedInsecurePackages = [
+            "electron-24.8.6"
+          ];
         };
 
         systems.modules.nixos = [

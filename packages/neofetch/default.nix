@@ -11,7 +11,7 @@ writeShellApplication {
 
   text = ''
     neofetch \
-      ${if neofetchImage != null then "--iterm2 ${neofetchImage}" else ""} \
+      ${if neofetchImage != null then "--kitty ${neofetchImage}" else ""} \
       --disable wm theme icons \
       --distro_shorthand on
   '';

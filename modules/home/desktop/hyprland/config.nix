@@ -139,7 +139,7 @@ in
   # windowrulev2 = workspace special:spotify, class:^(Spotify)$
 
   # $terminal = wezterm start --always-new-process
-  $terminal = wezterm
+  $terminal = kitty
   # $menu = tofi-drun --drun-launch=true
   $menu = anyrun
   $browser = firefox
@@ -161,8 +161,8 @@ in
 
   # -- Screenshot --
   $XDG_SCREENSHOTS_DIR = /home/teevik/Pictures/Screenshots
-  bind = , Print ,exec, XDG_SCREENSHOTS_DIR=$XDG_SCREENSHOTS_DIR shotman --copy --capture output
-  bind = CTRL, Print, exec, XDG_SCREENSHOTS_DIR=$XDG_SCREENSHOTS_DIR shotman --copy --capture region
+  bind = , Print ,exec, XDG_SCREENSHOTS_DIR=$XDG_SCREENSHOTS_DIR grimblast --notify copysave output
+  bind = CTRL, Print, exec, XDG_SCREENSHOTS_DIR=$XDG_SCREENSHOTS_DIR grimblast --notify copysave area
 
   # -- Hyprland --
   bind = SUPER, Q, killactive,
