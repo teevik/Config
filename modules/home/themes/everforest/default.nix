@@ -106,6 +106,8 @@ in
           misc = "626880";
         };
       };
+
+      kittyTheme = "Everforest Dark Medium";
     };
   };
 }

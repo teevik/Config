@@ -43,7 +43,7 @@ in
       borderColor = "#cba6f7";
 
       gtkTheme = {
-        name = "Catppuccin-Mocha-Standard-Pink-dark";
+        name = "Catppuccin-Mocha-Standard-Pink-Dark";
         package = pkgs.catppuccin-gtk.override {
           accents = [ "pink" ];
           size = "standard";
@@ -73,9 +73,11 @@ in
         "${discord-catppuccin}/themes/frappe.theme.css";
 
       spicetifyTheme = {
-        theme = "catppuccin-mocha";
-        colorScheme = "pink";
+        theme = "catppuccin";
+        colorScheme = "mocha";
       };
+
+      kittyTheme = "Catppuccin-Mocha";
     };
   };
 }

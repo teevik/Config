@@ -106,5 +106,17 @@ in
         default = null;
       };
     };
+
+    kittyTheme = mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = ''
+        Apply a Kitty color theme. This option takes the friendly name of
+        any theme given by the command {command}`kitty +kitten themes`.
+        See <https://github.com/kovidgoyal/kitty-themes>
+        for more details.
+      '';
+      example = "Everforest Dark Medium";
+    };
   };
 }
