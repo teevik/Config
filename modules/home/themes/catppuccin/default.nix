@@ -78,6 +78,8 @@ in
       };
 
       kittyTheme = "Catppuccin-Mocha";
+
+      helixTheme = "catppuccin_mocha";
     };
   };
 }

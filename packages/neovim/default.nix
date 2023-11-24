@@ -1,4 +1,9 @@
-{ writeScriptBin, lib, inputs, pkgs }:
+{ writeScriptBin
+, lib
+, inputs
+, pkgs
+,
+}:
 let
   configModule = {
     config.vim = {
@@ -18,6 +23,8 @@ let
       #     '';
       #   };
       # };
+
+      useSystemClipboard = true;
 
       # Catppuccin
       theme = {
@@ -154,6 +161,8 @@ let
           enable = true;
           autoOpen = true;
         };
+
+        openOnSetup = false;
       };
 
       # Bufferline at top of screen
@@ -210,22 +219,24 @@ let
     };
   };
 
-  neovimPackage = (inputs.neovim-flake.lib.neovimConfiguration {
-    modules = [
-      configModule
-    ];
-    pkgs = pkgs;
-  }).neovim;
+  neovimPackage =
+    (inputs.neovim-flake.lib.neovimConfiguration {
+      modules = [
+        configModule
+      ];
+      pkgs = pkgs;
+    }).neovim;
 
   neovim = lib.getExe neovimPackage;
   kitty = lib.getExe pkgs.kitty;
 in
 writeScriptBin "nvim" ''
+  #!/usr/bin/env bash
   ${kitty} @ set-spacing padding=0
   ${kitty} @ set-background-opacity 1
 
   ${neovim} $1 $2 $3
 
   ${kitty} @ set-spacing padding=10
-  ${kitty} @ set-background-opacity 0.5
+  ${kitty} @ set-background-opacity 0
 ''

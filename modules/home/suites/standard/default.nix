@@ -24,6 +24,7 @@ in
         direnv.enable = true;
         haskell.enable = false;
         javascript.enable = true;
+        cpp.enable = true;
         neovim.enable = true;
 
         nix = {

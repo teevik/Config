@@ -1,7 +1,10 @@
-{ config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.helix;
+  inherit (config.teevik.theme) helixTheme;
+  helix = lib.getExe pkgs.helix;
+  kitty = lib.getExe pkgs.kitty;
 in
 {
   options.teevik.apps.helix = {
@@ -15,17 +18,33 @@ in
   };
 
   config = mkIf cfg.enable {
+    xdg.configFile = {
+      "helix/themes/catppuccin_mocha.toml".source = ./themes/catppuccin_mocha.toml;
+    };
+
     programs.helix = {
       enable = true;
 
+      package = pkgs.writeScriptBin "hx" ''
+        #!/usr/bin/env bash
+        ${kitty} @ set-spacing padding=0
+        ${kitty} @ set-background-opacity 1
+
+        ${helix} $1 $2 $3
+
+        ${kitty} @ set-spacing padding=10
+        ${kitty} @ set-background-opacity 0
+      '';
+
       settings = {
-        theme = "everforest_dark";
+        theme = helixTheme;
 
         editor = {
           line-number = "relative";
           bufferline = "always";
           color-modes = true;
           auto-save = true;
+          cursorline = true;
 
           scrolloff = 10;
           completion-trigger-len = 1;
@@ -41,9 +60,23 @@ in
           insert = "bar";
         };
 
+        editor.indent-guides = {
+          render = true;
+        };
+
         keys.normal = {
           esc = [ "collapse_selection" "keep_primary_selection" ];
           "C-/" = "toggle_comments";
+
+          # ctrl-d from vscode
+          # "C-d" = ["move_prev_word_start", move_next_word_end", "search_selection", "extend_search_next"]
+          # make sure there is only one selection, select word under cursor, set search to selection, then switch to select mode
+          "C-d" = [ "keep_primary_selection" "move_prev_word_start" "move_next_word_end" "search_selection" "select_mode" ];
+        };
+
+        keys.select = {
+          # if already in select mode, just add new selection at next occurrence
+          "C-d" = [ "search_selection" "extend_search_next" ];
         };
 
         keys.insert = {
@@ -62,3 +95,5 @@ in
     };
   };
 }
+
+

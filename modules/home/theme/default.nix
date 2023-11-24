@@ -118,5 +118,16 @@ in
       '';
       example = "Everforest Dark Medium";
     };
+
+    helixTheme = mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = ''
+        Helix theme.
+        See <https://github.com/helix-editor/helix/tree/master/runtime/themes>
+        for a list of themes.
+      '';
+      example = "everforest_dark";
+    };
   };
 }

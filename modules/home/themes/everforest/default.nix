@@ -108,6 +108,8 @@ in
       };
 
       kittyTheme = "Everforest Dark Medium";
+
+      helixTheme = "everforest_dark";
     };
   };
 }

@@ -51,7 +51,7 @@
   teevik = {
     suites = {
       standard.enable = true;
-      gaming.enable = true;
+      # gaming.enable = true;
     };
 
     boot = {
