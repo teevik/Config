@@ -43,7 +43,7 @@ in
           line-number = "relative";
           bufferline = "always";
           color-modes = true;
-          auto-save = true;
+          # auto-save = true;
           cursorline = true;
 
           scrolloff = 10;
