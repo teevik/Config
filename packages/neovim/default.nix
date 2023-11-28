@@ -1,10 +1,9 @@
-{ writeScriptBin
-, lib
-, inputs
-, pkgs
-,
-}:
-let
+{
+  writeScriptBin,
+  lib,
+  inputs,
+  pkgs,
+}: let
   configModule = {
     config.vim = {
       # Debug
@@ -79,6 +78,8 @@ let
         enable = true;
         type = "nvim-cmp";
       };
+
+      autopairs.enable = true;
 
       # Multi-purpose search and picker
       telescope.enable = true;
@@ -225,18 +226,19 @@ let
         configModule
       ];
       pkgs = pkgs;
-    }).neovim;
+    })
+    .neovim;
 
   neovim = lib.getExe neovimPackage;
   kitty = lib.getExe pkgs.kitty;
 in
-writeScriptBin "nvim" ''
-  #!/usr/bin/env bash
-  ${kitty} @ set-spacing padding=0
-  ${kitty} @ set-background-opacity 1
+  writeScriptBin "nvim" ''
+    #!/usr/bin/env bash
+    ${kitty} @ set-spacing padding=0
+    ${kitty} @ set-background-opacity 1
 
-  ${neovim} $1 $2 $3
+    ${neovim} $1 $2 $3
 
-  ${kitty} @ set-spacing padding=10
-  ${kitty} @ set-background-opacity 0
-''
+    ${kitty} @ set-spacing padding=10
+    ${kitty} @ set-background-opacity 0
+  ''
