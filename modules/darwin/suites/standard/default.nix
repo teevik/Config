@@ -102,7 +102,8 @@ in
         alt - a : yabai -m window --toggle zoom-fullscreen
         alt - space : yabai -m window --toggle float
 
-        alt - q : skhd -k "cmd - q"
+        alt - q : yabai -m window --close
+        # alt - q: osascript -e 'tell application "System Events" to perform action "AXPress" of (first button whose subrole is "AXCloseButton") of (first window whose subrole is "AXStandardWindow") of (first process whose frontmost is true)'
 
         alt - d : open -a Launchpad
 
@@ -165,6 +166,7 @@ in
 
       services = {
         nix-daemon.enable = true;
+        sketchybar.enable = true;
       };
     };
 
