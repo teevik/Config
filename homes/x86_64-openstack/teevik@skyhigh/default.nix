@@ -9,12 +9,12 @@
       exa.enable = true;
       neofetch.enable = true;
       zellij.enable = true;
+      neovim.enable = true;
     };
 
     development = {
       direnv.enable = true;
       devenv.enable = true;
-      neovim.enable = true;
     };
 
     shells = {

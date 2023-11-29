@@ -25,7 +25,6 @@ in
         haskell.enable = false;
         javascript.enable = true;
         cpp.enable = true;
-        neovim.enable = true;
 
         nix = {
           nil.enable = true;
@@ -58,6 +57,7 @@ in
         firefox.enable = true;
         neofetch.enable = true;
         anyrun.enable = true;
+        neovim.enable = true;
       };
     };
 
