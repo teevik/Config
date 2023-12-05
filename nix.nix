@@ -27,6 +27,7 @@ in
         "https://jakestanger.cachix.org"
         "https://anyrun.cachix.org"
         "https://nix-gaming.cachix.org"
+        "https://helix.cachix.org"
       ];
 
       trusted-public-keys = [
@@ -38,6 +39,7 @@ in
         "jakestanger.cachix.org-1:VWJE7AWNe5/KOEvCQRxoE8UsI2Xs2nHULJ7TEjYm7mM="
         "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
         "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="
+        "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
       ];
     };
 

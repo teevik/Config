@@ -1,10 +1,8 @@
-{ pkgs, config, lib, ... }:
+{ inputs, pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.helix;
   inherit (config.teevik.theme) helixTheme;
-  helix = lib.getExe pkgs.helix;
-  kitty = lib.getExe pkgs.kitty;
 in
 {
   options.teevik.apps.helix = {
@@ -25,16 +23,22 @@ in
     programs.helix = {
       enable = true;
 
-      package = pkgs.writeScriptBin "hx" ''
-        #!/usr/bin/env bash
-        ${kitty} @ set-spacing padding=0
-        ${kitty} @ set-background-opacity 1
+      package =
+        let
+          helix = lib.getExe pkgs.helix;
+          # helix = lib.getExe (inputs.helix.packages.${pkgs.system}.default);
+          kitty = lib.getExe pkgs.kitty;
+        in
+        pkgs.writeScriptBin "hx" ''
+          #!/usr/bin/env bash
+          ${kitty} @ set-spacing padding=0
+          ${kitty} @ set-background-opacity 1
 
-        ${helix} $1 $2 $3
+          ${helix} $1 $2 $3
 
-        ${kitty} @ set-spacing padding=10
-        ${kitty} @ set-background-opacity 0
-      '';
+          ${kitty} @ set-spacing padding=10
+          ${kitty} @ set-background-opacity 0
+        '';
 
       settings = {
         theme = helixTheme;
