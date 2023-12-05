@@ -25,6 +25,7 @@ in
         haskell.enable = false;
         javascript.enable = true;
         cpp.enable = true;
+        zig.enable = true;
 
         nix = {
           nil.enable = true;
