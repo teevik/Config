@@ -16,8 +16,8 @@ in
 
   config = mkIf cfg.enable {
     teevik = {
-      themes.catppuccin.enable = true;
-      # themes.everforest.enable = true;
+      themes.catppuccin.enable = lib.mkDefault true;
+      themes.everforest.enable = lib.mkDefault false;
 
       development = {
         devenv.enable = true;
@@ -55,9 +55,7 @@ in
         vscode.enable = true;
         zellij.enable = true;
         zathura.enable = true;
-        firefox.enable = true;
         neofetch.enable = true;
-        anyrun.enable = true;
         neovim.enable = true;
       };
     };

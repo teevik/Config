@@ -13,6 +13,12 @@ in
         Whether to enable kitty
       '';
     };
+
+    opacity = mkOption {
+      type = types.float;
+      default = 0;
+      description = "Background opacity";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -28,9 +34,9 @@ in
         scrollback_lines = 10000;
         update_check_interval = 0;
         font_size = 13;
-        background_opacity = "0";
+        background_opacity = builtins.toJSON cfg.opacity;
         dynamic_background_opacity = "yes";
-        background_blur = 50;
+        background_blur = 65;
         window_padding_width = 10;
         allow_remote_control = "yes";
       };

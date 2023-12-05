@@ -6,12 +6,18 @@
   home.stateVersion = "23.11";
 
   teevik = {
+    themes = {
+      everforest.enable = true;
+      catppuccin.enable = false;
+    };
+
     suites = {
       standard.enable = true;
     };
 
     apps = {
       neofetch.neofetchImage = null;
+      kitty.opacity = 0.6;
     };
   };
 

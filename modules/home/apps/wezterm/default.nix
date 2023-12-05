@@ -73,7 +73,7 @@ in
         config.scrollback_lines = 10000
 
         config.window_background_opacity = 0.7
-        config.macos_window_background_blur = 50
+        config.macos_window_background_blur = 70
 
         config.underline_thickness = 3
         config.underline_position = -4

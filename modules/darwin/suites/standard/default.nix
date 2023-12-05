@@ -31,6 +31,10 @@ in
         mru-spaces = false;
       };
 
+      NSGlobalDomain = {
+        "com.apple.mouse.tapBehavior" = 1;
+      };
+
       CustomUserPreferences = {
         NSGlobalDomain.WebKitDeveloperExtras = true;
       };
@@ -94,23 +98,34 @@ in
 
         window_gap = 12;
       };
+
+      extraConfig = ''
+        yabai -m rule --add app="^System Preferences$" manage=off
+        yabai -m rule --add app="^Finder$" manage=off
+        yabai -m rule --add app="^Calculator$" manage=off
+        yabai -m rule --add app="^Disk Utility$" manage=off
+        yabai -m rule --add app="^Activity Monitor$" manage=off
+        yabai -m rule --add app="^Installer$" manage=off
+        yabai -m rule --add app="^System Information$" manage=off
+      '';
     };
 
     services.skhd = {
       enable = true;
       skhdConfig = ''
         alt - a : yabai -m window --toggle zoom-fullscreen
-        alt - space : yabai -m window --toggle float
+        alt - space : yabai -m window --toggle float && \
+                      yabai -m window --grid 5:5:1:1:3:3
 
         alt - q : yabai -m window --close
         # alt - q: osascript -e 'tell application "System Events" to perform action "AXPress" of (first button whose subrole is "AXCloseButton") of (first window whose subrole is "AXStandardWindow") of (first process whose frontmost is true)'
 
         alt - d : open -a Launchpad
 
-        alt - return : wezterm
-        alt + shift - return : wezterm
+        alt - return : open -na kitty
+        alt + shift - return : open -na kitty
 
-        alt - w : open -n -a Safari
+        alt - w : open -na Safari
         alt - f : open ~
         alt - e : code
         alt - backspace : Discord

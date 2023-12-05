@@ -38,6 +38,8 @@ in
         chrome.enable = false;
         webcord.enable = true;
         spotify.enable = true;
+        anyrun.enable = true;
+        firefox.enable = true;
       };
 
       xdg.enable = true;
