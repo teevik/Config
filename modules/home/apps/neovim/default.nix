@@ -43,7 +43,7 @@ in
       #a
 
       home.activation.neovim = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        $DRY_RUN_CMD ln -sf $VERBOSE_ARG \
+        $DRY_RUN_CMD ln -snf $VERBOSE_ARG \
             ${config.home.homeDirectory}/Documents/Config/modules/home/apps/neovim/lazy-vim \
             ${config.home.homeDirectory}/.config/nvim
       '';
