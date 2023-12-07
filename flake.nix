@@ -87,11 +87,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    neovim-flake = {
-      url = "github:NotAShelf/neovim-flake";
-      # inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     anyrun.url = "github:kirottu/anyrun";
     anyrun-nixos-options.url = "github:n3oney/anyrun-nixos-options";
 
@@ -109,6 +104,11 @@
     helix = {
       # url = "github:teevik/helix/inline-diagnostics";
       url = "github:helix-editor/helix";
+    };
+
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 

@@ -2,7 +2,9 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.neovim;
-  neovim = lib.getExe pkgs.neovim;
+  # TODO remove old lazyvim
+  # neovim = lib.getExe pkgs.neovim;
+  neovim = lib.getExe pkgs.teevik.neovim;
   kitty = lib.getExe pkgs.kitty;
 in
 {
@@ -42,10 +44,10 @@ in
       #   };
       #a
 
-      home.activation.neovim = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        $DRY_RUN_CMD ln -snf $VERBOSE_ARG \
-            ${config.home.homeDirectory}/Documents/Config/modules/home/apps/neovim/lazy-vim \
-            ${config.home.homeDirectory}/.config/nvim
-      '';
+      # home.activation.neovim = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      #   $DRY_RUN_CMD ln -snf $VERBOSE_ARG \
+      #       ${config.home.homeDirectory}/Documents/Config/modules/home/apps/neovim/lazy-vim \
+      #       ${config.home.homeDirectory}/.config/nvim
+      # '';
     };
 }
