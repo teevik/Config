@@ -10,10 +10,6 @@ nixvim.makeNixvimWithModule
     ];
 
     config = {
-      globals = {
-        mapleader = " ";
-      };
-
       options = {
         cursorline = true;
         number = true;
@@ -21,6 +17,10 @@ nixvim.makeNixvimWithModule
 
         timeout = true;
         timeoutlen = 400;
+      };
+
+      globals = {
+        mapleader = " ";
       };
 
       colorschemes.catppuccin = {
@@ -40,23 +40,13 @@ nixvim.makeNixvimWithModule
       };
 
       plugins = {
-        which-key.enable = true;
+        # Coding
         treesitter.enable = true;
         twilight.enable = true;
         todo-comments.enable = true;
         telescope.enable = true;
-
         surround = {
           # ys<motion>
-
-          enable = true;
-        };
-
-        nvim-tree = {
-          # <C-n> to toggle
-          # e to rename
-          # a to create file
-          # d to delete
 
           enable = true;
         };
@@ -69,6 +59,7 @@ nixvim.makeNixvimWithModule
         lspkind.enable = true;
 
         # UI
+        which-key.enable = true;
         notify.enable = true;
         noice.enable = true;
         nvim-colorizer.enable = true;
@@ -76,6 +67,15 @@ nixvim.makeNixvimWithModule
         indent-blankline.enable = true;
         alpha.enable = true;
         bufferline.enable = true;
+
+        nvim-tree = {
+          # <C-n> to toggle
+          # e to rename
+          # a to create file
+          # d to delete
+
+          enable = true;
+        };
 
         # Mini
         mini = {
