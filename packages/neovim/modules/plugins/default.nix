@@ -12,5 +12,9 @@
     ./lualine.nix
     ./lsp.nix
     ./alpha.nix
+    ./lsp-lines.nix
+    ./vim-visual-multi.nix
+    ./otter.nix
+    ./bufferline.nix
   ];
 }

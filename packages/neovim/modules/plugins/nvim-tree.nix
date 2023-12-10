@@ -5,34 +5,17 @@ let
 in
 {
   config = mkIf cfg.enable {
-    keymaps = [
-      {
-        mode = "n";
-        key = "<C-n>";
-        action = "<cmd>:NvimTreeToggle<cr>";
-        options = {
-          silent = true;
-          desc = "Toggle Tree";
-        };
-      }
-      {
-        mode = "n";
-        key = "<leader>gf";
-        action = "<cmd>:NvimTreeFindFile<cr>";
-        options = {
-          silent = true;
-          desc = "CurrentFile";
-        };
-      }
-    ];
-
-    extraConfigLua = ''
+    extraConfigLua = /* lua */ ''
       local which_key = require("which-key")
 
       require('which-key').register({
         g = {
           name = "Goto",
           f = { "<cmd>:NvimTreeFindFile<cr>", "File in Tree" },
+        },
+        t = {
+          name = "Toggle",
+          t = { "<cmd>:NvimTreeToggle<cr>", "Nvim tree" },
         },
       }, { mode = "n", prefix = "<leader>", silent = true })
     '';

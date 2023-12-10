@@ -1,23 +1,19 @@
-{ pkgs, lib, config, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.plugins.lsp;
 in
 {
   config = mkIf cfg.enable {
-    extraPlugins = with pkgs.vimPlugins; [
-      nvim-code-action-menu
-    ];
-
-    # extraConfigLua = ''
-    #   require("nvim-code-action-menu").setup()
-    # '';
-
     plugins.lsp = {
-      onAttach = ''
+      onAttach = /* lua */ ''
         do
           local lsp = require("lspconfig")
           local which_key = require("which-key")
+
+          if client.server_capabilities.inlayHintProvider then
+            vim.lsp.inlay_hint.enable(bufnr, true)
+          end
 
           -- See `:help vim.lsp.*` for documentation on any of the below functions
           which_key.register({
@@ -50,26 +46,18 @@ in
             },
             c = {
               name = "Code",
-              a = { "<cmd>CodeActionMenu<cr>", "Action" },
+              a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Action" },
               f = { "<cmd>lua vim.lsp.buf.format({ async = true })<cr>", "Format" },
               r = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
-            }
+            },
+            t = {
+              name = "Toggle",
+              i = { function() 
+                local bufnr = vim.api.nvim_get_current_buf()
+                vim.lsp.inlay_hint.enable(bufnr, not vim.lsp.inlay_hint.is_enabled(bufnr)) 
+              end, "Inlay hints" },
+            },
           }, { buffer = buffer, mode = "n", prefix = "<leader>", noremap = true, silent = true })
-
-          if client.name == "tsserver" then
-            which_key.register({
-              c = {
-                name = "Code",
-                a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Action" },
-                f = { "<cmd>lua vim.lsp.buf.format({ async = true })<cr>", "Format" },
-                r = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
-                i = {
-                  name = "Imports",
-                  o = { "<cmd>OrganizeImports<cr>", "Organize" },
-                },
-              }
-            }, { buffer = buffer, mode = "n", prefix = "<leader>", noremap = true, silent = true })
-          end
         end
       '';
     };

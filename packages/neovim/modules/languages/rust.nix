@@ -20,5 +20,7 @@ in
       installCargo = false;
       installRustc = false;
     };
+
+    plugins.crates-nvim.enable = true;
   };
 }

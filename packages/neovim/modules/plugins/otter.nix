@@ -1,31 +1,33 @@
 { lib, config, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.plugins.twilight;
+  cfg = config.plugins.otter;
 in
 {
-  options.plugins.twilight = {
+  options.plugins.otter = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable twilight
+        Whether to enable otter
       '';
     };
   };
 
   config = mkIf cfg.enable {
     extraPlugins = with pkgs.vimPlugins; [
-      twilight-nvim
+      otter-nvim
     ];
 
     extraConfigLua = /* lua */ ''
-      require("twilight").setup({})
+      local toggle_otter = function()
+        require("otter").activate({"lua", "bash"})
+      end
 
-      require("which-key").register({
+      require('which-key').register({
         t = {
           name = "Toggle",
-          t = { "<cmd>Twilight<cr>", "Toggle twilight" }
+          o = { toggle_otter, "Otter" },
         },
       }, { mode = "n", prefix = "<leader>", silent = true })
     '';

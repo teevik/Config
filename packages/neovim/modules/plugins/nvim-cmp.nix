@@ -5,7 +5,7 @@ let
 in
 {
   config = mkIf cfg.enable {
-    extraConfigLua = ''
+    extraConfigLua = /* lua */ ''
       local has_words_before = function()
         unpack = unpack or table.unpack
         local line, col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -33,7 +33,7 @@ in
 
         filetypes = {
           # Disable by default
-          "." = false;
+          "*" = false;
         };
       };
 
@@ -52,7 +52,7 @@ in
           "<C-e>" = "cmp.mapping.abort()";
           "<CR>" = "cmp.mapping.confirm({ select = true })"; # Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
 
-          "<Tab>" = ''
+          "<Tab>" = /* lua */ ''
             cmp.mapping(function(fallback)
               local luasnip = require("luasnip")
 
@@ -71,7 +71,7 @@ in
             end, { "i", "s" })
           '';
 
-          "<S-Tab>" = ''
+          "<S-Tab>" = /* lua */ ''
             cmp.mapping(function(fallback)
               local luasnip = require("luasnip")
 
@@ -87,6 +87,7 @@ in
         };
 
         sources = [
+          { name = "otter"; }
           {
             name = "copilot";
             groupIndex = 1;

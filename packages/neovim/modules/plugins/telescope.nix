@@ -5,7 +5,7 @@ let
 in
 {
   config = mkIf cfg.enable {
-    extraConfigLua = ''
+    extraConfigLua = /* lua */ ''
       local which_key = require("which-key")
       local telescope = require("telescope")
       local api = require("telescope.builtin")

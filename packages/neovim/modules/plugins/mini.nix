@@ -40,7 +40,7 @@ in
 
   config = mkIf cfg.enable {
     extraConfigLua = mkMerge [
-      (mkIf cfg.animate ''
+      (mkIf cfg.animate /* lua */ ''
         -- don't use animate when scrolling with the mouse
         local mouse_scrolled = false
 
@@ -74,15 +74,15 @@ in
         })
       '')
 
-      (mkIf cfg.comment ''
+      (mkIf cfg.comment /* lua */ ''
         require('mini.comment').setup()
       '')
 
-      (mkIf cfg.pairs ''
+      (mkIf cfg.pairs /* lua */ ''
         require('mini.pairs').setup()
       '')
 
-      (mkIf cfg.indentscope ''
+      (mkIf cfg.indentscope /* lua */ ''
         require('mini.indentscope').setup({
           symbol = '▎',
         })

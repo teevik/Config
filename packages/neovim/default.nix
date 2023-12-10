@@ -1,32 +1,86 @@
-{ inputs, system, ... }:
+{ pkgs, inputs, system, ... }:
 let
   nixvim = inputs.nixvim.legacyPackages.${system};
 in
 nixvim.makeNixvimWithModule
 {
+  inherit pkgs;
+
   module = {
     imports = [
       ./modules
     ];
 
     config = {
+      # Neovim nightly
+      package = pkgs.neovim-unwrapped.overrideAttrs (old: {
+        version = "0.10.0-dev";
+        src = pkgs.fetchFromGitHub {
+          owner = "neovim";
+          repo = "neovim";
+          rev = "29aa4dd10af74d29891cb293dc9ff393e9dba11f";
+          hash = "sha256-WcGPELMcBCuxNwyO5ULBV5do52O05TWJHBTS4M4Vnlo=";
+        };
+      });
+
+      colorschemes.catppuccin = {
+        enable = true;
+        flavour = "mocha";
+      };
+
       options = {
         cursorline = true;
         number = true;
         relativenumber = true;
 
         timeout = true;
-        timeoutlen = 400;
+        timeoutlen = 300;
+
+        signcolumn = "yes";
+        expandtab = true;
+        shiftwidth = 2;
+
+        undofile = true;
       };
 
       globals = {
         mapleader = " ";
       };
 
-      colorschemes.catppuccin = {
-        enable = true;
-        flavour = "mocha";
-      };
+      keymaps = [
+        {
+          mode = "v";
+          key = "<";
+          action = "<gv";
+          options = {
+            silent = true;
+          };
+        }
+        {
+          mode = "v";
+          key = ">";
+          action = ">gv";
+          options = {
+            silent = true;
+          };
+        }
+        {
+          mode = "n";
+          key = "U";
+          action = ":redo<CR>";
+          options = {
+            silent = true;
+          };
+        }
+        {
+          mode = "n";
+          key = "W";
+          action = "b";
+          options = {
+            silent = true;
+          };
+        }
+      ];
 
       languages = {
         nix.enable = true;
@@ -39,10 +93,15 @@ nixvim.makeNixvimWithModule
         python.enable = true;
       };
 
+      extraPlugins = with pkgs.vimPlugins; [
+        dressing-nvim
+      ];
+
       plugins = {
         # Coding
         treesitter.enable = true;
-        twilight.enable = true;
+        twilight.enable = false;
+        vim-visual-multi.enable = true;
         todo-comments.enable = true;
         telescope.enable = true;
         surround = {
@@ -57,6 +116,7 @@ nixvim.makeNixvimWithModule
         lsp-lines.enable = true;
         nvim-cmp.enable = true;
         lspkind.enable = true;
+        otter.enable = true;
 
         # UI
         which-key.enable = true;
