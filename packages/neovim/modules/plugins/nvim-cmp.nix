@@ -43,9 +43,7 @@ in
         mappingPresets = [ "insert" ];
 
         experimental = {
-          ghost_text = {
-            hl_group = "CmpGhostText";
-          };
+          ghost_text = true;
         };
 
         mapping = {
