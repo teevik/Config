@@ -6,6 +6,10 @@ nixvim.makeNixvimWithModule
 {
   inherit pkgs;
 
+  extraSpecialArgs = {
+    osInputs = inputs;
+  };
+
   module = {
     imports = [
       ./modules

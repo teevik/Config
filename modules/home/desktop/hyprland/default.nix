@@ -78,15 +78,11 @@ in
     };
   };
 
-  imports = [ inputs.hyprland.homeManagerModules.default ];
-
   config = mkIf cfg.enable {
     wayland.windowManager.hyprland = {
       enable = true;
-      package = null;
 
       systemdIntegration = true;
-      recommendedEnvironment = true;
 
       extraConfig = import ./config.nix {
         inherit config;

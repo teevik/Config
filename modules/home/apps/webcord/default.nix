@@ -17,7 +17,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      (webcord.override { electron_27 = electron_24; })
+      webcord
     ];
 
     xdg.configFile =

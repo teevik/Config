@@ -14,8 +14,6 @@ in
     };
   };
 
-  imports = [ inputs.hyprland.nixosModules.default ];
-
   config = mkIf cfg.enable {
     environment.loginShellInit = ''
       if [ "$(tty)" == /dev/tty1 ]; then
