@@ -99,7 +99,21 @@ nixvim.makeNixvimWithModule
 
       extraPlugins = with pkgs.vimPlugins; [
         dressing-nvim
+
+        (pkgs.vimUtils.buildVimPlugin {
+          name = "hawtkeys";
+          src = pkgs.fetchFromGitHub {
+            owner = "tris203";
+            repo = "hawtkeys.nvim";
+            rev = "ce2a3f96852a2e5cc59b780f8839a0b5a31c2878";
+            hash = "sha256-NT5sGW3+aZkFoNcf5Grx3tGkIb868CPPEFOUdJooehI=";
+          };
+        })
       ];
+
+      extraConfigLua = /* lua */ ''
+        require("hawtkeys").setup({})
+      '';
 
       plugins = {
         # Coding
