@@ -40,7 +40,7 @@ in
 
   input {
       kb_layout=us,no
-      kb_options = grp:alt_shift_toggle
+      kb_options = grp:alt_shift_toggle,caps:escape
       kb_variant =
       kb_model =
       kb_rules =
