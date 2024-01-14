@@ -1,4 +1,4 @@
-{ inputs, pkgs, config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.helix;
@@ -87,16 +87,16 @@ in
           "C-s" = ":w";
         };
       };
-
-      # languages = {
-      #   language = [{
-      #     name = "nix";
-      #     language-server = {
-      #       command = lib.getExe pkgs.nixd;
-      #     };
-      #   }];
-      # };
     };
+
+    xdg.configFile."helix/languages.toml".text = ''
+      [language-server.nil]
+      config.formatting.command = [ "nixpkgs-fmt" ]
+
+      [[language]]
+      name = "nix"
+      auto-format = true
+    '';
   };
 }
 

@@ -26,6 +26,7 @@ in
         javascript.enable = true;
         cpp.enable = true;
         zig.enable = true;
+        go.enable = true;
 
         nix = {
           nil.enable = true;
