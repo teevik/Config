@@ -61,6 +61,7 @@ in
       mutableExtensionsDir = false;
 
       extensions = with extensions; [
+        twxs.cmake
         # OpenGL
         slevesque.shader
 

@@ -31,7 +31,7 @@
 
   powerManagement.cpuFreqGovernor = "performance";
 
-  networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
+  networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn pkgs.gnome.networkmanager-openconnect ];
 
   time.hardwareClockInLocalTime = true;
 

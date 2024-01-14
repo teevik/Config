@@ -69,6 +69,8 @@ in
         };
 
         keys.normal = {
+          "S-w" = "move_prev_word_start";
+        
           esc = [ "collapse_selection" "keep_primary_selection" ];
           "C-/" = "toggle_comments";
 
