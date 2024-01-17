@@ -78,6 +78,7 @@ in
       watchexec
       xdg-utils
       yazi
+      wrk
     ];
   };
 }
