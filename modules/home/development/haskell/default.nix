@@ -16,8 +16,8 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      haskellPackages.ghc
-      haskellPackages.cabal-install
+      (haskellPackages.ghcWithPackages (pkgs: with pkgs; [ stack ]))
+      # haskellPackages.cabal-install
       haskell-language-server
     ];
   };

@@ -22,7 +22,7 @@ in
       development = {
         devenv.enable = true;
         direnv.enable = true;
-        haskell.enable = false;
+        haskell.enable = true;
         javascript.enable = true;
         cpp.enable = true;
         zig.enable = true;
