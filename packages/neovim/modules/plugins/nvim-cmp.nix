@@ -31,10 +31,10 @@ in
           enabled = false;
         };
 
-        filetypes = {
-          # Disable by default
-          "*" = false;
-        };
+        # filetypes = {
+        #   # Disable by default
+        #   "*" = false;
+        # };
       };
 
       nvim-cmp = {

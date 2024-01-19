@@ -17,7 +17,8 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       python3
-      python311Packages.python-lsp-server    
+      nodePackages_latest.pyright
+      ruff-lsp
     ];
   };
 }

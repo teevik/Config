@@ -69,8 +69,8 @@ in
         };
 
         keys.normal = {
-          "S-w" = "move_prev_word_start";
-        
+          "W" = "move_prev_word_start";
+
           esc = [ "collapse_selection" "keep_primary_selection" ];
           "C-/" = "toggle_comments";
 
@@ -95,9 +95,70 @@ in
       [language-server.nil]
       config.formatting.command = [ "nixpkgs-fmt" ]
 
+      # [language-server.pyright]
+      # command = "pyright-langserver"
+      # args = ["--stdio"]
+      # # will get "Async jobs timed out" errors if this empty config is not added
+      # config = {}
+      
       [[language]]
       name = "nix"
       auto-format = true
+
+      # [[language]]
+      # name = "python"
+      # scope = "source.python"
+      # injection-regex = "python"
+      # file-types = ["py","pyi","py3","pyw","ptl",".pythonstartup",".pythonrc","SConstruct"]
+      # shebangs = ["python"]
+      # roots = ["setup.py", "setup.cfg", "pyproject.toml"]
+      # comment-token = "#"
+      # language-servers = [ "pyright" ]
+      # formatter = { command = "black", args = ["-"] }
+      # indent = { tab-width = 4, unit = "    " }
+
+      [language-server.pyright]
+      command = "pyright-langserver"
+      args = ["--stdio"]
+      config = { settings = { python = { analysis = { autoImportCompletions = true, typeCheckingMode = "basic", autoSearchPaths = true, useLibraryCodeForTypes = true, diagnosticMode = "openFilesOnly" } } } }
+
+      [language-server.ruff-lsp]
+      command = "ruff-lsp"
+
+      [language-server.ruff-lsp.config]
+      documentFormatting = true 
+      settings.run = "onSave"
+
+      [[language]]
+      name = "python"
+      scope = "source.python"
+      injection-regex = "python"
+      auto-format = true
+      # formatter = { command = "black", args = ["-", "-q"] }
+      file-types = [
+        "py",
+        "pyi",
+        "py3",
+        "pyw",
+        "ptl",
+        ".pythonstartup",
+        ".pythonrc",
+        "SConstruct",
+      ]
+      shebangs = ["python"]
+      roots = [
+        "setup.py",
+        "setup.cfg",
+        "pyproject.toml",
+        "pyrightconfig.json",
+        "Poetry.lock",
+      ]
+      comment-token = "#"
+      language-servers = [
+        { name = "ruff-lsp", only-features = [ "format", "diagnostics" ] },
+        { name = "pyright", except-features = [ "format" ] },
+      ]
+      indent = { tab-width = 4, unit = "    " }
     '';
   };
 }

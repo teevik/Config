@@ -143,7 +143,7 @@ nixvim.makeNixvimWithModule
         nvim-colorizer.enable = true;
         lualine.enable = true;
         indent-blankline.enable = true;
-        alpha.enable = true;
+        alpha.enable = false; # TODO
         bufferline.enable = true;
 
         nvim-tree = {
