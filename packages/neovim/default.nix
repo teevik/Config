@@ -95,6 +95,7 @@ nixvim.makeNixvimWithModule
         web.enable = true;
         lua.enable = true;
         python.enable = true;
+        haskell.enable = true;
       };
 
       extraPlugins = with pkgs.vimPlugins; [

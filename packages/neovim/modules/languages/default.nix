@@ -9,5 +9,6 @@
     ./web.nix
     ./lua.nix
     ./python.nix
+    ./haskell.nix
   ];
 }

@@ -92,6 +92,7 @@ in
 
         # Haskell
         haskell.haskell
+        justusadam.language-haskell
 
         # Highlighting
         naumovs.color-highlight

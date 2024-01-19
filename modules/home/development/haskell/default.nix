@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.development.haskell;
@@ -16,9 +16,11 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      (haskellPackages.ghcWithPackages (pkgs: with pkgs; [ stack ]))
-      # haskellPackages.cabal-install
-      haskell-language-server
+      (haskellPackages.ghcWithPackages (pkgs: with pkgs; [
+        stack
+        haskell-language-server
+        doctest
+      ]))
     ];
   };
 }

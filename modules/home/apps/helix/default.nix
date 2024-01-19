@@ -91,7 +91,7 @@ in
       };
     };
 
-    xdg.configFile."helix/languages.toml".text = ''
+    xdg.configFile."helix/languages.toml".text = /* toml */ ''
       [language-server.nil]
       config.formatting.command = [ "nixpkgs-fmt" ]
 
@@ -159,6 +159,20 @@ in
         { name = "pyright", except-features = [ "format" ] },
       ]
       indent = { tab-width = 4, unit = "    " }
+
+      [[language]]
+      name = "haskell"
+      auto-format = true
+      # scope = "source.haskell"
+      # injection-regex = "haskell"
+      # file-types = [ "hs", "hs-boot" ]
+      # roots = [ "Setup.hs", "stack.yaml", "*.cabal" ]
+      # comment-token = "--"
+      # # language-servers = [{
+      # #   command = "haskell-language-server-wrapper",
+      # #   args = [ "--lsp" ]
+      # # }]
+      # indent = { tab-width = 4, unit = "    " }
     '';
   };
 }
