@@ -105,6 +105,11 @@ in
       name = "nix"
       auto-format = true
 
+      [[language]]
+      name = "cpp"
+      auto-format = true
+      formatter = { command = "clang-format", args = ["--fallback-style=Google"] }
+
       # [[language]]
       # name = "python"
       # scope = "source.python"
@@ -163,16 +168,6 @@ in
       [[language]]
       name = "haskell"
       auto-format = true
-      # scope = "source.haskell"
-      # injection-regex = "haskell"
-      # file-types = [ "hs", "hs-boot" ]
-      # roots = [ "Setup.hs", "stack.yaml", "*.cabal" ]
-      # comment-token = "--"
-      # # language-servers = [{
-      # #   command = "haskell-language-server-wrapper",
-      # #   args = [ "--lsp" ]
-      # # }]
-      # indent = { tab-width = 4, unit = "    " }
     '';
   };
 }
