@@ -1,11 +1,12 @@
-{
-  config,
-  lib,
-  ...
-}: let
+{ config
+, lib
+, ...
+}:
+let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.git;
-in {
+in
+{
   options.teevik.apps.git = {
     enable = mkOption {
       type = types.bool;
@@ -24,6 +25,11 @@ in {
       ignores = [
         ".DS_Store"
       ];
+
+      extraConfig = {
+        init.defaultBranch = "main";
+        push.autoSetupRemote = true;
+      };
     };
   };
 }
