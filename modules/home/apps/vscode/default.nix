@@ -56,12 +56,18 @@ in
         "[rust]" = {
           "editor.defaultFormatter" = "rust-lang.rust-analyzer";
         };
+
+        "[go]" = {
+          "editor.defaultFormatter" = "golang.go";
+        };
       };
 
       mutableExtensionsDir = false;
 
       extensions = with extensions; [
         github.copilot
+        github.copilot-chat
+        golang.go
 
         twxs.cmake
         # OpenGL
