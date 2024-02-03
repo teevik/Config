@@ -79,6 +79,7 @@ in
       xdg-utils
       yazi
       wrk
+      bruno
     ];
   };
 }
