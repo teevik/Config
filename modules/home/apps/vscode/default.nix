@@ -65,6 +65,7 @@ in
       mutableExtensionsDir = false;
 
       extensions = with extensions; [
+        ms-toolsai.jupyter
         github.copilot
         github.copilot-chat
         golang.go
