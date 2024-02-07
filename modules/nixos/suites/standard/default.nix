@@ -44,7 +44,7 @@ in
       };
     };
 
-    teevik.user.extraOptions.shell = pkgs.nushell;
+    teevik.user.extraOptions.shell = pkgs.fish;
 
     environment.systemPackages = with pkgs; [
       networkmanagerapplet
