@@ -19,7 +19,8 @@ in
       enable = true;
 
       configFile.text = with config.teevik.theme.colors.withHashtag; ''
-        let-env config = {
+        $env.config = {
+          show_banner: false,
           color_config: {
             separator: "${base03}"
             leading_trailing_space_bg: "${base04}"

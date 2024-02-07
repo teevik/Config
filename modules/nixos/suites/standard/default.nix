@@ -44,6 +44,8 @@ in
       };
     };
 
+    teevik.user.extraOptions.shell = pkgs.nushell;
+
     environment.systemPackages = with pkgs; [
       networkmanagerapplet
       pavucontrol

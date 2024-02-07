@@ -15,7 +15,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.sessionVariables.EDITOR = "nvim";
+    home.sessionVariables.EDITOR = "hx";
 
     programs.fish = {
       enable = true;

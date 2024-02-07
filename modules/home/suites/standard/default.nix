@@ -58,6 +58,7 @@ in
         zathura.enable = true;
         neofetch.enable = true;
         neovim.enable = true;
+        yazi.enable = true;
       };
     };
 

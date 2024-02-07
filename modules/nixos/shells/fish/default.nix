@@ -16,9 +16,5 @@ in
 
   config = mkIf cfg.enable {
     programs.fish.enable = true;
-
-    teevik.user.extraOptions.shell = pkgs.fish;
-
-    environment.sessionVariables.EDITOR = "nvim";
   };
 }
