@@ -140,8 +140,8 @@ in
 
   # $terminal = wezterm start --always-new-process
   $terminal = kitty
-  # $menu = tofi-drun --drun-launch=true
-  $menu = anyrun
+  $menu = tofi-drun --drun-launch=true
+  # $menu = anyrun
   $browser = firefox
   $discord = webcord
   $spotify = spotify
