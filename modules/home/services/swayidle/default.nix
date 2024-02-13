@@ -39,7 +39,7 @@ in
 
         {
           timeout = 4 * 60;
-          command = "${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
+          command = "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
         }
       ];
     };

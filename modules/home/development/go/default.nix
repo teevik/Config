@@ -16,7 +16,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      go
+      go_1_22
       gopls
       delve
     ];
