@@ -2,7 +2,6 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.themes.catppuccin;
-  colors = config.teevik.theme.colors.withHashtag;
   nmConnectionEditor = lib.getExe pkgs.networkmanagerapplet;
   pulsemixer = lib.getExe pkgs.pulsemixer;
   light = lib.getExe pkgs.light;
