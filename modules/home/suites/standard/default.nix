@@ -18,6 +18,7 @@ in
     teevik = {
       themes.catppuccin.enable = lib.mkDefault true;
       themes.everforest.enable = lib.mkDefault false;
+      themes.tokyo-night.enable = lib.mkDefault false;
 
       development = {
         devenv.enable = true;

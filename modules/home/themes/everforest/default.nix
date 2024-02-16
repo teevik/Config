@@ -79,8 +79,6 @@ in
 
       neofetchImage = ./neofetch.png;
 
-      vscodeTheme = "Everforest Dark";
-
       discordTheme = ./discord-theme.css;
 
       spicetifyTheme = {

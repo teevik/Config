@@ -71,14 +71,6 @@ in
       '';
     };
 
-    vscodeTheme = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      description = ''
-        Vscode theme name
-      '';
-    };
-
     discordTheme = mkOption {
       type = types.nullOr types.path;
       default = null;
@@ -96,7 +88,7 @@ in
       colorScheme = mkOption {
         type = lib.types.nullOr lib.types.str;
         default =
-          if cfg.customColorScheme != null
+          if cfg.spicetifyTheme.customColorScheme != null
           then "custom"
           else null;
       };
