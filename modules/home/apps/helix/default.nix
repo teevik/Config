@@ -20,6 +20,8 @@ in
       "helix/themes/catppuccin_mocha.toml".source = ./themes/catppuccin_mocha.toml;
     };
 
+    # home.packages = [ pkgs.helix-gpt ];
+
     programs.helix = {
       enable = true;
 
@@ -92,8 +94,18 @@ in
     };
 
     xdg.configFile."helix/languages.toml".text = /* toml */ ''
+      # [language-server.gpt]
+      # command = "helix-gpt"
+
       [language-server.nil]
       config.formatting.command = [ "nixpkgs-fmt" ]
+
+      # [[language]]
+      # name = "rust"
+      # language-servers = [
+      #   "rust-analyzer",
+      #   "gpt"
+      # ]
 
       # [language-server.pyright]
       # command = "pyright-langserver"
