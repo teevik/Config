@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, inputs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.suites.standard;
@@ -66,7 +66,7 @@ in
     home.packages = with pkgs; [
       teevik.asciiquarium
       teevik.asciiquarium-fullscreen
-      bat
+      inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
       erdtree
       flyctl
       gcc
