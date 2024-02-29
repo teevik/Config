@@ -67,6 +67,7 @@ in
       teevik.asciiquarium
       teevik.asciiquarium-fullscreen
       inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
+      bat
       erdtree
       flyctl
       gcc
