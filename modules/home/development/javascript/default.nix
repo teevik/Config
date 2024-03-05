@@ -18,5 +18,11 @@ in
     home.packages = with pkgs; [
       nodejs
     ];
+
+    home.file.".npmrc".text = ''
+      prefix=~/.npm-packages
+      audit=false
+      loglevel=silent
+    '';
   };
 }
