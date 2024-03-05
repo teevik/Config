@@ -32,6 +32,7 @@ in
         autologin.enable = true;
         flatpak.enable = true;
         podman.enable = true;
+        tailscale.enable = true;
       };
 
       shells = {
