@@ -4,5 +4,5 @@ let
   ];
 in
 {
-  "tailscale.age".publicKeys = publicKeys;
+  "copilot.age".publicKeys = publicKeys;
 }

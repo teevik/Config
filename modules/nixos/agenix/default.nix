@@ -1,23 +1,12 @@
-{ inputs, lib, pkgs, ... }:
-let
-  inherit (lib) types mkOption mkIf;
-in
+{ inputs, pkgs, ... }:
 {
   imports = [ inputs.agenix.nixosModules.default ];
 
   config = {
-    environment.systemPackages = [
-      inputs.agenix.packages.${pkgs.system}.default
-    ];
-
     age = {
       identityPaths = [ "/home/teevik/.ssh/id_rsa" ];
 
       secrets.tailscale.file = ./tailscale.age;
-      secrets.copilot = {
-        file = ./copilot.age;
-        owner = "teevik";
-      };
     };
   };
 }

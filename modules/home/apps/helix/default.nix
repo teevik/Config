@@ -1,4 +1,4 @@
-{ pkgs, config, osConfig, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.helix;
@@ -22,7 +22,7 @@ in
 
     home.file = {
       ".envrc".text = ''
-        export export COPILOT_API_KEY=$(cat ${osConfig.age.secrets.copilot.path})
+        export COPILOT_API_KEY=$(cat ${config.age.secrets.copilot.path})
         export HANDLER=copilot
       '';
     };
