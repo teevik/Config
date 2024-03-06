@@ -14,6 +14,10 @@ in
       identityPaths = [ "/home/teevik/.ssh/id_rsa" ];
 
       secrets.tailscale.file = ./tailscale.age;
+      secrets.copilot = {
+        file = ./copilot.age;
+        owner = "teevik";
+      };
     };
   };
 }

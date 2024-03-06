@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, osConfig, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.helix;
@@ -18,6 +18,13 @@ in
   config = mkIf cfg.enable {
     xdg.configFile = {
       "helix/themes/catppuccin_mocha.toml".source = ./themes/catppuccin_mocha.toml;
+    };
+
+    home.file = {
+      ".envrc".text = ''
+        export export COPILOT_API_KEY=$(cat ${osConfig.age.secrets.copilot.path})
+        export HANDLER=copilot
+      '';
     };
 
     home.packages = [
