@@ -38,7 +38,7 @@ in
         chrome.enable = false;
         webcord.enable = true;
         spotify.enable = true;
-        anyrun.enable = true;
+        anyrun.enable = false;
         firefox.enable = true;
       };
 
