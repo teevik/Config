@@ -1,4 +1,4 @@
-{ lib, config, inputs, ... }:
+{ lib, config, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
@@ -79,13 +79,17 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.packages = with pkgs; [
+      teevik.hyprland-scratchpad
+    ];
+
     wayland.windowManager.hyprland = {
       enable = true;
 
       systemdIntegration = true;
 
       extraConfig = import ./config.nix {
-        inherit config;
+        inherit lib config pkgs;
         inherit (cfg) enableMasterLayout enableVrr enableHidpi scaling monitor;
       };
     };

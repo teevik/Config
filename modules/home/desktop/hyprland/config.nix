@@ -1,8 +1,9 @@
-{ config, enableVrr, enableMasterLayout, enableHidpi, scaling, monitor }:
+{ lib, pkgs, config, enableVrr, enableMasterLayout, enableHidpi, scaling, monitor }:
 let
   theme = config.teevik.theme;
   cursorName = config.gtk.cursorTheme.name;
   cursorSize = builtins.floor (16 * scaling);
+  hyprland-scratchpad = lib.getExe pkgs.teevik.hyprland-scratchpad;
 in
 ''
   ${if monitor.enable then ''
@@ -150,14 +151,14 @@ in
 
   # -- Apps --
   bind = SUPER_SHIFT, Return, exec, $terminal
-  bind = SUPER, Return, exec, hyprland-scratchpad toggle-exec --name terminal --exec '$terminal'
+  bind = SUPER, Return, exec, ${hyprland-scratchpad} toggle-exec --name terminal --exec '$terminal'
 
   bind = SUPER, D, exec, $menu
   bind = SUPER, W, exec, $browser
   bind = SUPER, F ,exec, $files
   bind = SUPER, E ,exec, $editor
-  bind = SUPER, Backspace ,exec, hyprland-scratchpad toggle-exec --name discord --exec '$discord'
-  bind = SUPER, M ,exec, hyprland-scratchpad toggle-exec --name spotify --exec '$spotify'
+  bind = SUPER, Backspace ,exec, ${hyprland-scratchpad} toggle-exec --name discord --exec '$discord'
+  bind = SUPER, M ,exec, ${hyprland-scratchpad} toggle-exec --name spotify --exec '$spotify'
 
   # -- Screenshot --
   $XDG_SCREENSHOTS_DIR = /home/teevik/Pictures/Screenshots
