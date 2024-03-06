@@ -1,4 +1,4 @@
-{ config, lib, pkgs, osConfig, ... }:
+{ config, lib, pkgs, osConfig ? { }, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.services.swayidle;

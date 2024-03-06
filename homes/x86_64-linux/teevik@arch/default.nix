@@ -9,5 +9,7 @@
       linux.enable = true;
       ctf.enable = true;
     };
+
+    services.swayidle.enable = false;
   };
 }
