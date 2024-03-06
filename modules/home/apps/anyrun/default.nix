@@ -1,4 +1,4 @@
-{ inputs, config, osConfig, pkgs, lib, ... }:
+{ inputs, config, pkgs, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.anyrun;
@@ -46,7 +46,7 @@ in
 
       extraConfigFiles."nixos-options.ron".text = ''
         Config(
-          options: {":nixos": ["${osConfig.system.build.manual.optionsJSON}/share/doc/nixos/options.json"]}
+          options: {":nixos": [".system.build.manual.optionsJSON}/share/doc/nixos/options.json"]}
         )
       '';
 
