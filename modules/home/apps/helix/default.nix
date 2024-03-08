@@ -20,16 +20,16 @@ in
       "helix/themes/catppuccin_mocha.toml".source = ./themes/catppuccin_mocha.toml;
     };
 
-    home.file = {
-      ".envrc".text = ''
-        export COPILOT_API_KEY=$(cat ${config.age.secrets.copilot.path})
-        export HANDLER=copilot
-      '';
-    };
+    # home.file = {
+    #   ".envrc".text = ''
+    #     export COPILOT_API_KEY=$(cat ${config.age.secrets.copilot.path})
+    #     export HANDLER=copilot
+    #   '';
+    # };
 
-    home.packages = [
-      pkgs.teevik.helix-gpt
-    ];
+    # home.packages = [
+    #   pkgs.teevik.helix-gpt
+    # ];
 
     programs.helix = {
       enable = true;
@@ -103,18 +103,18 @@ in
     };
 
     xdg.configFile."helix/languages.toml".text = /* toml */ ''
-      [language-server.gpt]
-      command = "helix-gpt"
+      # [language-server.gpt]
+      # command = "helix-gpt"
 
       [language-server.nil]
       config.formatting.command = [ "nixpkgs-fmt" ]
 
-      [[language]]
-      name = "rust"
-      language-servers = [
-        "rust-analyzer",
-        "gpt"
-      ]
+      # [[language]]
+      # name = "rust"
+      # language-servers = [
+      #   "rust-analyzer",
+      #   "gpt"
+      # ]
 
       # [language-server.pyright]
       # command = "pyright-langserver"
