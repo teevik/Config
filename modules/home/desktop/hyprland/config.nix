@@ -5,7 +5,7 @@ let
   cursorSize = builtins.floor (16 * scaling);
   hyprland-scratchpad = lib.getExe pkgs.teevik.hyprland-scratchpad;
 in
-''
+  /* hyprlang */ ''
   ${if monitor.enable then ''
     monitor=,${monitor.resolution}@${builtins.toJSON monitor.refreshRate},auto,${builtins.toJSON scaling}${if monitor.bitDepth != null then ",bitdepth,10" else ""}
   '' else ''
@@ -57,12 +57,13 @@ in
       sensitivity = 0 # -1.0 - 1.0, 0 means no modification.
   }
 
-  # Thinkpad trackpad
-  device:tpps/2-elan-trackpoint {
-      # sensitivity = -0.35
-  }
+  # # Thinkpad trackpad
+  # device:tpps/2-elan-trackpoint {
+  #     # sensitivity = -0.35
+  # }
 
-  device:logitech-usb-receiver {
+  device {
+      name = "logitech-usb-receiver" 
       sensitivity = 0.75
   }
 
