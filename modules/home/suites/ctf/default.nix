@@ -32,7 +32,7 @@ in
 
       # rga: ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, etc
       # https://github.com/phiresky/ripgrep-all
-      # ripgrep-all
+      ripgrep-all
 
       # A software reverse engineering (SRE) suite of tools developed by NSA's Research Directorate in support of the Cybersecurity mission
       # https://github.com/NationalSecurityAgency/ghidra
