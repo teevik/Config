@@ -1,8 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.neovim;
-  neovim = lib.getExe pkgs.teevik.neovim;
+  neovim = lib.getExe inputs.neovim.packages.${pkgs.system}.neovim;
   kitty = lib.getExe pkgs.kitty;
 in
 {

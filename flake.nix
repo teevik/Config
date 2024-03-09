@@ -101,16 +101,6 @@
       url = "github:helix-editor/helix";
     };
 
-    nixvim = {
-      url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    wgsl-analyzer = {
-      url = "github:wgsl-analyzer/wgsl-analyzer";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -118,6 +108,11 @@
 
     openconnect-sso = {
       url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    neovim = {
+      url = "github:teevik/neovim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
