@@ -65,7 +65,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    base16.url = "github:SenchoPens/base16.nix";
+    base16.url = "github:SenchoPens/base16.nix/v2.2.0";
 
     base16-fish = {
       url = "github:tomyun/base16-fish";

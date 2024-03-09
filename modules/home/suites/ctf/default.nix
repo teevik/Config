@@ -75,7 +75,7 @@ in
 
       binwalk
 
-      (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec ]))
+      # (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec ]))
 
       gdb
 

@@ -33,7 +33,7 @@ in
       vrr = ${if enableVrr then "1" else "0" }
 
       enable_swallow = true
-      swallow_regex = ^(org.wezfurlong.wezterm)$
+      swallow_regex = ^(kitty)$
       focus_on_activate = true
       animate_manual_resizes = true
       close_special_on_empty = false

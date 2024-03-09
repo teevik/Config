@@ -37,7 +37,7 @@ in
         # };
       };
 
-      nvim-cmp = {
+      cmp.settings = {
         snippet.expand = "luasnip";
 
         mappingPresets = [ "insert" ];
