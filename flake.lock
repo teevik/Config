@@ -932,11 +932,11 @@
         "wgsl-analyzer": "wgsl-analyzer"
       },
       "locked": {
-        "lastModified": 1709950813,
-        "narHash": "sha256-0WiD9JX0DKLeqvBl89dmQ78u8NL7oXD0P/2j/vdAjEw=",
+        "lastModified": 1709992943,
+        "narHash": "sha256-EhRRZmvgEkcejwHpOET1Rbq10dyto/ifmwWKF9HwecE=",
         "owner": "teevik",
         "repo": "neovim",
-        "rev": "4308a0740227ecc723867dc8c4ec99c25629b4b5",
+        "rev": "72f5842dc2ab4f53e4cd80ac828fd273b7c00db6",
         "type": "github"
       },
       "original": {
