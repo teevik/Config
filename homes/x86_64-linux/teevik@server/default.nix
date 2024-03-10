@@ -14,8 +14,8 @@
         refreshRate = 60;
       };
 
-      enableHidpi = true;
-      scaling = 1.5;
+      # enableHidpi = true;
+      # scaling = 1;
     };
   };
 }
