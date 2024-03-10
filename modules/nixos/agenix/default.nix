@@ -1,4 +1,4 @@
-{ inputs, pkgs, ... }:
+{ inputs, ... }:
 {
   imports = [ inputs.agenix.nixosModules.default ];
 
@@ -7,6 +7,7 @@
       identityPaths = [ "/home/teevik/.ssh/id_rsa" ];
 
       secrets.tailscale.file = ./tailscale.age;
+      secrets.healthchecks.file = ./healthchecks.age;
     };
   };
 }

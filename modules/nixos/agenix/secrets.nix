@@ -5,4 +5,5 @@ let
 in
 {
   "tailscale.age".publicKeys = publicKeys;
+  "healthchecks.age".publicKeys = publicKeys;
 }
