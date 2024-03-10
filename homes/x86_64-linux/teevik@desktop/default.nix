@@ -15,7 +15,7 @@
         enable = true;
         resolution = "3440x1440";
         refreshRate = 175;
-        bitDepth = 10;
+        # bitDepth = 10;
       };
     };
   };
