@@ -36,7 +36,6 @@ in
         '';
 
       shellAbbrs = {
-        cat = "bat";
         ls = "exa";
       };
     };
