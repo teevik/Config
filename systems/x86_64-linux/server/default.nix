@@ -23,11 +23,6 @@
     mediaDir = "/data/media";
     stateDir = "/data/media/.state";
 
-    vpn = {
-      enable = lib.mkForce false;
-      wgConf = "/";
-    };
-
     jellyfin.enable = true;
     transmission.enable = true;
 
