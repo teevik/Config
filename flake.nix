@@ -117,7 +117,7 @@
     };
 
     nixarr = {
-      url = "github:rasmus-kirk/nixarr";
+      url = "github:teevik/nixarr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
