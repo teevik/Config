@@ -6,4 +6,5 @@ in
 {
   "tailscale.age".publicKeys = publicKeys;
   "healthchecks.age".publicKeys = publicKeys;
+  "wireguard.age".publicKeys = publicKeys;
 }
