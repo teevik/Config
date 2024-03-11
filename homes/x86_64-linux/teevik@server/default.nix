@@ -13,9 +13,6 @@
         resolution = "2560x1440";
         refreshRate = 60;
       };
-
-      # enableHidpi = true;
-      # scaling = 1;
     };
   };
 }
