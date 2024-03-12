@@ -83,6 +83,7 @@ in
       yazi
       wrk
       bruno
+      gh
     ];
   };
 }
