@@ -1,25 +1,23 @@
 { inputs, ... }:
 {
   imports = [
-    inputs.disko.nixosModules.disko
     ./hardware.nix
+    inputs.disko.nixosModules.disko
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-7th-gen
   ];
 
   teevik = {
     suites = {
       standard.enable = true;
+      laptop.enable = true;
     };
 
     boot = {
       enable = true;
     };
 
-    desktop.hyprland = {
-      enableHidpi = true;
-    };
-
     hardware = {
+      bluetooth.enable = true;
       light.enable = true;
     };
   };

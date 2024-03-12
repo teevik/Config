@@ -33,6 +33,7 @@ in
         flatpak.enable = true;
         podman.enable = true;
         tailscale.enable = true;
+        polkit.enable = true;
       };
 
       shells = {
@@ -44,6 +45,8 @@ in
         nix-alien.enable = true;
       };
     };
+
+    services.fwupd.enable = true;
 
     teevik.user.extraOptions.shell = pkgs.fish;
 

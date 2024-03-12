@@ -5,6 +5,11 @@
     suites = {
       standard.enable = true;
       linux.enable = true;
+      ctf.enable = true;
+    };
+
+    services = {
+      swayidle.enable = true;
     };
 
     desktop.hyprland = {
@@ -14,8 +19,8 @@
         refreshRate = 60;
       };
 
-      enableHidpi = true;
-      scaling = 1.5;
+      # enableHidpi = true;
+      # scaling = 1.5;
     };
   };
 

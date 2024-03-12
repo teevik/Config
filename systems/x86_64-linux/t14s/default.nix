@@ -51,6 +51,8 @@
   teevik = {
     suites = {
       standard.enable = true;
+      laptop.enable = true;
+
       # gaming.enable = true;
     };
 
@@ -75,67 +77,20 @@
   networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn pkgs.networkmanager-openconnect ];
 
   # powerManagement.cpuFreqGovernor = "powersave";
-  services.auto-cpufreq.enable = true;
-
-  services.fwupd.enable = true;
-
   # boot.kernelParams = [ "amd_pstate=passive" ];
 
   # boot.kernelModules = [ "amd-pstate" ];
   # boot.initrd.kernelModules = [ "amdgpu" ];
 
-  # services.tlp = {
-  #   enable = true;
-  #   settings = {
-  #     CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-  #     CPU_SCALING_GOVERNOR_ON_AC = "performance";
-
-  #     # # The following prevents the battery from charging fully to
-  #     # # preserve lifetime. Run `tlp fullcharge` to temporarily force
-  #     # # full charge.
-  #     # # https://linrunner.de/tlp/faq/battery.html#how-to-choose-good-battery-charge-thresholds
-  #     # START_CHARGE_THRESH_BAT0 = 40;
-  #     # STOP_CHARGE_THRESH_BAT0 = 50;
-
-  #     # 100 being the maximum, limit the speed of my CPU to reduce
-  #     # heat and increase battery usage:
-  #     CPU_MAX_PERF_ON_AC = 100;
-  #     CPU_MAX_PERF_ON_BAT = 20;
-  #   };
-  # };
 
   virtualisation.libvirtd.enable = true;
-  programs.dconf.enable = true;
+
   environment.systemPackages = with pkgs; [
     virt-manager
   ];
 
   virtualisation.virtualbox.host.enable = true;
   users.extraGroups.vboxusers.members = [ "teevik" ];
-
-  security.polkit.enable = true;
-  systemd = {
-    user.services.polkit-gnome-authentication-agent-1 = {
-      enable = true;
-
-      description = "polkit-gnome-authentication-agent-1";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-        Restart = "on-failure";
-        RestartSec = 1;
-        TimeoutStopSec = 10;
-      };
-    };
-  };
-
-  # services.tailscale = {
-  #   enable = true;
-  # };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "22.11";

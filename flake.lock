@@ -1244,15 +1244,15 @@
         "vpnconfinement": "vpnconfinement"
       },
       "locked": {
-        "lastModified": 1709589977,
-        "narHash": "sha256-IDM/GCXLzvLbOWBKW+XmeVnbTg27V0uvd9BTOGbNiN4=",
-        "owner": "rasmus-kirk",
+        "lastModified": 1710121694,
+        "narHash": "sha256-lWs/x5tMQePg0Qz9Qen7qmjG2WEqATKRCPYibzlcpbI=",
+        "owner": "teevik",
         "repo": "nixarr",
-        "rev": "190a33f8f3f55cb9b807cec0410c7213fd6acde8",
+        "rev": "07ea69b5df77f99588c15ed957b7f2be6baf29b9",
         "type": "github"
       },
       "original": {
-        "owner": "rasmus-kirk",
+        "owner": "teevik",
         "repo": "nixarr",
         "type": "github"
       }

@@ -25,6 +25,10 @@
   }];
 
   teevik = {
+    suites = {
+      laptop.enable = true;
+    };
+
     boot = {
       enable = true;
       canTouchEfiVariables = false;
