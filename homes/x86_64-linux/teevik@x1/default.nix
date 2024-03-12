@@ -9,7 +9,7 @@
     };
 
     services = {
-      swayidle.enable = true;
+      # swayidle.enable = true;
     };
 
     desktop.hyprland = {
