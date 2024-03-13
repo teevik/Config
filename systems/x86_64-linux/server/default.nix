@@ -40,6 +40,7 @@
   system.activationScripts = {
     "nixarr" = /* bash */''
       mkdir -p /data/.state/nixarr/transmission/.config/transmission-daemon
+      chown torrenter:torrenter /data/.state/nixarr/transmission/.config/transmission-daemon
     '';
   };
 
