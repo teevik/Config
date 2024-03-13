@@ -37,6 +37,12 @@
     lidarr.enable = true;
   };
 
+  system.activationScripts = {
+    "nixarr" = /* bash */''
+      mkdir -p /data/.state/nixarr/transmission/.config/transmission-daemon
+    '';
+  };
+
   services.tailscale = {
     useRoutingFeatures = "both";
     extraUpFlags = [ "--exit-node=no-osl-wg-007.mullvad.ts.net" ];
