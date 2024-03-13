@@ -97,13 +97,13 @@ in
             "Youtube" = mkBasicSearchEngine {
               url = "https://www.youtube.com/results";
               param = "search_query";
-              aliases = [ "@yt" "@youtube" "youtube" ];
+              aliases = [ "@yt" "@youtube" ];
             };
 
             "Github" = mkBasicSearchEngine {
               url = "https://github.com/search";
               param = "q";
-              aliases = [ "@gh" "@github" "github" ];
+              aliases = [ "@gh" "@github" ];
             };
           };
       };
