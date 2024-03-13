@@ -27,9 +27,6 @@
   nixarr = {
     enable = true;
 
-    mediaDir = "/data/media";
-    stateDir = "/data/media/.state";
-
     jellyfin.enable = true;
     transmission.enable = true;
 
