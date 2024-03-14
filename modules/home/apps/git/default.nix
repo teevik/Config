@@ -20,6 +20,8 @@ in
   config = mkIf cfg.enable {
     programs.git = {
       enable = true;
+      delta.enable = true;
+
       userEmail = "teemu.vikoren@gmail.com";
       userName = "teevik";
       ignores = [
@@ -29,6 +31,7 @@ in
       extraConfig = {
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
+        pull.rebase = true;
       };
     };
   };

@@ -88,6 +88,13 @@ in
               icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
             };
 
+            "Home Manager Options" = mkBasicSearchEngine {
+              aliases = [ "@hm" "@home-manager" ];
+              url = "https://home-manager-options.extranix.com";
+              param = "query";
+              icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+            };
+
             "NixOS Wiki" = mkBasicSearchEngine {
               aliases = [ "@nw" "@nix-wiki" ];
               url = "https://nixos.wiki/index.php";
