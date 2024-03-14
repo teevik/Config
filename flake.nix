@@ -117,7 +117,12 @@
     };
 
     nixarr = {
-      url = "github:teevik/nixarr";
+      url = "github:rasmus-kirk/nixarr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    caligula = {
+      url = "github:ifd3f/caligula";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

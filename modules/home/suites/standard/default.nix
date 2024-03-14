@@ -60,6 +60,7 @@ in
         neofetch.enable = true;
         neovim.enable = true;
         yazi.enable = true;
+        tealdeer.enable = true;
       };
     };
 
@@ -67,6 +68,7 @@ in
       teevik.asciiquarium
       teevik.asciiquarium-fullscreen
       inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
+      inputs.caligula.packages.${pkgs.system}.caligula
       bat
       erdtree
       flyctl
@@ -77,7 +79,6 @@ in
       (obsidian.override { electron = electron_24; })
       ripgrep
       sd
-      tealdeer
       watchexec
       xdg-utils
       yazi
