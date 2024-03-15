@@ -2,13 +2,13 @@
 let
   html = pkgs.stdenv.mkDerivation {
     name = "html";
-    src = ./index.html;
+    src = ./html;
 
     phases = [ "installPhase" ];
 
     installPhase = ''
       mkdir -p $out
-      cp $src $out/index.html
+      cp -R $src $out
     '';
   };
 in
