@@ -8,7 +8,7 @@ let
 
     installPhase = ''
       mkdir -p $out
-      cp -R $src $out
+      cp -R $src/* $out
     '';
   };
 in
