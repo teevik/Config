@@ -1,4 +1,17 @@
-{ inputs, ... }:
+{ pkgs, inputs, ... }:
+let
+  html = pkgs.stdenv.mkDerivation {
+    name = "html";
+    src = ./index.html;
+
+    phases = [ "installPhase" ];
+
+    installPhase = ''
+      mkdir -p $out
+      cp $src $out/index.html
+    '';
+  };
+in
 {
   imports = [
     ./hardware.nix
@@ -43,6 +56,14 @@
       chown torrenter:torrenter /data/.state/nixarr/transmission/.config/transmission-daemon
     '';
   };
+
+  services.static-web-server = {
+    enable = true;
+    root = "${html}";
+    listen = "[::]:80";
+  };
+
+  networking.firewall.allowedTCPPorts = [ 80 ];
 
   services.tailscale = {
     useRoutingFeatures = "both";
