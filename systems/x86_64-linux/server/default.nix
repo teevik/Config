@@ -46,8 +46,8 @@ in
     sonarr.enable = true;
     radarr.enable = true;
     prowlarr.enable = true;
-    readarr.enable = true;
-    lidarr.enable = true;
+    # readarr.enable = true;
+    # lidarr.enable = true;
   };
 
   system.activationScripts = {
