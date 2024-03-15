@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ lib, pkgs, inputs, ... }:
 let
   html = pkgs.stdenv.mkDerivation {
     name = "html";
@@ -67,7 +67,19 @@ in
 
   services.tailscale = {
     useRoutingFeatures = "both";
-    extraUpFlags = [ "--exit-node=no-osl-wg-007.mullvad.ts.net" ];
+    # extraUpFlags = [ "--exit-node=no-osl-wg-001.mullvad.ts.net" ];
+  };
+
+  systemd.services.tailscale-exit-node = {
+    after = [ "tailscaled-autoconnect.service" ];
+    wants = [ "tailscaled-autoconnect.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+    };
+    script = ''
+      ${lib.getExe pkgs.tailscale} up --operator=teevik --exit-node=no-osl-wg-001.mullvad.ts.net 
+    '';
   };
 
   services.logind.lidSwitch = "ignore";
