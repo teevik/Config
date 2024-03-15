@@ -37,6 +37,7 @@ in
 
       shellAbbrs = {
         ls = "exa";
+        ssh = "kitten ssh";
       };
     };
   };
