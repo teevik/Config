@@ -48,7 +48,7 @@ in
     home.packages = with pkgs; [
       inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
       teevik.insomnia
-      mplayer
+      mpv
       obs-studio
       trashy
     ];
