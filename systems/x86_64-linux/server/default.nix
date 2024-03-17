@@ -35,7 +35,7 @@ in
         slug = "server";
       };
 
-      tailwind = {
+      tailscale = {
         exitNode = "no-osl-wg-001.mullvad.ts.net";
       };
     };
