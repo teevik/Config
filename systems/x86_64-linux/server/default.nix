@@ -59,7 +59,16 @@ in
     '';
   };
 
-  networking.firewall.allowedTCPPorts = [ 80 ];
+  networking.firewall.allowedTCPPorts = [ 80 8080 ];
+
+  services.sabnzbd = {
+
+    enable = true;
+
+    user = "sabnzbd";
+    group = "media";
+  };
+
   services.static-web-server = {
     enable = true;
     root = "${html}";
