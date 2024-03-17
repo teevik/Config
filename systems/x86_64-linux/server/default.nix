@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, ... }:
+{ pkgs, inputs, ... }:
 let
   html = pkgs.stdenv.mkDerivation {
     name = "html";
@@ -34,6 +34,10 @@ in
         enable = true;
         slug = "server";
       };
+
+      tailwind = {
+        exitNode = "no-osl-wg-001.mullvad.ts.net";
+      };
     };
   };
 
@@ -46,8 +50,6 @@ in
     sonarr.enable = true;
     radarr.enable = true;
     prowlarr.enable = true;
-    # readarr.enable = true;
-    # lidarr.enable = true;
   };
 
   system.activationScripts = {
@@ -57,29 +59,11 @@ in
     '';
   };
 
+  networking.firewall.allowedTCPPorts = [ 80 ];
   services.static-web-server = {
     enable = true;
     root = "${html}";
     listen = "[::]:80";
-  };
-
-  networking.firewall.allowedTCPPorts = [ 80 ];
-
-  services.tailscale = {
-    useRoutingFeatures = "both";
-    # extraUpFlags = [ "--exit-node=no-osl-wg-001.mullvad.ts.net" ];
-  };
-
-  systemd.services.tailscale-exit-node = {
-    after = [ "tailscaled-autoconnect.service" ];
-    wants = [ "tailscaled-autoconnect.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-    };
-    script = ''
-      ${lib.getExe pkgs.tailscale} up --operator=teevik --exit-node=no-osl-wg-001.mullvad.ts.net 
-    '';
   };
 
   services.logind.lidSwitch = "ignore";
