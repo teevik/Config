@@ -1,17 +1,4 @@
 { pkgs, inputs, ... }:
-let
-  html = pkgs.stdenv.mkDerivation {
-    name = "html";
-    src = ./html;
-
-    phases = [ "installPhase" ];
-
-    installPhase = ''
-      mkdir -p $out
-      cp -R $src/* $out
-    '';
-  };
-in
 {
   imports = [
     ./hardware.nix
@@ -76,18 +63,31 @@ in
   networking.firewall.allowedTCPPorts = [ 80 8080 ];
 
   services.sabnzbd = {
-
     enable = true;
 
     user = "sabnzbd";
     group = "media";
   };
 
-  services.static-web-server = {
-    enable = true;
-    root = "${html}";
-    listen = "[::]:80";
-  };
+  services.static-web-server =
+    let
+      html = pkgs.stdenv.mkDerivation {
+        name = "html";
+        src = ./html;
+
+        phases = [ "installPhase" ];
+
+        installPhase = ''
+          mkdir -p $out
+          cp -R $src/* $out
+        '';
+      };
+    in
+    {
+      enable = true;
+      root = "${html}";
+      listen = "[::]:80";
+    };
 
   services.logind.lidSwitch = "ignore";
 

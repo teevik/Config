@@ -132,7 +132,7 @@ in
       new_is_master = false
   }
 
-  windowrule = float, feh|MPlayer
+  windowrule = float, feh|mpv
 
   windowrule = float, yad|nm-connection-editor|pavucontrolk
   windowrule = float, xfce-polkit|kvantummanager|qt5ct
