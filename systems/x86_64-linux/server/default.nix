@@ -24,9 +24,8 @@
 
       tailscale = {
         exitNode = "no-osl-wg-001.mullvad.ts.net";
+        funnel = 8096;
       };
-
-      funnel = 8096;
     };
   };
 
