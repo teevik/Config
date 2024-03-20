@@ -59,7 +59,7 @@ in
         Type = "oneshot";
       };
       script = ''
-        ${lib.getExe pkgs.tailscale} funnel ${cfg.funnel} 
+        ${lib.getExe pkgs.tailscale} funnel ${toString cfg.funnel} 
       '';
     };
 
