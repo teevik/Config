@@ -22,7 +22,7 @@ in
     };
 
     funnel = mkOption {
-      type = types.nullOr types.str;
+      type = types.nullOr types.int;
       default = null;
       description = ''
         The funnel port to use
