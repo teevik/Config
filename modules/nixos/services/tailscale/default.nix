@@ -20,6 +20,14 @@ in
         The exit node to use
       '';
     };
+
+    funnel = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        The funnel port to use
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -42,5 +50,18 @@ in
         ${lib.getExe pkgs.tailscale} up --operator=teevik --exit-node=${cfg.exitNode} 
       '';
     };
+
+    systemd.services.tailscale-funnel = mkIf (cfg.funnel != null) {
+      after = [ "tailscaled-autoconnect.service" ];
+      wants = [ "tailscaled-autoconnect.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+      };
+      script = ''
+        ${lib.getExe pkgs.tailscale} funnel ${cfg.funnel} 
+      '';
+    };
+
   };
 }
