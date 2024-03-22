@@ -67,7 +67,7 @@
       standard.enable = true;
       laptop.enable = true;
 
-      # gaming.enable = true;
+      gaming.enable = true;
     };
 
     boot = {

@@ -10,7 +10,7 @@
     };
 
     services = {
-      swayidle.enable = true;
+      hypridle.enable = true;
     };
 
     desktop.hyprland = {

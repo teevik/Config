@@ -96,6 +96,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hypridle = {
+      url = "github:hyprwm/hypridle";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     helix = {
       # url = "github:teevik/helix/inline-diagnostics";
       url = "github:helix-editor/helix";
