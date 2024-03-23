@@ -6,6 +6,14 @@ let
   hyprland = osConfig.programs.hyprland.finalPackage;
   hyprctl = "${hyprland}/bin/hyprctl";
   light = lib.getExe (pkgs.light);
+
+  checkAudio = command: /* bash */ ''
+    ${pkgs.pipewire}/bin/pw-cli i all 2>&1 | ${pkgs.ripgrep}/bin/rg running -q
+    # only suspend if audio isn't running
+    if [ $? == 1 ]; then
+      ${command}
+    fi
+  '';
 in
 {
   imports = [ inputs.hypridle.homeManagerModules.hypridle ];
@@ -27,19 +35,19 @@ in
       listeners = [
         {
           timeout = 2 * 60;
-          onTimeout = "${light} -U 50";
+          onTimeout = checkAudio "${light} -U 50";
           onResume = "${light} -A 50";
         }
 
         {
           timeout = 3 * 60;
-          onTimeout = "${hyprctl} dispatch dpms off";
+          onTimeout = checkAudio "${hyprctl} dispatch dpms off";
           onResume = "${hyprctl} dispatch dpms on";
         }
 
         {
           timeout = 4 * 60;
-          onTimeout = "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
+          onTimeout = checkAudio "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
         }
       ];
     };

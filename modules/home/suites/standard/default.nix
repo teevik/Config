@@ -85,6 +85,7 @@ in
       wrk
       bruno
       gh
+      gitu
     ];
   };
 }

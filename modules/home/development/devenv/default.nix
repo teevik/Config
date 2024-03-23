@@ -1,4 +1,4 @@
-{ config, lib, inputs, system, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.development.devenv;
@@ -15,8 +15,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [
-      inputs.devenv.packages.${system}.devenv
+    home.packages = with pkgs; [
+      devenv
     ];
   };
 }
