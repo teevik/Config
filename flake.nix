@@ -165,9 +165,15 @@
               cachix-deploy-lib = inputs.cachix-deploy-flake.lib pkgs;
             in
             cachix-deploy-lib.spec {
-              agents = {
-                desktop = inputs.self.nixosConfigurations.desktop.config.system.build.toplevel;
-              };
+              agents =
+                let
+                  getDerivation = system: inputs.self.nixosConfigurations.${system}.config.system.build.toplevel;
+                in
+                {
+                  desktop = getDerivation "desktop";
+                  t14s = getDerivation "t14s";
+                  server = getDerivation "server";
+                };
             };
         };
       } // {

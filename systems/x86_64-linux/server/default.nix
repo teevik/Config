@@ -27,6 +27,10 @@
         funnel = 8096;
       };
     };
+
+    services = {
+      cachix-agent.enable = true;
+    };
   };
 
   users.users.github-runner = {
