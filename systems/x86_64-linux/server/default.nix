@@ -33,7 +33,7 @@
     secrets.runner-token.file = ./secrets/runner-token.age;
   };
 
-  services.github-runner = {
+  services.github-runners.server = {
     enable = true;
     user = "github-runner";
     name = "server";
