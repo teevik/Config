@@ -30,7 +30,10 @@
   };
 
   age = {
-    secrets.runner-token.file = ./secrets/runner-token.age;
+    secrets.runner-token = {
+      file = ./secrets/runner-token.age;
+      user = "github-runner";
+    };
   };
 
   services.github-runners.server = {
