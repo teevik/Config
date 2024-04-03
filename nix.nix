@@ -5,7 +5,7 @@ let
 in
 {
   nix = {
-    # package = mkIf (!isArm) inputs.nix-super.packages.${pkgs.system}.default;
+    package = mkIf (!isArm) inputs.nix-super.packages.${pkgs.system}.default;
 
     settings = {
       trusted-users = [
