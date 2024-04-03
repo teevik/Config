@@ -25,4 +25,4 @@ jobs:
           CACHIX_ACTIVATE_TOKEN: "${{ secrets.CACHIX_ACTIVATE_TOKEN }}"
         run: |
           cachix push teevik ./result
-          cachix deploy activate ./result
+          cachix deploy activate --async ./result
