@@ -48,9 +48,13 @@
     extraLabels = [ "nixos" ];
     url = "https://github.com/teevik/Config";
     tokenFile = config.age.secrets.runner-token.path;
+
+    extraPackages = with pkgs; [
+      cachix
+    ];
   };
 
-  nix.settings.allowed-users = [ "github-runner" ];
+  nix.settings.trusted-users = [ "github-runner" ];
 
   # https://wiki.archlinux.org/title/intel_graphics
   boot.kernelParams = [
