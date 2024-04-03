@@ -19,9 +19,4 @@
       scaling = 1.4;
     };
   };
-
-  home.packages = with pkgs; [
-    jetbrains.clion
-    jetbrains.rust-rover
-  ];
 }

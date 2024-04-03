@@ -23,8 +23,4 @@
       # scaling = 1.5;
     };
   };
-
-  home.packages = with pkgs; [
-    jetbrains.clion
-  ];
 }

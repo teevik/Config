@@ -13,8 +13,4 @@
       hypridle.enable = true;
     };
   };
-
-  home.packages = with pkgs; [
-    jetbrains.clion
-  ];
 }

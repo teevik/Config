@@ -37,6 +37,5 @@
 
   home.packages = with pkgs; [
     discord
-    jetbrains.clion
   ];
 }
