@@ -29,6 +29,10 @@
     };
   };
 
+  users.users.github-runner = {
+    isSystemUser = true;
+  };
+
   age = {
     secrets.runner-token = {
       file = ./secrets/runner-token.age;
