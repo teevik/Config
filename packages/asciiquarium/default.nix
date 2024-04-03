@@ -23,6 +23,7 @@ stdenv.mkDerivation {
   '';
 
   meta = with lib; {
+    mainProgram = "asciiquarium";
     description = "Enjoy the mysteries of the sea from the safety of your own terminal!";
     homepage = "https://github.com/nothub/asciiquarium";
     license = licenses.gpl2;

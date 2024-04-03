@@ -86,7 +86,7 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
-      systemdIntegration = true;
+      systemd.enable = true;
 
       extraConfig = import ./config.nix {
         inherit lib config pkgs;

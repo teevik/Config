@@ -12,4 +12,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-pKPW6S3aHw8M+zfkIv26xaWGbAGVR4FPEgc+3+bJ2LM=";
+
+  meta.mainProgram = "hyprland-scratchpad";
 }

@@ -15,11 +15,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    programs.exa = {
+    programs.eza = {
       enable = true;
 
       git = true;
-
       icons = true;
     };
   };
