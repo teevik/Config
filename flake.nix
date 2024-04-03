@@ -130,6 +130,8 @@
       url = "github:ifd3f/caligula";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    cachix-deploy-flake.url = "github:cachix/cachix-deploy-flake";
   };
 
   outputs = inputs:
@@ -157,6 +159,19 @@
         systems.modules.darwin = [
           ./nix.nix
         ];
+
+        outputs-builder = channels: {
+          packages.cachix-deploy =
+            let
+              pkgs = channels.nixpkgs;
+              cachix-deploy-lib = inputs.cachix-deploy-flake.lib pkgs;
+            in
+            cachix-deploy-lib.spec {
+              agents = {
+                desktop = inputs.self.nixosConfigurations.desktop.config.system.build.toplevel;
+              };
+            };
+        };
       } // {
       templates = {
         devshell = {

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   imports = [
     ./hardware.nix
@@ -21,11 +21,25 @@
     };
   };
 
+  age = {
+    secrets.cachix-agent.file = ./secrets/cachix-agent.age;
+  };
+
+  services.cachix-agent = {
+    enable = true;
+    credentialsFile = config.age.secrets.cachix-agent.path;
+  };
+
   services.hardware.openrgb = {
     enable = true;
     motherboard = "amd";
     package = pkgs.teevik.openrgb;
   };
+
+  boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
+  boot.kernelModules = [
+    "v4l2loopback"
+  ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
