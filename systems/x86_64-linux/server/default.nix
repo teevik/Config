@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ config, pkgs, inputs, ... }:
 {
   imports = [
     ./hardware.nix
@@ -28,6 +28,21 @@
       };
     };
   };
+
+  age = {
+    secrets.runner-token.file = ./secrets/runner-token.age;
+  };
+
+  services.github-runner = {
+    enable = true;
+    user = "github-runner";
+    name = "server";
+    extraLabels = [ "nixos" ];
+    url = "https://github.com/teevik/Config";
+    tokenFile = config.age.secrets.runner-token.path;
+  };
+
+  nix.settings.allowed-users = [ "github-runner" ];
 
   # https://wiki.archlinux.org/title/intel_graphics
   boot.kernelParams = [
