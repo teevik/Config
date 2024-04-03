@@ -20,8 +20,9 @@ in
       pkg-config
       openssl.dev
       cargo-watch
-      # cargo-wizard
       lld
+      mold
+      cargo-wizard
     ];
 
     home.sessionVariables.PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
