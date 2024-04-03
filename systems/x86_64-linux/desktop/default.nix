@@ -19,15 +19,10 @@
       nvidia.enable = true;
       bluetooth.enable = true;
     };
-  };
 
-  age = {
-    secrets.cachix-agent.file = ./secrets/cachix-agent.age;
-  };
-
-  services.cachix-agent = {
-    enable = true;
-    credentialsFile = config.age.secrets.cachix-agent.path;
+    services = {
+      cachix-agent.enable = true;
+    };
   };
 
   services.hardware.openrgb = {

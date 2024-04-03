@@ -6,8 +6,11 @@
     age = {
       identityPaths = [ "/home/teevik/.ssh/id_rsa" ];
 
-      secrets.tailscale.file = ./tailscale.age;
-      secrets.healthchecks.file = ./healthchecks.age;
+      secrets = {
+        tailscale.file = ./tailscale.age;
+        healthchecks.file = ./healthchecks.age;
+        cachix-agent.file = ./cachix-agent.age;
+      };
     };
   };
 }

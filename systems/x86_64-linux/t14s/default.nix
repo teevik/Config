@@ -82,6 +82,10 @@
     hardware = {
       light.enable = true;
     };
+
+    services = {
+      cachix-agent.enable = true;
+    };
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
