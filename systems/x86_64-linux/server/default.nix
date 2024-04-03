@@ -31,6 +31,7 @@
 
   users.users.github-runner = {
     isSystemUser = true;
+    group = "users";
   };
 
   age = {
