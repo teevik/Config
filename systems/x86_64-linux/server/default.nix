@@ -32,7 +32,7 @@
   age = {
     secrets.runner-token = {
       file = ./secrets/runner-token.age;
-      user = "github-runner";
+      owner = "github-runner";
     };
   };
 
