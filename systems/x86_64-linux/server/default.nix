@@ -54,6 +54,7 @@
     tokenFile = config.age.secrets.runner-token.path;
 
     extraPackages = with pkgs; [
+      nix
       cachix
     ];
   };
