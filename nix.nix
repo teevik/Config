@@ -1,11 +1,11 @@
 { inputs, pkgs, lib, ... }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf mkDefault;
   isArm = pkgs.system == "aarch64-linux" || pkgs.system == "aarch64-darwin";
 in
 {
   nix = {
-    package = mkIf (!isArm) inputs.nix-super.packages.${pkgs.system}.default;
+    package = mkIf (!isArm) (mkDefault inputs.nix-super.packages.${pkgs.system}.default);
 
     settings = {
       trusted-users = [

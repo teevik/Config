@@ -7,6 +7,8 @@
     inputs.nixarr.nixosModules.default
   ];
 
+  nix.package = pkgs.nix;
+
   teevik = {
     suites = {
       standard.enable = true;
@@ -54,7 +56,6 @@
     tokenFile = config.age.secrets.runner-token.path;
 
     extraPackages = with pkgs; [
-      nix
       cachix
     ];
   };
