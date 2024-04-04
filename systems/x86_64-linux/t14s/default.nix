@@ -8,6 +8,7 @@
     inputs.nixos-hardware.nixosModules.common-gpu-amd
   ];
 
+  # HW acceleration
   boot.initrd.kernelModules = [ "amdgpu" ];
   services.xserver.videoDrivers = [ "amdgpu" ];
 
@@ -27,6 +28,7 @@
     size = 34 * 1024;
   }];
 
+  # Hibernate
   boot.resumeDevice = "/dev/disk/by-uuid/7c5b49de-9b7b-44d9-a8fa-e0ed6d2a23bd";
   boot.kernelParams = [
     "amdgpu.dcdebugmask=0x10"
@@ -88,11 +90,8 @@
     };
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
+  # Disable hardware cursor
   environment.sessionVariables.WLR_NO_HARDWARE_CURSORS = "1";
-
-  networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn pkgs.networkmanager-openconnect ];
 
   # powerManagement.cpuFreqGovernor = "powersave";
   # boot.kernelParams = [ "amd_pstate=passive" ];
@@ -100,9 +99,8 @@
   # boot.kernelModules = [ "amd-pstate" ];
   # boot.initrd.kernelModules = [ "amdgpu" ];
 
-
+  # Virt manager
   virtualisation.libvirtd.enable = true;
-
   environment.systemPackages = with pkgs; [
     virt-manager
   ];

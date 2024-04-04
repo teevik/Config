@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ ... }: {
   home.stateVersion = "23.11";
 
   teevik = {

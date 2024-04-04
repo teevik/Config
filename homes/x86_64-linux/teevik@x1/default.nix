@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ ... }: {
   home.stateVersion = "23.11";
 
   teevik = {
@@ -9,7 +9,7 @@
     };
 
     services = {
-      # swayidle.enable = true;
+      hypridle.enable = true;
     };
 
     desktop.hyprland = {
