@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ lib, config, pkgs, inputs, ... }:
 {
   imports = [
     ./hardware.nix
@@ -7,7 +7,7 @@
     inputs.nixarr.nixosModules.default
   ];
 
-  nix.package = pkgs.nix;
+  nix.package = lib.mkForce pkgs.nix;
 
   teevik = {
     suites = {
