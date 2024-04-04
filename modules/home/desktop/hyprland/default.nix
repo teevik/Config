@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ osConfig, inputs, lib, config, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
@@ -86,7 +86,13 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
+      package = osConfig.programs.hyprland.package;
+
       systemd.enable = true;
+
+      plugins = with inputs.hyprland-plugins.packages.${pkgs.system}; [
+        # hyprexpo
+      ];
 
       extraConfig = import ./config.nix {
         inherit lib config pkgs;

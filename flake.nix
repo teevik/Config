@@ -129,7 +129,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    cachix-deploy-flake.url = "github:cachix/cachix-deploy-flake";
+    cachix-deploy-flake = {
+      url = "github:cachix/cachix-deploy-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprland.url = "github:hyprwm/Hyprland";
+
+    hyprland-plugins = {
+      url = "github:hyprwm/hyprland-plugins";
+      inputs.hyprland.follows = "hyprland";
+    };
   };
 
   outputs = inputs:

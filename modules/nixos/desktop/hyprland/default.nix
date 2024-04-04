@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, config, pkgs, inputs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
@@ -25,6 +25,8 @@ in
 
     programs.hyprland = {
       enable = true;
+
+      package = inputs.hyprland.packages.${pkgs.system}.hyprland;
     };
   };
 }
