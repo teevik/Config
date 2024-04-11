@@ -28,7 +28,10 @@
   services.hardware.openrgb = {
     enable = true;
     motherboard = "amd";
-    package = pkgs.openrgb-with-all-plugins;
+    package = pkgs.teevik.openrgb.withPlugins [
+      pkgs.openrgb-plugin-effects
+      pkgs.openrgb-plugin-hardwaresync
+    ];
   };
 
   # Allows for virtual cam in obs
