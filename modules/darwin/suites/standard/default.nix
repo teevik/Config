@@ -38,6 +38,11 @@ in
       CustomUserPreferences = {
         NSGlobalDomain.WebKitDeveloperExtras = true;
       };
+
+      trackpad = {
+        Dragging = true;
+        Clicking = true;
+      };
     };
 
     services.nix-daemon.enable = true;
