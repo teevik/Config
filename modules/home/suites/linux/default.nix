@@ -46,6 +46,8 @@ in
     };
 
     home.packages = with pkgs; [
+      inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
+      inputs.caligula.packages.${pkgs.system}.caligula
       inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
       teevik.insomnia
       mpv
