@@ -19,18 +19,16 @@ in
   config = mkIf cfg.enable
     {
       home.packages = with pkgs; [
-        (writeScriptBin "nvim"
-          /* bash */
-          ''
-            #!/usr/bin/env bash
-            ${kitty} @ set-spacing padding=0
-            ${kitty} @ set-background-opacity 1
+        (writeScriptBin "nvim" /* bash */ ''
+          #!/usr/bin/env bash
+          ${kitty} @ set-spacing padding=0
+          ${kitty} @ set-background-opacity 1
 
-            ${neovim} $1 $2 $3
+          ${neovim} $1 $2 $3
 
-            ${kitty} @ set-spacing padding=10
-            ${kitty} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
-          '')
+          ${kitty} @ set-spacing padding=10
+          ${kitty} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
+        '')
       ];
     };
 }
