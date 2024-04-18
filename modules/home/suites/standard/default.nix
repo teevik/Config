@@ -84,9 +84,9 @@ in
       bruno
       gh
       gitu
-      koji
-      zed-editor
-      nix-inspect
+      # koji
+      # zed-editor
+      # nix-inspect
     ];
   };
 }
