@@ -5,6 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     # https://github.com/NixOS/nixpkgs/pull/246441
     # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     nur.url = "github:nix-community/NUR";
 

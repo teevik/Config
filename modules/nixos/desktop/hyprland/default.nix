@@ -26,7 +26,8 @@ in
     programs.hyprland = {
       enable = true;
 
-      package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+      # Broken?
+      # package = inputs.hyprland.packages.${pkgs.system}.hyprland;
     };
   };
 }

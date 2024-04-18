@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ config, inputs, ... }:
 {
   imports = [ inputs.agenix.nixosModules.default ];
 
@@ -10,7 +10,12 @@
         tailscale.file = ./tailscale.age;
         healthchecks.file = ./healthchecks.age;
         cachix-agent.file = ./cachix-agent.age;
+        nix-access-tokens-github.file = ./nix-access-tokens-github.age;
       };
     };
+
+    nix.extraOptions = ''
+      !include ${config.age.secrets.nix-access-tokens-github.path}
+    '';
   };
 }

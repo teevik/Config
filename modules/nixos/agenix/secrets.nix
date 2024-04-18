@@ -7,4 +7,5 @@ in
   "tailscale.age".publicKeys = publicKeys;
   "healthchecks.age".publicKeys = publicKeys;
   "cachix-agent.age".publicKeys = publicKeys;
+  "nix-access-tokens-github.age".publicKeys = publicKeys;
 }
