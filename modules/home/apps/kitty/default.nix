@@ -36,7 +36,7 @@ in
         font_size = 13;
         background_opacity = builtins.toJSON cfg.opacity;
         dynamic_background_opacity = "yes";
-        background_blur = 65;
+        # background_blur = 65;
         window_padding_width = 10;
         allow_remote_control = "yes";
       };

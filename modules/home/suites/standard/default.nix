@@ -84,9 +84,9 @@ in
       bruno
       gh
       gitu
-      inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.koji
-      inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.zed-editor
-      inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.nix-inspect
+      koji
+      zed-editor
+      nix-inspect
     ];
   };
 }
