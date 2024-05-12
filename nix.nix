@@ -19,6 +19,8 @@ in
       auto-optimise-store = true;
 
       substituters = [
+        # high priority since it's almost always used
+        "https://cache.nixos.org?priority=10"
 
         "https://teevik.cachix.org"
         "https://cache.privatevoid.net"
@@ -32,6 +34,8 @@ in
       ];
 
       trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+
         "teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ="
         "cache.privatevoid.net:SErQ8bvNWANeAvtsOESUwVYr2VJynfuc9JRwlzTTkVg="
         "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
