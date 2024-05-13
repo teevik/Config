@@ -1,4 +1,4 @@
-{ inputs, config, lib, pkgs, osConfig ? { }, ... }:
+{ config, lib, pkgs, osConfig ? { }, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.services.hypridle;
@@ -16,7 +16,6 @@ let
   '';
 in
 {
-  imports = [ inputs.hypridle.homeManagerModules.hypridle ];
 
   options.teevik.services.hypridle = {
     enable = mkOption {
@@ -32,24 +31,26 @@ in
     services.hypridle = {
       enable = true;
 
-      listeners = [
-        {
-          timeout = 2 * 60;
-          onTimeout = checkAudio "${light} -U 50";
-          onResume = "${light} -A 50";
-        }
+      settings = {
+        listeners = [
+          {
+            timeout = 2 * 60;
+            on-timeout = checkAudio "${light} -U 50";
+            on-resume = "${light} -A 50";
+          }
 
-        {
-          timeout = 3 * 60;
-          onTimeout = checkAudio "${hyprctl} dispatch dpms off";
-          onResume = "${hyprctl} dispatch dpms on";
-        }
+          {
+            timeout = 3 * 60;
+            on-timeout = checkAudio "${hyprctl} dispatch dpms off";
+            on-resume = "${hyprctl} dispatch dpms on";
+          }
 
-        {
-          timeout = 4 * 60;
-          onTimeout = checkAudio "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
-        }
-      ];
+          {
+            timeout = 4 * 60;
+            on-timeout = checkAudio "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
+          }
+        ];
+      };
     };
   };
 }

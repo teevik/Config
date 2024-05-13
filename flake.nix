@@ -93,11 +93,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hypridle = {
-      url = "github:hyprwm/hypridle";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     helix = {
       # url = "github:teevik/helix/inline-diagnostics";
       url = "github:helix-editor/helix";
@@ -108,10 +103,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    openconnect-sso = {
-      url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
 
     neovim = {
       url = "github:teevik/neovim";
