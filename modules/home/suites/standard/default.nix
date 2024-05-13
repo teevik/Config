@@ -28,6 +28,7 @@ in
         cpp.enable = true;
         zig.enable = true;
         go.enable = true;
+        roc.enable = true;
 
         nix = {
           nil.enable = true;

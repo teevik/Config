@@ -131,6 +131,8 @@
       url = "github:hyprwm/hyprland-plugins";
       inputs.hyprland.follows = "hyprland";
     };
+
+    roc.url = "github:roc-lang/roc";
   };
 
   outputs = inputs:
