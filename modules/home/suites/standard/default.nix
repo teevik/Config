@@ -65,6 +65,10 @@ in
       };
     };
 
+    programs.fzf = {
+      enable = true;
+    };
+
     home.packages = with pkgs; [
       teevik.asciiquarium
       teevik.asciiquarium-fullscreen
