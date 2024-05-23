@@ -103,7 +103,13 @@
   virtualisation.libvirtd.enable = true;
   environment.systemPackages = with pkgs; [
     virt-manager
+    probe-rs
   ];
+
+  # Pico probe
+  services.udev.extraRules = ''
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000c", MODE="0666"
+  '';
 
   virtualisation.virtualbox.host.enable = true;
   users.extraGroups.vboxusers.members = [ "teevik" ];
