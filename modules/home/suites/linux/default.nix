@@ -53,6 +53,7 @@ in
       mpv
       obs-studio
       trashy
+      beekeeper-studio
     ];
   };
 }
