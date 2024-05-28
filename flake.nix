@@ -3,8 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # https://github.com/NixOS/nixpkgs/pull/246441
-    # nixpkgs.url = "github:RaitoBezarius/nixpkgs/this_has_to_end";
     nur.url = "github:nix-community/NUR";
 
     snowfall-lib = {
@@ -146,7 +144,9 @@
         inherit inputs;
         src = ./.;
 
-        package-namespace = "teevik";
+        snowfall = {
+          namespace = "teevik";
+        };
 
         channels-config = {
           allowUnfree = true;
