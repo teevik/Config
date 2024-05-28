@@ -133,6 +133,11 @@
     };
 
     roc.url = "github:roc-lang/roc";
+
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v0.3.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:

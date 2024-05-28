@@ -1,7 +1,8 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, inputs, ... }:
 {
   imports = [
     ./hardware.nix
+    inputs.lanzaboote.nixosModules.lanzaboote
   ];
 
   teevik = {
@@ -23,6 +24,13 @@
     services = {
       cachix-agent.enable = true;
     };
+  };
+
+  boot.loader.systemd-boot.enable = lib.mkForce false;
+
+  boot.lanzaboote = {
+    enable = true;
+    pkiBundle = "/etc/secureboot";
   };
 
   services.hardware.openrgb = {
@@ -51,7 +59,12 @@
   virtualisation.libvirtd.enable = true;
   environment.systemPackages = with pkgs; [
     virt-manager
+    probe-rs
   ];
+
+  services.udev.extraRules = ''
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000c", MODE="0666"
+  '';
 
   powerManagement.cpuFreqGovernor = "performance";
 

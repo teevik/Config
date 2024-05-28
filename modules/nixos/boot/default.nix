@@ -26,7 +26,10 @@ in
 
   config = mkIf cfg.enable {
     boot.loader = {
-      systemd-boot.enable = true;
+      systemd-boot = {
+        enable = true;
+        configurationLimit = 50;
+      };
       # timeout = 0;
 
       efi = {
