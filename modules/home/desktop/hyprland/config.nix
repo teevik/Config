@@ -12,6 +12,8 @@ in
     monitor=,preferred,auto,${builtins.toJSON scaling}
   ''}
 
+  monitor=Unknown-1,disable
+
   env = XCURSOR_SIZE,${builtins.toJSON (cursorSize * 2)}
 
   ${
@@ -37,6 +39,8 @@ in
       focus_on_activate = true
       animate_manual_resizes = true
       close_special_on_empty = false
+      new_window_takes_over_fullscreen = 2
+      middle_click_paste = false
   }
 
   input {

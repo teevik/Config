@@ -7,11 +7,17 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "teevik";
     repo = "hyprland-scratchpad";
-    rev = "8d7774c8ce56c205f5c5a64b75bb10b1b5e06ee2";
-    hash = "sha256-Duoku9BLHA56GA6CWTCpVnfUEqaeEkkVJB8eBuZfLk8=";
+    rev = "28e4f9f794090b195a7f2cb235ccc066298c036b";
+    hash = "sha256-2YNjV0xLwp6TOd18BZUkHZL+ai9YjfyyODBJFEXQPRs=";
   };
 
-  cargoHash = "sha256-pKPW6S3aHw8M+zfkIv26xaWGbAGVR4FPEgc+3+bJ2LM=";
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+
+    outputHashes = {
+      "hyprland-0.4.0-alpha.2" = "sha256-+AkB1ZltdqPn2ZRzU5FIQVWwuvm2TWhnNJnnG/oUIfI=";
+    };
+  };
 
   meta.mainProgram = "hyprland-scratchpad";
 }
