@@ -39,7 +39,7 @@ in
 
         onChange = ''
           export PATH=${pkgs.podman}/bin:$PATH
-          ${lib.getExe pkgs.distrobox} assemble create --file ${config.home.homeDirectory}/.config/distrobox/distrobox.ini
+          ${lib.getExe' pkgs.distrobox "distrobox"} assemble create --file ${config.home.homeDirectory}/.config/distrobox/distrobox.ini
         '';
       };
     };
