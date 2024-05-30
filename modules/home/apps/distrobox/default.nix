@@ -30,18 +30,18 @@ in
       "distrobox/distrobox.ini" = {
         text = pkgs.lib.generators.toINI { } {
           arch = {
-            image = "ghcr.io/greyltc-org/archlinux-aur:paru";
-            additional_packages = listToPackages [ "eza" "bat" ];
+            home = "/tmp/arch-home";
+            image = "ghcr.io/teevik/arch:main";
             pull = true;
             root = false;
             replace = true;
           };
         };
 
-        # onChange = ''
-        #   export PATH=${pkgs.podman}/bin:$PATH
-        #   ${lib.getExe pkgs.distrobox} assemble create --file ${config.home.homeDirectory}/.config/distrobox/distrobox.ini
-        # '';
+        onChange = ''
+          export PATH=${pkgs.podman}/bin:$PATH
+          ${lib.getExe pkgs.distrobox} assemble create --file ${config.home.homeDirectory}/.config/distrobox/distrobox.ini
+        '';
       };
     };
   };
