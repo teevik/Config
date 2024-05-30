@@ -168,20 +168,26 @@
         ];
 
         outputs-builder = channels: {
-          packages.cachix-deploy =
+          packages =
             let
               pkgs = channels.nixpkgs;
               cachix-deploy-lib = inputs.cachix-deploy-flake.lib pkgs;
+              getDerivation = system: inputs.self.nixosConfigurations.${system}.config.system.build.toplevel;
             in
-            cachix-deploy-lib.spec {
-              agents =
-                let
-                  getDerivation = system: inputs.self.nixosConfigurations.${system}.config.system.build.toplevel;
-                in
-                {
-                  desktop = getDerivation "desktop";
-                  t14s = getDerivation "t14s";
-                  server = getDerivation "server";
+            {
+              cachix-deploy-sync =
+                cachix-deploy-lib.spec {
+                  agents = {
+                    server = getDerivation "server";
+                  };
+                };
+
+              cachix-deploy-async =
+                cachix-deploy-lib.spec {
+                  agents = {
+                    desktop = getDerivation "desktop";
+                    t14s = getDerivation "t14s";
+                  };
                 };
             };
         };

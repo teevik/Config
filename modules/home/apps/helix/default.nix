@@ -49,7 +49,7 @@ in
           ${kitty} @ set-spacing padding=0
           ${kitty} @ set-background-opacity 1
 
-          ${helix} $1 $2 $3
+          ${helix} -a $1 $2 $3
 
           ${kitty} @ set-spacing padding=10
           ${kitty} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
