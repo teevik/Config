@@ -2,7 +2,6 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.distrobox;
-  listToPackages = list: "\"${lib.strings.concatStrings (lib.strings.intersperse " " list)}\"";
 in
 {
   options.teevik.apps.distrobox = {
