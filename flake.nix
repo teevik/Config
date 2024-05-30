@@ -92,8 +92,9 @@
     };
 
     helix = {
-      # url = "github:teevik/helix/inline-diagnostics";
-      url = "github:helix-editor/helix";
+      # url = "github:helix-editor/helix";
+      url = "github:AlexanderDickie/helix/1de81886505f0deaef257eb4b11df048c09d7573";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     agenix = {

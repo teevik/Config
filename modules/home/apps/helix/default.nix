@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, inputs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.helix;
@@ -16,6 +16,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.packages = [
+      pkgs.teevik.copilot
+    ];
+
     xdg.configFile = {
       "helix/themes/catppuccin_mocha.toml".source = ./themes/catppuccin_mocha.toml;
     };
@@ -36,8 +40,8 @@ in
 
       package =
         let
-          helix = lib.getExe pkgs.helix;
-          # helix = lib.getExe (inputs.helix.packages.${pkgs.system}.default);
+          # helix = lib.getExe pkgs.helix;
+          helix = lib.getExe (inputs.helix.packages.${pkgs.system}.default);
           kitty = lib.getExe pkgs.kitty;
         in
         pkgs.writeScriptBin "hx" ''
@@ -98,6 +102,7 @@ in
 
         keys.insert = {
           "C-s" = ":w";
+          "C-w" = "copilot_apply_completion";
         };
       };
     };

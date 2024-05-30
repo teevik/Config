@@ -40,6 +40,7 @@ in
         spotify.enable = true;
         anyrun.enable = false;
         firefox.enable = true;
+        distrobox.enable = true;
       };
 
       xdg.enable = true;
@@ -54,7 +55,6 @@ in
       obs-studio
       trashy
       beekeeper-studio
-      distrobox
     ];
   };
 }
