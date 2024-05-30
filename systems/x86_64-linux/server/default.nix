@@ -18,6 +18,10 @@
       enable = true;
     };
 
+    hardware = {
+      light.enable = true;
+    };
+
     services = {
       healthchecks = {
         enable = true;

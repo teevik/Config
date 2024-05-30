@@ -56,12 +56,11 @@ in
       wants = [ "tailscaled-autoconnect.service" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        Type = "oneshot";
+        Type = "simple";
       };
       script = ''
         ${lib.getExe pkgs.tailscale} funnel ${toString cfg.funnel} 
       '';
     };
-
   };
 }
