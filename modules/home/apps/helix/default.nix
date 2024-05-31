@@ -103,6 +103,7 @@ in
         keys.insert = {
           "C-s" = ":w";
           "C-w" = "copilot_apply_completion";
+          "tab" = "copilot_apply_completion";
         };
       };
     };
