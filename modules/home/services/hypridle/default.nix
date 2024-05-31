@@ -3,7 +3,7 @@ let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.services.hypridle;
 
-  hyprland = osConfig.programs.hyprland.finalPackage;
+  hyprland = osConfig.programs.hyprland.package;
   hyprctl = "${hyprland}/bin/hyprctl";
   light = lib.getExe (pkgs.light);
 
