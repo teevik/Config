@@ -150,7 +150,7 @@ in
   $menu = tofi-drun --drun-launch=true
   # $menu = anyrun
   $browser = firefox
-  $discord = webcord
+  $discord = webcord --ozone-platform-hint=x11
   $spotify = spotify
   $files = nautilus
   $editor = code

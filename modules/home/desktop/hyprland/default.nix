@@ -90,9 +90,9 @@ in
 
       systemd.enable = true;
 
-      plugins = with inputs.hyprland-plugins.packages.${pkgs.system}; [
-        # hyprexpo
-      ];
+      # plugins = with inputs.hyprland-plugins.packages.${pkgs.system}; [
+      #   # hyprexpo
+      # ];
 
       extraConfig = import ./config.nix {
         inherit lib config pkgs;
