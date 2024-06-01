@@ -9,39 +9,30 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    snowfall-lib = {
-      url = "github:snowfallorg/lib";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    snowfall-lib.url = "https://flakehub.com/f/snowfallorg/lib/3.tar.gz";
+    # TODO: Remove this once the flake is updated
+    snowfall-lib.inputs.nixpkgs.follows = "nixpkgs";
+    disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
+    agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
+    lanzaboote.url = "https://flakehub.com/f/nix-community/lanzaboote/0.3.tar.gz";
 
+    nixos-generators.url = "github:nix-community/nixos-generators";
     nix-super.url = "github:privatevoid-net/nix-super";
-
     nur.url = "github:nix-community/NUR";
     nh.url = "github:viperML/nh";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     devenv.url = "github:cachix/devenv";
-    disko.url = "github:nix-community/disko";
     darwin.url = "github:lnl7/nix-darwin";
-    nixos-generators.url = "github:nix-community/nixos-generators";
     spicetify.url = "github:the-argus/spicetify-nix";
     hyprland-contrib.url = "github:hyprwm/contrib";
     # url = "github:helix-editor/helix";
     helix.url = "github:AlexanderDickie/helix/1de81886505f0deaef257eb4b11df048c09d7573";
-    agenix.url = "github:ryantm/agenix";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     neovim.url = "github:teevik/neovim";
-    nixarr = {
-      url = "github:rasmus-kirk/nixarr";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-index-database = {
-      url = "github:Mic92/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    nixarr.url = "github:rasmus-kirk/nixarr";
+    nix-index-database.url = "github:Mic92/nix-index-database";
     cachix-deploy-flake.url = "github:cachix/cachix-deploy-flake";
     roc.url = "github:roc-lang/roc";
-    lanzaboote.url = "github:nix-community/lanzaboote/v0.3.0";
 
     base16.url = "github:SenchoPens/base16.nix/v2.2.0";
     base16-fish = {

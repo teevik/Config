@@ -92,6 +92,7 @@ in
       koji
       zed-editor
       nix-inspect
+      fh
     ];
   };
 }
