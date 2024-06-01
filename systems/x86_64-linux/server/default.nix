@@ -32,6 +32,11 @@
         exitNode = "no-osl-wg-001.mullvad.ts.net";
         funnel = 8096;
       };
+
+      stirling-pdf = {
+        enable = true;
+        port = 8081;
+      };
     };
 
     services = {
@@ -101,7 +106,7 @@
     '';
   };
 
-  networking.firewall.allowedTCPPorts = [ 80 8080 ];
+  networking.firewall.allowedTCPPorts = [ 80 8081 ];
 
   services.sabnzbd = {
     enable = true;
