@@ -42,10 +42,10 @@ in
 
       apps = {
         nautilus.enable = true;
-        nix-alien.enable = true;
       };
     };
 
+    programs.nix-ld.enable = true;
     services.fwupd.enable = true;
 
     teevik.user.extraOptions.shell = pkgs.fish;

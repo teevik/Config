@@ -38,7 +38,6 @@ in
         chrome.enable = false;
         webcord.enable = true;
         spotify.enable = true;
-        anyrun.enable = false;
         firefox.enable = true;
         distrobox.enable = true;
       };
@@ -48,9 +47,9 @@ in
 
     home.packages = with pkgs; [
       inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
-      inputs.caligula.packages.${pkgs.system}.caligula
       inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
       teevik.insomnia
+      caligula
       mpv
       obs-studio
       trashy

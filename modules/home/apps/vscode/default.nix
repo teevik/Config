@@ -1,8 +1,8 @@
-{ inputs, pkgs, config, lib, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.vscode;
-  extensions = inputs.nix-vscode-extensions.extensions.${pkgs.system}.vscode-marketplace;
+  # extensions = inputs.nix-vscode-extensions.extensions.${pkgs.system}.vscode-marketplace;
   # package = (pkgs.vscode.override { isInsiders = true; }).overrideAttrs (oldAttrs: {
   #   src = (builtins.fetchTarball {
   #     url = "https://code.visualstudio.com/sha/download?build=insider&os=linux-x64";

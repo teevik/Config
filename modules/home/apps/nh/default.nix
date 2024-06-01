@@ -1,4 +1,4 @@
-{ pkgs, config, lib, inputs, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.nh;
@@ -15,7 +15,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ inputs.nh.packages.${pkgs.system}.default ];
+    home.packages = [ pkgs.nh ];
     home.sessionVariables.FLAKE = "${config.home.homeDirectory}/Documents/Config";
   };
 }
