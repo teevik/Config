@@ -33,7 +33,6 @@
     };
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
   services.auto-cpufreq.enable = true;
 
   services.logind.lidSwitch = "suspend-then-hibernate";

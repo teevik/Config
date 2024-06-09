@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.boot;
@@ -25,16 +25,20 @@ in
   };
 
   config = mkIf cfg.enable {
-    boot.loader = {
-      systemd-boot = {
-        enable = true;
-        configurationLimit = 50;
-      };
-      # timeout = 0;
+    boot = {
+      kernelPackages = pkgs.linuxPackages_latest;
 
-      efi = {
-        canTouchEfiVariables = cfg.canTouchEfiVariables;
-        efiSysMountPoint = cfg.efiSysMountPoint;
+      loader = {
+        systemd-boot = {
+          enable = true;
+          configurationLimit = 50;
+        };
+        # timeout = 0;
+
+        efi = {
+          canTouchEfiVariables = cfg.canTouchEfiVariables;
+          efiSysMountPoint = cfg.efiSysMountPoint;
+        };
       };
     };
   };
