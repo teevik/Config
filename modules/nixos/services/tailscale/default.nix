@@ -28,39 +28,68 @@ in
         The funnel port to use
       '';
     };
-  };
 
-  config = mkIf cfg.enable {
-    services.tailscale = {
-      enable = true;
-      authKeyFile = config.age.secrets.tailscale.path;
-      extraUpFlags = [ "--operator=teevik" ];
+    proxies = mkOption {
+      default = { };
 
-      useRoutingFeatures = mkIf (cfg.exitNode != null) "both";
-    };
+      type = with types;
+        attrsOf (submodule {
+          options = {
+            enable = (mkEnableOption "tailscale-proxy") // { default = true; };
 
-    systemd.services.tailscale-exit-node = mkIf (cfg.exitNode != null) {
-      after = [ "tailscaled-autoconnect.service" ];
-      wants = [ "tailscaled-autoconnect.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-      };
-      script = ''
-        ${lib.getExe pkgs.tailscale} up --operator=teevik --exit-node=${cfg.exitNode} 
-      '';
-    };
+            hostname = mkOption {
+              type = types.str;
+              description = "Hostname to use, presented via MagicDNS";
+            };
 
-    systemd.services.tailscale-funnel = mkIf (cfg.funnel != null) {
-      after = [ "tailscaled-autoconnect.service" ];
-      wants = [ "tailscaled-autoconnect.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "simple";
-      };
-      script = ''
-        ${lib.getExe pkgs.tailscale} funnel ${toString cfg.funnel} 
+            port = mkOption {
+              type = types.port;
+              description = "Port to proxy onto the tailscale network";
+            };
+          };
+        });
+
+      description = lib.mdDoc ''
+        Multiple tailscale-proxies
       '';
     };
   };
+
+  config = mkIf cfg.enable
+    {
+      services.tailscale = {
+        enable = true;
+
+        authKeyFile = config.age.secrets.tailscale.path;
+        extraUpFlags = [ "--operator=teevik" ];
+
+        useRoutingFeatures = mkIf (cfg.exitNode != null) "both";
+      };
+
+      # Exit node
+      systemd.services.tailscale-exit-node = mkIf (cfg.exitNode != null) {
+        after = [ "tailscaled-autoconnect.service" ];
+        wants = [ "tailscaled-autoconnect.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+        };
+        script = ''
+          ${lib.getExe pkgs.tailscale} up --operator=teevik --exit-node=${cfg.exitNode} 
+        '';
+      };
+
+      # Funnel
+      systemd.services.tailscale-funnel = mkIf (cfg.funnel != null) {
+        after = [ "tailscaled-autoconnect.service" ];
+        wants = [ "tailscaled-autoconnect.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          Type = "simple";
+        };
+        script = ''
+          ${lib.getExe pkgs.tailscale} funnel ${toString cfg.funnel} 
+        '';
+      };
+    };
 }

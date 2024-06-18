@@ -33,6 +33,37 @@
         funnel = 8096;
       };
 
+      tailscale-proxy = {
+        enable = true;
+
+        proxies = {
+          jellyfin = {
+            hostname = "jellyfin";
+            port = 8096;
+          };
+
+          radarr = {
+            hostname = "radarr";
+            port = 7878;
+          };
+
+          sonarr = {
+            hostname = "sonarr";
+            port = 8989;
+          };
+
+          prowlarr = {
+            hostname = "prowlarr";
+            port = 9696;
+          };
+
+          stirling = {
+            hostname = "stirling";
+            port = 8081;
+          };
+        };
+      };
+
       stirling-pdf = {
         enable = true;
         port = 8081;
