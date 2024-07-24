@@ -1,24 +1,22 @@
 { config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.development.go;
+  cfg = config.teevik.development.json;
 in
 {
-  options.teevik.development.go = {
+  options.teevik.development.json = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable go
+        Whether to enable json
       '';
     };
   };
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      go_1_22
-      gopls
-      delve
+      vscode-langservers-extracted
     ];
   };
 }

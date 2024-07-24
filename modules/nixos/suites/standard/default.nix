@@ -45,7 +45,12 @@ in
       };
     };
 
-    programs.nix-ld.enable = true;
+    programs = {
+      _1password.enable = true;
+      _1password-gui.enable = true;
+      nix-ld.enable = true;
+    };
+
     services.fwupd.enable = true;
 
     teevik.user.extraOptions.shell = pkgs.fish;

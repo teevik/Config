@@ -34,7 +34,7 @@ in
   misc {
       vrr = ${if enableVrr then "1" else "0" }
 
-      enable_swallow = true
+      enable_swallow = false
       swallow_regex = ^(kitty)$
       focus_on_activate = true
       animate_manual_resizes = true

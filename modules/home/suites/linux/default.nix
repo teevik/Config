@@ -54,6 +54,7 @@ in
       obs-studio
       trashy
       beekeeper-studio
+      xdragon
     ];
   };
 }

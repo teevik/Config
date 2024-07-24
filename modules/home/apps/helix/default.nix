@@ -108,6 +108,15 @@ in
     };
 
     xdg.configFile."helix/languages.toml".text = /* toml */ ''
+      [language-server.glsl_analyzer]
+      command = "glsl_analyzer"
+
+      [[language]]
+      name = "glsl"
+      auto-format = true
+      file-types = ["glsl", "vert", "frag", "geom", "comp" ]
+      language-servers = ["glsl_analyzer"]
+
       [language-server.roc-ls]
       command = "roc_language_server"
 

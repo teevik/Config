@@ -29,6 +29,9 @@ in
         zig.enable = true;
         go.enable = true;
         roc.enable = true;
+        odin.enable = true;
+        json.enable = true;
+        glsl.enable = true;
 
         nix = {
           nil.enable = true;
@@ -52,7 +55,7 @@ in
         kitty.enable = true;
         comma.enable = true;
         exa.enable = true;
-        feh.enable = true;
+        # feh.enable = true;
         git.enable = true;
         helix.enable = true;
         vscode.enable = true;
@@ -65,9 +68,7 @@ in
       };
     };
 
-    programs.fzf = {
-      enable = true;
-    };
+    programs.fzf.enable = true;
 
     home.packages = with pkgs; [
       teevik.asciiquarium
@@ -93,6 +94,8 @@ in
       zed-editor
       nix-inspect
       fh
+      xournalpp
+      loupe
     ];
   };
 }

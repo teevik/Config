@@ -76,7 +76,6 @@ in
             } // (if icon == null then { } else { inherit icon; });
           in
           {
-
             "Nix Packages" = mkBasicSearchEngine {
               aliases = [ "@np" "@nix-packages" ];
               url = "https://search.nixos.org/packages";
@@ -114,6 +113,12 @@ in
               url = "https://github.com/search";
               param = "q";
               aliases = [ "@gh" "@github" ];
+            };
+
+            "docs.rs" = mkBasicSearchEngine {
+              url = "https://docs.rs/releases/search";
+              param = "query";
+              aliases = [ "@docs" "@docs.rs" ];
             };
           };
       };

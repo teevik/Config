@@ -1,24 +1,22 @@
 { config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
-  cfg = config.teevik.development.go;
+  cfg = config.teevik.development.glsl;
 in
 {
-  options.teevik.development.go = {
+  options.teevik.development.glsl = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
-        Whether to enable go
+        Whether to enable glsl
       '';
     };
   };
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      go_1_22
-      gopls
-      delve
+      glsl_analyzer
     ];
   };
 }
