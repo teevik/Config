@@ -4,6 +4,8 @@ let
   isArm = pkgs.system == "aarch64-linux" || pkgs.system == "aarch64-darwin";
 in
 {
+  home-manager.backupFileExtension = "bak";
+
   nix = {
     package = mkIf (!isArm) (inputs.nix-super.packages.${pkgs.system}.default);
 

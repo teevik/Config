@@ -40,20 +40,30 @@ in
 
       package =
         let
-          # helix = lib.getExe pkgs.helix;
-          helix = lib.getExe (inputs.helix.packages.${pkgs.system}.default);
-          kitty = lib.getExe pkgs.kitty;
+          helix = inputs.helix.packages.${pkgs.system}.default;
+          helixBin = lib.getExe helix;
+          kittyBin = lib.getExe pkgs.kitty;
+
+          helix-kitty-integration = pkgs.writeScriptBin "hx" ''
+            #!/usr/bin/env bash
+            ${kittyBin} @ set-spacing padding=0
+            ${kittyBin} @ set-background-opacity 1
+
+            ${helixBin} -a $1 $2 $3
+
+            ${kittyBin} @ set-spacing padding=10
+            ${kittyBin} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
+          '';
         in
-        pkgs.writeScriptBin "hx" ''
-          #!/usr/bin/env bash
-          ${kitty} @ set-spacing padding=0
-          ${kitty} @ set-background-opacity 1
-
-          ${helix} -a $1 $2 $3
-
-          ${kitty} @ set-spacing padding=10
-          ${kitty} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
-        '';
+        pkgs.runCommand
+          "${helix.name}-kitty-integration"
+          { }
+          ''
+            mkdir -p $out/{share,bin}
+            ${pkgs.xorg.lndir}/bin/lndir -silent ${helix}/share $out/share
+            cp ${helix-kitty-integration}/bin/hx $out/bin
+          ''
+      ;
 
       settings = {
         theme = helixTheme;

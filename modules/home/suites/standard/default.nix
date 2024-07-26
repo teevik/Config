@@ -60,7 +60,7 @@ in
         helix.enable = true;
         vscode.enable = true;
         zellij.enable = true;
-        zathura.enable = true;
+        zathura.enable = false;
         neofetch.enable = true;
         neovim.enable = true;
         yazi.enable = true;

@@ -1,8 +1,9 @@
-{ config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.kitty;
   inherit (config.teevik.theme) kittyTheme;
+  gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
 in
 {
   options.teevik.apps.kitty = {
@@ -44,6 +45,7 @@ in
       keybindings = {
         "ctrl+shift+t" = "new_tab_with_cwd";
         "ctrl+shift+n" = "new_os_window_with_cwd";
+        "ctrl+f" = "launch --type=background --cwd=current ${gtk-launch} org.gnome.Nautilus .";
       };
     };
   };

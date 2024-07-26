@@ -16,11 +16,11 @@ in
 
   config = mkIf cfg.enable {
     services.gvfs.enable = true;
-
     services.gnome.sushi.enable = true;
 
     environment.systemPackages = with pkgs; [
       gnome.nautilus
+      nautilus-open-any-terminal
       ffmpegthumbnailer
     ];
   };

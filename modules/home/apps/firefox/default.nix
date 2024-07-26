@@ -40,6 +40,7 @@ in
 
           translate-web-pages
           search-by-image
+          darkreader
 
           (buildFirefoxXpiAddon {
             pname = "everforest-dark";
