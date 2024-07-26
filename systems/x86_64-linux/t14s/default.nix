@@ -8,7 +8,7 @@
     inputs.nixos-hardware.nixosModules.common-gpu-amd
   ];
 
-  kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # HW acceleration
   boot.initrd.kernelModules = [ "amdgpu" ];
