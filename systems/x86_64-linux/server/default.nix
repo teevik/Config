@@ -142,7 +142,7 @@
   services.sabnzbd = {
     enable = true;
 
-    user = "sabnzbd";
+    user = "usenet";
     group = "media";
   };
 
