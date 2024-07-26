@@ -45,20 +45,6 @@ in
       };
     };
 
-    xdg.configFile =
-      if gtkTheme != null then {
-        "gtk-4.0" = {
-          source = "${gtkTheme.package}/share/themes/${gtkTheme.name}/gtk-4.0";
-          recursive = true;
-        };
-      } else
-        let css = (import ./css.nix) config.teevik.theme.colors;
-        in
-        {
-          "gtk-3.0/gtk.css".text = css;
-          "gtk-4.0/gtk.css".text = css;
-        };
-
     dconf.settings = {
       "org/gnome/desktop/interface" = {
         color-scheme = "prefer-dark";

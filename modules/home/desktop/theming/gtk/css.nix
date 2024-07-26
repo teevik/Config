@@ -1,5 +1,5 @@
 colors:
-with colors; ''
+with colors; /* css */ ''
   window.background { border-radius: 0; }
 
   @define-color accent_color #${base0A-hex};

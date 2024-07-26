@@ -47,7 +47,7 @@ in
       borderColor = "#cba6f7";
 
       gtkTheme = {
-        name = "Catppuccin-Mocha-Standard-Pink-Dark";
+        name = "catppuccin-mocha-pink-standard+rimless";
         package = pkgs.catppuccin-gtk.override {
           accents = [ "pink" ];
           size = "standard";

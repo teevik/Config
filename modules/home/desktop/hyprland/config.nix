@@ -134,7 +134,7 @@ in
   master {
       orientation = center
       always_center_master = true
-      new_is_master = false
+      # new_is_master = false
   }
 
   windowrule = float, feh|mpv
