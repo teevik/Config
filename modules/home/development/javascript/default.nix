@@ -17,6 +17,9 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       nodejs
+      bun
+      typescript
+      nodePackages.typescript-language-server
     ];
 
     home.file.".npmrc".text = ''
