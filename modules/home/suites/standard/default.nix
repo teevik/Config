@@ -51,7 +51,7 @@ in
       apps = {
         home-manager.enable = true;
         alacritty.enable = false;
-        wezterm.enable = true;
+        wezterm.enable = false;
         kitty.enable = true;
         comma.enable = true;
         exa.enable = true;
