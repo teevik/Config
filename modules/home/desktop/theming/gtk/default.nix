@@ -22,7 +22,7 @@ in
       enable = true;
 
       cursorTheme = {
-        name = "Catppuccin-Mocha-Dark-Cursors";
+        name = "catppuccin-mocha-dark-cursors";
         package = pkgs.catppuccin-cursors.mochaDark;
       };
 
