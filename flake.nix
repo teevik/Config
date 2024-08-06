@@ -26,7 +26,7 @@
     spicetify.url = "github:the-argus/spicetify-nix";
     hyprland-contrib.url = "github:hyprwm/contrib";
     # url = "github:helix-editor/helix";
-    helix.url = "github:AlexanderDickie/helix/1de81886505f0deaef257eb4b11df048c09d7573";
+    helix.url = "github:AlexanderDickie/helix/076d8dde4b9f7a951c1e9b74c26b79689eca5a74";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     neovim.url = "github:teevik/neovim";
     nixarr.url = "github:rasmus-kirk/nixarr";

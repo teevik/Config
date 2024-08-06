@@ -19,7 +19,9 @@ in
       nodejs
       bun
       typescript
+      biome
       nodePackages.typescript-language-server
+      nodePackages."@prisma/language-server"
     ];
 
     home.file.".npmrc".text = ''

@@ -78,19 +78,24 @@ in
           scrolloff = 10;
           completion-trigger-len = 1;
           idle-timeout = 100;
-        };
 
-        editor.lsp = {
-          display-messages = true;
-          display-inlay-hints = true;
-        };
+          lsp = {
+            display-messages = true;
+            display-inlay-hints = true;
+          };
 
-        editor.cursor-shape = {
-          insert = "bar";
-        };
+          inline-diagnostics = {
+            cursor-line = "hint";
+            other-lines = "error";
+          };
 
-        editor.indent-guides = {
-          render = true;
+          cursor-shape = {
+            insert = "bar";
+          };
+
+          indent-guides = {
+            render = true;
+          };
         };
 
         keys.normal = {
@@ -111,6 +116,7 @@ in
         };
 
         keys.insert = {
+          "S-tab" = "unindent";
           "C-s" = ":w";
           "C-w" = "copilot_apply_completion";
         };
@@ -118,13 +124,46 @@ in
     };
 
     xdg.configFile."helix/languages.toml".text = /* toml */ ''
+      [language-server.biome]
+      command = "biome"
+      args = ["lsp-proxy"]
+
+      [[language]]
+      name = "prisma"
+      auto-format = true
+
+      [[language]]
+      name = "javascript"
+      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      auto-format = true
+
+      [[language]]
+      name = "typescript"
+      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      auto-format = true
+
+      [[language]]
+      name = "tsx"
+      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      auto-format = true
+
+      [[language]]
+      name = "jsx"
+      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      auto-format = true
+
+      [[language]]
+      name = "json"
+      language-servers = [ { name = "vscode-json-language-server", except-features = [ "format" ] }, "biome" ]
+      auto-format = true
+    
       [language-server.glsl_analyzer]
       command = "glsl_analyzer"
 
       [[language]]
       name = "glsl"
       auto-format = true
-      file-types = ["glsl", "vert", "frag", "geom", "comp" ]
+      file-types = ["glsl", "vert", "frag", "geom", "comp"]
       language-servers = ["glsl_analyzer"]
 
       [language-server.roc-ls]
