@@ -55,6 +55,9 @@ in
       trashy
       beekeeper-studio
       xdragon
+      loupe
+      koji
+      zed-editor
     ];
   };
 }

@@ -1,12 +1,13 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ config
+, lib
+, pkgs
+, ...
+}:
+let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.fonts;
-in {
+in
+{
   options.teevik.desktop.fonts = {
     enable = mkOption {
       type = types.bool;
@@ -18,8 +19,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    fonts.fontDir.enable = true;
-    fonts.fonts = with pkgs; [
+    fonts.packages = with pkgs; [
       noto-fonts
       noto-fonts-cjk
       noto-fonts-emoji
