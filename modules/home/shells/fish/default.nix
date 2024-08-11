@@ -39,7 +39,11 @@ in
 
       shellAbbrs = {
         # ls = "exa";
+      };
+
+      shellAliases = {
         ssh = "kitten ssh";
+        I3 = "startx";
       };
     };
   };

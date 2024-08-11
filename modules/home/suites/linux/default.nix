@@ -17,9 +17,8 @@ in
   config = mkIf cfg.enable {
     teevik = {
       desktop = {
-        hyprland = {
-          enable = true;
-        };
+        hyprland.enable = true;
+        i3.enable = true;
 
         mako.enable = true;
         swaybg.enable = true;
