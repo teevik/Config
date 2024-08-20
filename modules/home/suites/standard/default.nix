@@ -80,7 +80,7 @@ in
       just
       magic-wormhole
       nurl
-      (obsidian.override { electron = electron_24; })
+      obsidian
       ripgrep
       sd
       watchexec
