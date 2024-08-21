@@ -16,8 +16,10 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      odin
-      ols
+      # TODO use normal odin once this exists https://github.com/NixOS/nixpkgs/blob/nixos-24.05/pkgs/by-name/od/odin/package.nix
+      teevik.odin
+      teevik.ols
+      # (ols.override { odin = teevik.odin; })
     ];
   };
 }

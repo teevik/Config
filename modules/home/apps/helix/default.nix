@@ -111,6 +111,7 @@ in
         };
 
         keys.select = {
+          "W" = "move_prev_word_start";
           # if already in select mode, just add new selection at next occurrence
           "C-d" = [ "search_selection" "extend_search_next" ];
         };
