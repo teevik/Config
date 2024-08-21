@@ -43,6 +43,7 @@ in
 
       apps = {
         nautilus.enable = true;
+        firefox.enable = true;
       };
     };
 

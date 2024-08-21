@@ -30,6 +30,7 @@ in
 
           "media.ffmpeg.vaapi.enabled" = true;
           "gfx.webrender.all" = true;
+          "browser.fullscreen.autohide" = false;
         };
 
         # List of addons: https://github.com/nix-community/nur-combined/blob/master/repos/rycee/pkgs/firefox-addons/generated-firefox-addons.nix
@@ -38,18 +39,16 @@ in
           ublock-origin
           wikiwand-wikipedia-modernized
 
-          translate-web-pages
-          search-by-image
           darkreader
 
-          (buildFirefoxXpiAddon {
-            pname = "everforest-dark";
-            version = "2.0";
-            addonId = "{c0f86627-5243-4bf4-a522-a41ed12f1737}";
-            url = "https://addons.mozilla.org/firefox/downloads/file/4055905/everforest_dark_official-2.0.xpi";
-            sha256 = "sha256-xL55Gq9URihK0bS/oKyd/yrSoo4qNRpy2Kv+Vt0VL/g=";
-            meta = { };
-          })
+          # (buildFirefoxXpiAddon {
+          #   pname = "everforest-dark";
+          #   version = "2.0";
+          #   addonId = "{c0f86627-5243-4bf4-a522-a41ed12f1737}";
+          #   url = "https://addons.mozilla.org/firefox/downloads/file/4055905/everforest_dark_official-2.0.xpi";
+          #   sha256 = "sha256-xL55Gq9URihK0bS/oKyd/yrSoo4qNRpy2Kv+Vt0VL/g=";
+          #   meta = { };
+          # })
 
           # (buildFirefoxXpiAddon {
           #   pname = "catppuccin-mocha-pink";
