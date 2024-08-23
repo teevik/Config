@@ -44,6 +44,7 @@ in
       apps = {
         nautilus.enable = true;
         firefox.enable = true;
+        android-studio.enable = true;
       };
     };
 
