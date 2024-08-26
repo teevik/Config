@@ -93,6 +93,9 @@ in
       nix-inspect
       fh
       xournalpp
+      azure-cli
+      terraform
+      graphviz
     ];
   };
 }
