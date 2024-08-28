@@ -95,6 +95,7 @@ in
       xournalpp
       azure-cli
       terraform
+      terraform-ls
       graphviz
     ];
   };
