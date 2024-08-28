@@ -90,6 +90,9 @@ in
       # Zed Attack Proxy (ZAP)
       # https://github.com/zaproxy/zaproxy
       zap
+
+      # Sql injections
+      sqlmap
     ];
   };
 }
