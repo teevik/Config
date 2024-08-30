@@ -108,6 +108,8 @@ in
           # "C-d" = ["move_prev_word_start", move_next_word_end", "search_selection", "extend_search_next"]
           # make sure there is only one selection, select word under cursor, set search to selection, then switch to select mode
           "C-d" = [ "keep_primary_selection" "move_prev_word_start" "move_next_word_end" "search_selection" "select_mode" ];
+
+          space."i" = ":toggle lsp.display-inlay-hints";
         };
 
         keys.select = {
