@@ -127,13 +127,21 @@ in
     };
 
     xdg.configFile."helix/languages.toml".text = /* toml */ ''
+      [[language]]
+      name = "prisma"
+      auto-format = true
+
       [language-server.biome]
       command = "biome"
       args = ["lsp-proxy"]
 
+      [language-server.emmet-ls]
+      command = "emmet-ls"
+      args = ["--stdio"]
+
       [[language]]
-      name = "prisma"
-      auto-format = true
+      name = "html"
+      language-servers = ["vscode-html-language-server", "emmet-ls"]
 
       [[language]]
       name = "javascript"
@@ -147,12 +155,12 @@ in
 
       [[language]]
       name = "tsx"
-      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome", "emmet-ls" ]
       auto-format = true
 
       [[language]]
       name = "jsx"
-      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome", "emmet-ls" ]
       auto-format = true
 
       [[language]]

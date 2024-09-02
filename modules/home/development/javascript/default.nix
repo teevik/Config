@@ -20,6 +20,7 @@ in
       bun
       typescript
       biome
+      emmet-ls
       nodePackages.typescript-language-server
       nodePackages."@prisma/language-server"
     ];
