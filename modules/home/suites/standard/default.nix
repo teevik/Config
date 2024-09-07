@@ -32,6 +32,7 @@ in
         odin.enable = true;
         json.enable = true;
         glsl.enable = true;
+        latex.enable = true;
 
         nix = {
           nil.enable = true;

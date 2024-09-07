@@ -56,7 +56,7 @@ in
       xdragon
       loupe
       koji
-      zed-editor
+      super-productivity
     ];
   };
 }

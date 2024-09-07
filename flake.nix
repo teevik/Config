@@ -23,7 +23,11 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     devenv.url = "github:cachix/devenv";
     darwin.url = "github:lnl7/nix-darwin";
-    spicetify.url = "github:the-argus/spicetify-nix";
+    spicetify = {
+      url = "github:Gerg-L/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     hyprland-contrib.url = "github:hyprwm/contrib";
     # url = "github:helix-editor/helix";
     helix.url = "github:AlexanderDickie/helix/076d8dde4b9f7a951c1e9b74c26b79689eca5a74";

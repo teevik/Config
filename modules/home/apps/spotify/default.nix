@@ -3,7 +3,7 @@ let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.spotify;
   theme = config.teevik.theme.spicetifyTheme;
-  spicePkgs = inputs.spicetify.packages.${pkgs.system}.default;
+  spicePkgs = inputs.spicetify.legacyPackages.${pkgs.system};
 in
 {
   options.teevik.apps.spotify = {
@@ -16,7 +16,7 @@ in
     };
   };
 
-  imports = [ inputs.spicetify.homeManagerModule ];
+  imports = [ inputs.spicetify.homeManagerModules.default ];
 
   config = mkIf cfg.enable {
     programs.spicetify = {

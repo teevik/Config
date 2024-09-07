@@ -94,8 +94,8 @@ in
       };
 
       customColorScheme = mkOption {
-        type = lib.types.nullOr lib.types.attrs;
-        default = null;
+        type = lib.types.attrsOf lib.types.str;
+        default = { };
       };
     };
 
