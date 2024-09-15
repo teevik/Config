@@ -3,6 +3,7 @@ let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
   hyprlandPackages = inputs.hyprland.packages.${pkgs.system};
+  pkgs-unstable = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
 in
 {
   options.teevik.desktop.hyprland = {
@@ -24,7 +25,7 @@ in
 
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-    environment.systemPackages = with hyprlandPackages; [
+    environment.systemPackages = with pkgs-unstable; [
       nwg-displays
     ];
 

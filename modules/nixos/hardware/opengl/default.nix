@@ -2,7 +2,7 @@
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.hardware.opengl;
-  pkgs-unstable = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+  pkgs-unstable = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
 in
 {
   options.teevik.hardware.opengl = {
