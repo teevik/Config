@@ -72,7 +72,7 @@ in
             hash = "sha256-3uEVrR2T39Pj0puUwUPuUfXcCPoOq2lNHL8UpppTOiU=";
           };
         in
-        "${discord-catppuccin}/themes/frappe.theme.css";
+        "${discord-catppuccin}/themes/mocha.theme.css";
 
       spicetifyTheme = {
         # theme = "catppuccin";
