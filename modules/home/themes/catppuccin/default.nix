@@ -75,8 +75,10 @@ in
         "${discord-catppuccin}/themes/frappe.theme.css";
 
       spicetifyTheme = {
-        theme = "catppuccin";
-        colorScheme = "mocha";
+        # theme = "catppuccin";
+        # colorScheme = "mocha";
+        theme = "lucid";
+        colorScheme = "catppuccin-mocha";
       };
 
       kittyTheme = "Catppuccin-Mocha";

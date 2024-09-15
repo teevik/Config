@@ -88,13 +88,14 @@
             {
               cachix-deploy-sync =
                 cachix-deploy-lib.spec {
-                  agents = { };
+                  agents = {
+                    server = getDerivation "server";
+                  };
                 };
 
               cachix-deploy-async =
                 cachix-deploy-lib.spec {
                   agents = {
-                    server = getDerivation "server";
                     desktop = getDerivation "desktop";
                     t14s = getDerivation "t14s";
                   };

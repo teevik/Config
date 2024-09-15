@@ -30,6 +30,10 @@ in
         shuffle
         groupSession
         powerBar
+        beautifulLyrics
+        playingSource
+        betterGenres
+        history
       ];
     };
   };

@@ -14,6 +14,9 @@ in
 
   monitor=Unknown-1,disable
 
+  exec = touch ~/.config/hypr/monitors.conf
+  source = ~/.config/hypr/monitors.conf
+
   env = XCURSOR_SIZE,${builtins.toJSON (cursorSize * 2)}
 
   ${
