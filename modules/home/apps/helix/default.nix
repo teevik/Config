@@ -81,12 +81,12 @@ in
 
           lsp = {
             display-messages = true;
-            display-inlay-hints = true;
+            display-inlay-hints = false;
           };
 
           inline-diagnostics = {
             cursor-line = "hint";
-            other-lines = "error";
+            other-lines = "disable";
           };
 
           cursor-shape = {
@@ -110,6 +110,7 @@ in
           "C-d" = [ "keep_primary_selection" "move_prev_word_start" "move_next_word_end" "search_selection" "select_mode" ];
 
           space."i" = ":toggle lsp.display-inlay-hints";
+          space."e" = ":toggle inline-diagnostics.other-lines error disable";
         };
 
         keys.select = {

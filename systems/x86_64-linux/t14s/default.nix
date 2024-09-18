@@ -22,8 +22,6 @@
     rocm-opencl-icd
     rocm-opencl-runtime
   ];
-  hardware.opengl.driSupport = true;
-
   # https://wiki.archlinux.org/title/Power_management/Suspend_and_hibernate#Hibernation_into_swap_file
   swapDevices = [{
     device = "/var/lib/swapfile";

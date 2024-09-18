@@ -17,7 +17,7 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       python3
-      nodePackages_latest.pyright
+      pyright
       ruff-lsp
     ];
   };

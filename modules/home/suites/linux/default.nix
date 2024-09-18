@@ -57,6 +57,7 @@ in
       loupe
       koji
       super-productivity
+      nwg-displays
     ];
   };
 }

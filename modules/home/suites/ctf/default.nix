@@ -75,7 +75,7 @@ in
 
       binwalk
 
-      # (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec ]))
+      (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec sigdb ]))
 
       gdb
 
@@ -93,6 +93,55 @@ in
 
       # Sql injections
       sqlmap
+
+      sherlock
+
+      (
+        let base = pkgs.appimageTools.defaultFhsEnvArgs; in
+        pkgs.buildFHSUserEnv (base // {
+          name = "fhs";
+          targetPkgs = pkgs: (
+            # pkgs.buildFHSUserEnv provides only a minimal FHS environment,
+            # lacking many basic packages needed by most software.
+            # Therefore, we need to add them manually.
+            #
+            # pkgs.appimageTools provides basic packages required by most software.
+            (base.targetPkgs pkgs) ++ (with pkgs; [
+              pkg-config
+              ncurses
+              # Feel free to add more packages here if needed.
+
+              # Needed for operating system detection until
+              # https://github.com/ValveSoftware/steam-for-linux/issues/5909 is resolved
+              lsb-release
+              # Errors in output without those
+              pciutils
+              # run.sh wants ldconfig
+              glibc_multi.bin
+              # Games' dependencies
+              xorg.xrandr
+              which
+              # Needed by gdialog, including in the steam-runtime
+              perl
+              # Open URLs
+              xdg-utils
+              iana-etc
+              # Steam Play / Proton
+              python3
+
+              # It tries to execute xdg-user-dir and spams the log with command not founds
+              xdg-user-dirs
+
+              # electron based launchers need newer versions of these libraries than what runtime provides
+              mesa
+              sqlite
+            ])
+          );
+          profile = "export FHS=1";
+          runScript = "bash";
+          extraOutputsToInstall = [ "dev" ];
+        })
+      )
     ];
   };
 }

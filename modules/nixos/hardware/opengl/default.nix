@@ -1,8 +1,7 @@
-{ inputs, pkgs, config, lib, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.hardware.opengl;
-  pkgs-unstable = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
 in
 {
   options.teevik.hardware.opengl = {
@@ -27,9 +26,6 @@ in
     hardware.opengl = {
       enable = true;
       driSupport32Bit = cfg.driSupport32Bit;
-
-      package = pkgs-unstable.mesa.drivers;
-      package32 = pkgs-unstable.pkgsi686Linux.mesa.drivers;
     };
   };
 }
