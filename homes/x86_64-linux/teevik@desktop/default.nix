@@ -9,7 +9,7 @@
     };
 
     desktop.hyprland = {
-      enableVrr = false;
+      enableVrr = true;
 
       monitor = {
         enable = true;
