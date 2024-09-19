@@ -1,4 +1,4 @@
-{ osConfig, inputs, lib, config, pkgs, ... }:
+{ osConfig, lib, config, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
@@ -81,7 +81,11 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       teevik.hyprland-scratchpad
+      pkgs.catppuccin-cursors.mochaDark
     ];
+
+    home.sessionVariables.XCURSOR_THEME = "catppuccin-mocha-dark-cursors";
+    home.sessionVariables.HYPRCURSOR_THEME = "catppuccin-mocha-dark-cursors";
 
     wayland.windowManager.hyprland = {
       enable = true;

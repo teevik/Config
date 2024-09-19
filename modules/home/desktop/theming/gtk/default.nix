@@ -16,8 +16,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.sessionVariables.XCURSOR_THEME = "Catppuccin-Mocha-Dark-Cursors";
-
     gtk = {
       enable = true;
 
