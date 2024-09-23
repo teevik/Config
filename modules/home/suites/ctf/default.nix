@@ -55,7 +55,8 @@ in
 
       # Fast password cracker
       # https://hashcat.net/hashcat/
-      hashcat
+      # hashcat
+      (hashcat.override { cudaSupport = true; })
 
       # Hashcat-utils are a set of small utilities that are useful in advanced password cracking
       # https://hashcat.net/wiki/doku.php?id=hashcat_utils
@@ -137,10 +138,57 @@ in
               sqlite
             ])
           );
-          profile = "export FHS=1";
-          runScript = "bash";
+          profile = /* bash */ ''
+            export SHELL_ENV=fhs
+            export FHS=1
+          '';
+          runScript = "fish";
           extraOutputsToInstall = [ "dev" ];
         })
+      )
+
+      (
+        pkgs.buildFHSUserEnv {
+          name = "cuda";
+          targetPkgs = pkgs: with pkgs; [
+            git
+            gitRepo
+            gnupg
+            autoconf
+            curl
+            procps
+            gnumake
+            util-linux
+            m4
+            gperf
+            unzip
+            cudatoolkit
+            linuxPackages.nvidia_x11
+            libGLU
+            libGL
+            xorg.libXi
+            xorg.libXmu
+            freeglut
+            xorg.libXext
+            xorg.libX11
+            xorg.libXv
+            xorg.libXrandr
+            zlib
+            ncurses5
+            stdenv.cc
+            binutils
+          ];
+          multiPkgs = pkgs: with pkgs; [ zlib ];
+          runScript = "fish";
+          profile = ''
+            export SHELL_ENV=cuda
+            export DT_RUNPATH=${lib.getLib pkgs.cudaPackages.cuda_cudart}/lib:$DT_RUNPATH
+            export CUDA_PATH=${pkgs.cudatoolkit}
+            # export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib
+            export EXTRA_LDFLAGS="-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib"
+            export EXTRA_CCFLAGS="-I/usr/include"
+          '';
+        }
       )
     ];
   };
