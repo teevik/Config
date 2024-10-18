@@ -39,6 +39,7 @@ in
         spotify.enable = true;
         firefox.enable = true;
         distrobox.enable = true;
+        nwg-displays.enable = true;
       };
 
       xdg.enable = true;
@@ -57,7 +58,6 @@ in
       loupe
       koji
       super-productivity
-      nwg-displays
     ];
   };
 }

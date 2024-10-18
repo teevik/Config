@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.firefox;
@@ -46,6 +46,7 @@ in
           "browser.newtabpage.activity-stream.system.showSponsored" = lock-false;
           "browser.newtabpage.activity-stream.showSponsoredTopSites" = lock-false;
           "middlemouse.paste" = lock-false;
+          "browser.fullscreen.autohide" = lock-false;
         };
 
         ExtensionSettings = {
