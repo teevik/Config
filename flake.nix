@@ -16,11 +16,17 @@
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
     lanzaboote.url = "https://flakehub.com/f/nix-community/lanzaboote/0.3.tar.gz";
 
-    nixos-generators.url = "github:nix-community/nixos-generators";
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-super.url = "github:privatevoid-net/nix-super";
     nur.url = "github:nix-community/NUR";
     nh.url = "github:viperML/nh";
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+
     devenv.url = "github:cachix/devenv";
     darwin.url = "github:lnl7/nix-darwin";
     spicetify = {

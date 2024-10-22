@@ -2,7 +2,8 @@
 {
   imports = [
     ./hardware.nix
-    inputs.lanzaboote.nixosModules.lanzaboote
+    inputs.disko.nixosModules.disko
+    # inputs.lanzaboote.nixosModules.lanzaboote
   ];
 
   teevik = {
@@ -11,10 +12,7 @@
       gaming.enable = true;
     };
 
-    boot = {
-      enable = true;
-      efiSysMountPoint = "/boot/efi";
-    };
+    boot.enable = true;
 
     hardware = {
       nvidia.enable = true;
@@ -26,12 +24,12 @@
     };
   };
 
-  boot.loader.systemd-boot.enable = lib.mkForce false;
+  # boot.loader.systemd-boot.enable = lib.mkForce false;
 
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/etc/secureboot";
-  };
+  # boot.lanzaboote = {
+  #   enable = true;
+  #   pkiBundle = "/etc/secureboot";
+  # };
 
   services.hardware.openrgb = {
     enable = true;
@@ -67,6 +65,10 @@
   '';
 
   powerManagement.cpuFreqGovernor = "performance";
+
+  disko.devices = import ./disk-config.nix {
+    disks = [ "/dev/nvme0n1" ];
+  };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "22.11";
