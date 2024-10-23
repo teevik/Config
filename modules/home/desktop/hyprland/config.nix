@@ -19,6 +19,8 @@ in
 
   env = XCURSOR_SIZE,${builtins.toJSON (cursorSize * 2)}
 
+  exec-once = 1password
+
   ${
     if enableHidpi
     then ''
