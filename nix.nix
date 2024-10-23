@@ -56,7 +56,8 @@ in
     #   options = "--delete-older-than 30d";
     # };
 
-    registry.default.flake = inputs.nixpkgs;
+    registry.default.flake = inputs.nixpkgs-unfree;
+    registry.nixpkgs.flake = inputs.nixpkgs-unfree;
     registry.teevik.flake = inputs.self;
 
     # flake-utils-plus
