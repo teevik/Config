@@ -20,7 +20,7 @@ in
     services.xserver.videoDrivers = [ "nvidia" ];
 
     hardware = {
-      nvidia.open = true;
+      nvidia.open = false;
       nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
       nvidia.modesetting.enable = true;
     };

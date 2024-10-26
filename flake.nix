@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unfree.url = "github:numtide/nixpkgs-unfree/nixos-24.05";
+    nixpkgs-unstable-unfree.url = "github:numtide/nixpkgs-unfree/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-24.05";

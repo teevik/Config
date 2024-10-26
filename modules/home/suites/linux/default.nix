@@ -58,6 +58,7 @@ in
       loupe
       koji
       super-productivity
+      libreoffice-qt6-fresh
     ];
   };
 }

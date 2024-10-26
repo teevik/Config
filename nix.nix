@@ -58,6 +58,7 @@ in
 
     registry.default.flake = inputs.nixpkgs-unfree;
     registry.nixpkgs.flake = inputs.nixpkgs-unfree;
+    registry.unstable.flake = inputs.nixpkgs-unstable-unfree;
     registry.teevik.flake = inputs.self;
 
     # flake-utils-plus
