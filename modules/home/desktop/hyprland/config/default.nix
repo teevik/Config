@@ -1,4 +1,4 @@
-{ osConfig, lib, config, pkgs, ... }:
+{ inputs, osConfig, lib, config, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
@@ -38,9 +38,9 @@ in
     };
 
     scaling = mkOption {
-      type = types.number;
-      default = 1;
-      description = ''
+      type = types.float;
+      default = 1.;
+        description = ''
         Amount to scale
       '';
     };
@@ -78,6 +78,8 @@ in
     };
   };
 
+  imports = [ inputs.hyprnix.homeManagerModules.hyprland ];
+
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       teevik.hyprland-scratchpad
@@ -92,16 +94,16 @@ in
 
       package = osConfig.programs.hyprland.package;
 
-      systemd.enable = true;
+      # config = import ./config/monitor.nix { inherit (cfg) scaling; };
 
       # plugins = with inputs.hyprland-plugins.packages.${pkgs.system}; [
       #   # hyprexpo
       # ];
 
-      extraConfig = import ./config.nix {
-        inherit lib config pkgs;
-        inherit (cfg) enableMasterLayout enableVrr enableHidpi scaling monitor;
-      };
+      # extraConfig = import ./config.nix {
+      #   inherit lib config pkgs;
+      #   inherit (cfg) enableMasterLayout enableVrr enableHidpi scaling monitor;
+      # };
     };
   };
 }

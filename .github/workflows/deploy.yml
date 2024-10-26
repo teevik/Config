@@ -1,37 +1,37 @@
-name: Build & Deploy
-on:
-  push:
-    branches:
-      - main
+# name: Build & Deploy
+# on:
+#   push:
+#     branches:
+#       - main
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+#   cancel-in-progress: true
 
-jobs:
-  build:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/cachix-action@v14
-        with:
-          name: teevik
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-      - name: Build async
-        run: nix build -L .#cachix-deploy-async
-      - name: Deploy async
-        if: github.ref == 'refs/heads/main'
-        env:
-          CACHIX_ACTIVATE_TOKEN: "${{ secrets.CACHIX_ACTIVATE_TOKEN }}"
-        run: |
-          cachix push teevik ./result
-          cachix deploy activate --async ./result
-      - name: Build sync
-        run: nix build -L .#cachix-deploy-sync
-      - name: Deploy sync
-        if: github.ref == 'refs/heads/main'
-        env:
-          CACHIX_ACTIVATE_TOKEN: "${{ secrets.CACHIX_ACTIVATE_TOKEN }}"
-        run: |
-          cachix push teevik ./result
-          cachix deploy activate ./result
+# jobs:
+#   build:
+#     runs-on: self-hosted
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: cachix/cachix-action@v14
+#         with:
+#           name: teevik
+#           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+#       - name: Build async
+#         run: nix build -L .#cachix-deploy-async
+#       - name: Deploy async
+#         if: github.ref == 'refs/heads/main'
+#         env:
+#           CACHIX_ACTIVATE_TOKEN: "${{ secrets.CACHIX_ACTIVATE_TOKEN }}"
+#         run: |
+#           cachix push teevik ./result
+#           cachix deploy activate --async ./result
+#       - name: Build sync
+#         run: nix build -L .#cachix-deploy-sync
+#       - name: Deploy sync
+#         if: github.ref == 'refs/heads/main'
+#         env:
+#           CACHIX_ACTIVATE_TOKEN: "${{ secrets.CACHIX_ACTIVATE_TOKEN }}"
+#         run: |
+#           cachix push teevik ./result
+#           cachix deploy activate ./result

@@ -34,10 +34,16 @@
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
     # hyprland = {
     #   url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
+
+    hyprnix = {
+      url = "github:hyprland-community/hyprnix/allfollow";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     hyprland-contrib.url = "github:hyprwm/contrib";
     # url = "github:helix-editor/helix";
