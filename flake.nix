@@ -41,11 +41,6 @@
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
 
-    hyprnix = {
-      url = "github:hyprland-community/hyprnix/allfollow";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     hyprland-contrib.url = "github:hyprwm/contrib";
     # url = "github:helix-editor/helix";
     helix.url = "github:AlexanderDickie/helix/076d8dde4b9f7a951c1e9b74c26b79689eca5a74";

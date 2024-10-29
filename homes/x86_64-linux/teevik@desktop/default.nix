@@ -10,13 +10,6 @@
 
     desktop.hyprland = {
       enableVrr = true;
-
-      monitor = {
-        enable = true;
-        resolution = "3440x1440";
-        refreshRate = 175;
-        # bitDepth = 10;
-      };
     };
   };
 }
