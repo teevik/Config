@@ -19,7 +19,10 @@ in
 {
   config = mkIf cfg.enable {
     wayland.windowManager.hyprland.settings = {
-      windowrulev2 = [ "float, class:^(${lib.strings.concatStringsSep "|" float})$" ];
+      windowrulev2 = [
+        "float, class:^(${lib.strings.concatStringsSep "|" float})$"
+        "suppressevent maximize, class:^(libreoffice.*)$"
+      ];
     };
   };
 }
