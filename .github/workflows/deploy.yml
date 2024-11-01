@@ -25,7 +25,6 @@ jobs:
           CACHIX_ACTIVATE_TOKEN: "${{ secrets.CACHIX_ACTIVATE_TOKEN }}"
         run: |
           cachix push teevik ./result
-          cachix deploy activate --async ./result
       - name: Build sync
         run: nix build -L .#cachix-deploy-sync
       - name: Deploy sync

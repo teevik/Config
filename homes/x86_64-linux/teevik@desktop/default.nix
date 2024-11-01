@@ -9,7 +9,7 @@
     };
 
     desktop.hyprland = {
-      enableVrr = true;
+      enableVrr = false;
     };
   };
 }
