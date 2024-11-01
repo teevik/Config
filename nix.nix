@@ -56,8 +56,8 @@ in
     #   options = "--delete-older-than 30d";
     # };
 
-    registry.default.flake = inputs.nixpkgs-unfree;
-    registry.nixpkgs.flake = inputs.nixpkgs-unfree;
+    registry.default.flake = inputs.nixpkgs-unstable-unfree;
+    registry.nixpkgs.flake = inputs.nixpkgs-unstable-unfree;
     registry.unstable.flake = inputs.nixpkgs-unstable-unfree;
     registry.teevik.flake = inputs.self;
 

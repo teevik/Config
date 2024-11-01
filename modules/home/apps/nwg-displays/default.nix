@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, inputs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.apps.nwg-displays;
@@ -16,7 +16,9 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      nwg-displays
+      # nwg-displays
+      # TODO use stable
+      (inputs.nixpkgs-unstable-unfree.legacyPackages.${pkgs.system}.nwg-displays)
     ];
 
     home.activation.myNwgDisplay = lib.home-manager.hm.dag.entryAfter [ "writeBoundary" ] ''

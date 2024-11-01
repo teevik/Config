@@ -46,6 +46,7 @@ in
         "ctrl+shift+t" = "new_tab_with_cwd";
         "ctrl+shift+n" = "new_os_window_with_cwd";
         "ctrl+f" = "launch --type=background --cwd=current ${gtk-launch} org.gnome.Nautilus .";
+        "ctrl+e" = "launch --type=background --cwd=current ${gtk-launch} code .";
       };
     };
   };
