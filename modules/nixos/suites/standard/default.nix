@@ -55,7 +55,8 @@ in
 
     services.fwupd.enable = true;
 
-    teevik.user.extraOptions.shell = pkgs.fish;
+    teevik.user.extraOptions.shell = pkgs.nushell;
+    environment.shells = [ pkgs.nushell ];
 
     environment.systemPackages = with pkgs; [
       networkmanagerapplet

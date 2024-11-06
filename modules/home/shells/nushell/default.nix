@@ -18,9 +18,52 @@ in
     programs.nushell = {
       enable = true;
 
-      configFile.text = with config.teevik.theme.colors.withHashtag; ''
+      # envFile.source = ./env.nu;
+
+      # TODO check if needed
+      # environmentVariables = builtins.mapAttrs (name: value: "\"${builtins.toString value}\"") config.home.sessionVariables;
+
+      loginFile.text = /* nu */ ''
+        if (tty) == "/dev/tty1" {
+          Hyprland
+        }
+      '';
+
+      configFile.text = with config.teevik.theme.colors.withHashtag;  /* nu */ ''
+        let fish_completer = {|spans|
+          fish --command $'complete "--do-complete=($spans | str join " ")"'
+          | $"value(char tab)description(char newline)" + $in
+          | from tsv --flexible --no-infer
+        }
+
+        let menus = []
+
+        let keybindings = [
+            {
+                name: fuzzy_file
+                modifier: control
+                keycode: char_t
+                mode: emacs
+                event: {
+                    send: executehostcommand
+                    cmd: "commandline edit --insert (fzf --layout=reverse)"
+                }
+            }
+        ]
+
         $env.config = {
           show_banner: false,
+          shell_integration: true,
+
+          menus: $menus,
+          keybindings: $keybindings
+
+          completions: {
+            external: {
+              enable: true
+              completer: $fish_completer
+            }
+          },
           color_config: {
             separator: "${base03}"
             leading_trailing_space_bg: "${base04}"

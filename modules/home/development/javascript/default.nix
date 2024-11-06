@@ -28,7 +28,10 @@ in
     home.file.".npmrc".text = ''
       prefix=~/.npm-packages
       audit=false
-      loglevel=silent
+    '';
+
+    home.activation.npm-packages = lib.home-manager.hm.dag.entryAfter [ "writeBoundary" ] ''
+      mkdir -p ~/.npm-packages/lib
     '';
   };
 }

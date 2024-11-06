@@ -98,6 +98,7 @@ in
       terraform
       terraform-ls
       graphviz
+      ngrok
     ];
   };
 }
