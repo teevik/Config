@@ -31,10 +31,14 @@
   #   pkiBundle = "/etc/secureboot";
   # };
 
+  # boot.kernelParams = [ "acpi_enforce_resources=lax" ];
+  # hardware.i2c.enable = true;
+  # teevik.user.extraGroups = [ "i2c" ];
+
   services.hardware.openrgb = {
     enable = true;
     motherboard = "amd";
-    package = pkgs.teevik.openrgb.withPlugins [
+    package = pkgs.openrgb.withPlugins [
       pkgs.openrgb-plugin-effects
       pkgs.openrgb-plugin-hardwaresync
     ];
