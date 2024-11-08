@@ -4,8 +4,8 @@
 
   teevik = {
     suites = {
-      standard.enable = true;
-      linux.enable = true;
+      # standard.enable = true;
+      # linux.enable = true;
     };
 
     desktop = {
