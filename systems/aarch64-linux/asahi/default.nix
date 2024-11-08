@@ -14,7 +14,6 @@
 
   hardware.asahi = {
     withRust = true;
-    addEdgeKernelConfig = true;
     useExperimentalGPUDriver = true;
     experimentalGPUInstallMode = "replace";
   };
