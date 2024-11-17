@@ -142,7 +142,7 @@ in
             export SHELL_ENV=fhs
             export FHS=1
           '';
-          runScript = "fish";
+          runScript = "nu";
           extraOutputsToInstall = [ "dev" ];
         })
       )

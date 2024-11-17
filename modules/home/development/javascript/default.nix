@@ -23,6 +23,8 @@ in
       emmet-ls
       nodePackages.typescript-language-server
       nodePackages."@prisma/language-server"
+
+      yarn
     ];
 
     home.file.".npmrc".text = ''
