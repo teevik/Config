@@ -30,6 +30,7 @@ in
 
           "media.ffmpeg.vaapi.enabled" = true;
           "gfx.webrender.all" = true;
+          "middlemouse.paste" = false;
         };
 
         # List of addons: https://github.com/nix-community/nur-combined/blob/master/repos/rycee/pkgs/firefox-addons/generated-firefox-addons.nix
