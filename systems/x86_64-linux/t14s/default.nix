@@ -19,8 +19,7 @@
   ];
 
   hardware.opengl.extraPackages = with pkgs; [
-    rocm-opencl-icd
-    rocm-opencl-runtime
+    rocmPackages.clr.icd
   ];
   # https://wiki.archlinux.org/title/Power_management/Suspend_and_hibernate#Hibernation_into_swap_file
   swapDevices = [{
