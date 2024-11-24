@@ -3,7 +3,7 @@
 , llvmPackages
 , makeBinaryWrapper
 , which
-, MacOSX-SDK
+, darwin
 , libiconv
 , Security
 }:
@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
   postPatch =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       substituteInPlace src/linker.cpp \
-          --replace-fail '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk' ${MacOSX-SDK}
+          --replace-fail '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk' ${darwin.apple_sdk.MacOSX-SDK}
     ''
     + ''
       substituteInPlace build_odin.sh \
