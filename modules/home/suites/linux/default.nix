@@ -15,7 +15,7 @@ in
   };
 
   config = (mkIf cfg.enable {
-    teevik = lib.trace "linux enabled: ${lib.boolToString cfg.enable}" {
+    teevik = {
       desktop = {
         hyprland.enable = true;
         i3.enable = true;
@@ -30,7 +30,7 @@ in
         };
       };
 
-      development = {
+      development = lib.trace "linux enabled: ${lib.boolToString cfg.enable}" {
         roc.enable = true;
         glsl.enable = true;
         latex.enable = true;
