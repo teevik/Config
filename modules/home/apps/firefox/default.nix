@@ -35,34 +35,34 @@ in
 
 
 
-        # List of addons: https://github.com/nix-community/nur-combined/blob/master/repos/rycee/pkgs/firefox-addons/generated-firefox-addons.nix
-        extensions =
-          lib.trace "Firefox module loaded: ${lib.boolToString cfg.enable}" (if cfg.enable then
-            (with config.nur.repos.rycee.firefox-addons; [
-              onepassword-password-manager
-              ublock-origin
-              wikiwand-wikipedia-modernized
+        # # List of addons: https://github.com/nix-community/nur-combined/blob/master/repos/rycee/pkgs/firefox-addons/generated-firefox-addons.nix
+        # extensions =
+        #   lib.trace "Firefox module loaded: ${lib.boolToString cfg.enable}" (if cfg.enable then
+        #     (with config.nur.repos.rycee.firefox-addons; [
+        #       onepassword-password-manager
+        #       ublock-origin
+        #       wikiwand-wikipedia-modernized
 
-              darkreader
+        #       darkreader
 
-              # (buildFirefoxXpiAddon {
-              #   pname = "everforest-dark";
-              #   version = "2.0";
-              #   addonId = "{c0f86627-5243-4bf4-a522-a41ed12f1737}";
-              #   url = "https://addons.mozilla.org/firefox/downloads/file/4055905/everforest_dark_official-2.0.xpi";
-              #   sha256 = "sha256-xL55Gq9URihK0bS/oKyd/yrSoo4qNRpy2Kv+Vt0VL/g=";
-              #   meta = { };
-              # })
+        #       # (buildFirefoxXpiAddon {
+        #       #   pname = "everforest-dark";
+        #       #   version = "2.0";
+        #       #   addonId = "{c0f86627-5243-4bf4-a522-a41ed12f1737}";
+        #       #   url = "https://addons.mozilla.org/firefox/downloads/file/4055905/everforest_dark_official-2.0.xpi";
+        #       #   sha256 = "sha256-xL55Gq9URihK0bS/oKyd/yrSoo4qNRpy2Kv+Vt0VL/g=";
+        #       #   meta = { };
+        #       # })
 
-              # (buildFirefoxXpiAddon {
-              #   pname = "catppuccin-mocha-pink";
-              #   version = "old";
-              #   addonId = "{8446b178-c865-4f5c-8ccc-1d7887811ae3}";
-              #   url = "https://github.com/catppuccin/firefox/releases/download/old/catppuccin_mocha_pink.xpi";
-              #   sha256 = "sha256-MPaGVZMjqdqbDA7dbiSl5qQ2ji+aKyftLJiISY5ShQI=";
-              #   meta = { };
-              # })
-            ]) else [ ]);
+        #       # (buildFirefoxXpiAddon {
+        #       #   pname = "catppuccin-mocha-pink";
+        #       #   version = "old";
+        #       #   addonId = "{8446b178-c865-4f5c-8ccc-1d7887811ae3}";
+        #       #   url = "https://github.com/catppuccin/firefox/releases/download/old/catppuccin_mocha_pink.xpi";
+        #       #   sha256 = "sha256-MPaGVZMjqdqbDA7dbiSl5qQ2ji+aKyftLJiISY5ShQI=";
+        #       #   meta = { };
+        #       # })
+        #     ]) else [ ]);
 
         search.force = true;
 
