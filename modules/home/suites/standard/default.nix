@@ -70,6 +70,7 @@ in
     };
 
     programs.fzf.enable = true;
+    programs.zoxide.enable = true;
 
     home.packages = with pkgs; [
       teevik.asciiquarium
