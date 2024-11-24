@@ -33,9 +33,11 @@ in
           "middlemouse.paste" = false;
         };
 
+
+
         # List of addons: https://github.com/nix-community/nur-combined/blob/master/repos/rycee/pkgs/firefox-addons/generated-firefox-addons.nix
         extensions =
-          if cfg.enable then
+          lib.trace "Firefox module loaded: ${lib.boolToString cfg.enable}" (if cfg.enable then
             (with config.nur.repos.rycee.firefox-addons; [
               onepassword-password-manager
               ublock-origin
@@ -60,7 +62,7 @@ in
               #   sha256 = "sha256-MPaGVZMjqdqbDA7dbiSl5qQ2ji+aKyftLJiISY5ShQI=";
               #   meta = { };
               # })
-            ]) else [ ];
+            ]) else [ ]);
 
         search.force = true;
 
