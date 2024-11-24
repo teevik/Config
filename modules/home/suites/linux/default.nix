@@ -14,7 +14,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.trace "linux enabled: ${lib.boolToString cfg.enable}" (mkIf cfg.enable {
     teevik = {
       desktop = {
         hyprland.enable = true;
@@ -68,5 +68,5 @@ in
       wl-clipboard
       watchman
     ];
-  };
+  });
 }
