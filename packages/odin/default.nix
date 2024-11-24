@@ -1,6 +1,6 @@
 { fetchFromGitHub
 , lib
-, llvmPackages
+, llvmPackages_12
 , makeBinaryWrapper
 , which
 , darwin
@@ -8,7 +8,7 @@
 }:
 
 let
-  inherit (llvmPackages) stdenv;
+  inherit (llvmPackages_12) stdenv;
 in
 stdenv.mkDerivation {
   pname = "odin";
@@ -32,7 +32,7 @@ stdenv.mkDerivation {
       patchShebangs build_odin.sh
     '';
 
-  LLVM_CONFIG = "${llvmPackages.llvm.dev}/bin/llvm-config";
+  LLVM_CONFIG = "${llvmPackages_12.llvm.dev}/bin/llvm-config";
 
   dontConfigure = true;
 
@@ -60,7 +60,7 @@ stdenv.mkDerivation {
     wrapProgram $out/bin/odin \
       --prefix PATH : ${
         lib.makeBinPath (
-          with llvmPackages;
+          with llvmPackages_12;
           [
             bintools
             llvm
