@@ -33,6 +33,7 @@ in
       development = {
         roc.enable = true;
         glsl.enable = true;
+        latex.enable = true;
       };
 
       apps = {

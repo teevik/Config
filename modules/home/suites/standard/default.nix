@@ -30,7 +30,6 @@ in
         go.enable = true;
         odin.enable = false;
         json.enable = true;
-        latex.enable = true;
 
         nix = {
           nil.enable = true;
