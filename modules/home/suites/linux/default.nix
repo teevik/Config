@@ -30,6 +30,10 @@ in
         };
       };
 
+      development = {
+        glsl.enable = true;
+      };
+
       apps = {
         nh.enable = true;
         playerctl.enable = true;

@@ -31,7 +31,6 @@ in
         roc.enable = true;
         odin.enable = false;
         json.enable = true;
-        glsl.enable = true;
         latex.enable = true;
 
         nix = {
