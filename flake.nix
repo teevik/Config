@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
-    nixpkgs-unfree.url = "github:numtide/nixpkgs-unfree/nixos-24.11";
+    nixpkgs-unfree.url = "github:numtide/nixpkgs-unfree/nixos-24.05";
     nixpkgs-unstable-unfree.url = "github:numtide/nixpkgs-unfree/nixos-unstable";
 
     nixos-apple-silicon = {
