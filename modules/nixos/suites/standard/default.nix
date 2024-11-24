@@ -44,6 +44,7 @@ in
       apps = {
         _1password.enable = true;
         nautilus.enable = true;
+        firefox.enable = true;
         android-studio.enable = true;
       };
     };
