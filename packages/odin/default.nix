@@ -45,7 +45,7 @@ stdenv.mkDerivation {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
-    darwin.apple_sdk.Security
+    darwin.apple_sdk.frameworks.Security
   ];
 
   installPhase = ''
