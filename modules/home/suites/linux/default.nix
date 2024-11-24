@@ -31,6 +31,7 @@ in
       };
 
       development = {
+        roc.enable = true;
         glsl.enable = true;
       };
 
