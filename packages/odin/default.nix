@@ -2,8 +2,10 @@
 , lib
 , llvmPackages
 , makeBinaryWrapper
-, nix-update-script
 , which
+, MacOSX-SDK
+, libiconv
+, Security
 }:
 
 let
@@ -11,20 +13,25 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "odin";
-  version = "dev-2024-05";
+  version = "0-unstable-2024-10-12";
 
   src = fetchFromGitHub {
     owner = "odin-lang";
     repo = "Odin";
-    rev = version;
-    hash = "sha256-JGTC+Gi5mkHQHvd5CmEzrhi1muzWf1rUN4f5FT5K5vc=";
+    rev = "af9ae4897ad9e526d74489ddd12cfae179639ff3";
+    hash = "sha256-ky3jiVk2KfOW4JjXqiCTdnbEu7bnmTVupw2r5fwyB00=";
   };
 
-  postPatch = ''
-    substituteInPlace build_odin.sh \
-        --replace-fail '-framework System' '-lSystem'
-    patchShebangs build_odin.sh
-  '';
+  postPatch =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      substituteInPlace src/linker.cpp \
+          --replace-fail '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk' ${MacOSX-SDK}
+    ''
+    + ''
+      substituteInPlace build_odin.sh \
+          --replace-fail '-framework System' '-lSystem'
+      patchShebangs build_odin.sh
+    '';
 
   LLVM_CONFIG = "${llvmPackages.llvm.dev}/bin/llvm-config";
 
@@ -37,6 +44,10 @@ stdenv.mkDerivation rec {
     which
   ];
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    libiconv
+    Security
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -64,19 +75,12 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   meta = {
     description = "Fast, concise, readable, pragmatic and open sourced programming language";
     downloadPage = "https://github.com/odin-lang/Odin";
     homepage = "https://odin-lang.org/";
     license = lib.licenses.bsd3;
     mainProgram = "odin";
-    maintainers = with lib.maintainers; [
-      astavie
-      luc65r
-      znaniye
-    ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isMusl;
   };
