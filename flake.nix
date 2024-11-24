@@ -2,7 +2,7 @@
   description = "teevik's NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unfree.url = "github:numtide/nixpkgs-unfree/nixos-24.05";
     nixpkgs-unstable-unfree.url = "github:numtide/nixpkgs-unfree/nixos-unstable";
 
