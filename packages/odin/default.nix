@@ -5,13 +5,12 @@
 , which
 , darwin
 , libiconv
-, Security
 }:
 
 let
   inherit (llvmPackages) stdenv;
 in
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "odin";
   version = "0-unstable-2024-10-12";
 
@@ -46,7 +45,7 @@ stdenv.mkDerivation rec {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
-    Security
+    darwin.apple_sdk.Security
   ];
 
   installPhase = ''
