@@ -1,38 +1,34 @@
-{ stdenv, fetchFromGitHub, makeBinaryWrapper, unstableGitUpdater, teevik, lib }:
+{ fetchFromGitHub
+, makeBinaryWrapper
+, stdenv
+, teevik
+}:
 let
   odin = teevik.odin;
 in
 stdenv.mkDerivation {
   pname = "ols";
-  version = "0-unstable-2024-05-11";
+  version = "0-unstable-2024-10-27";
 
   src = fetchFromGitHub {
     owner = "DanielGavin";
     repo = "ols";
-    rev = "30625d5568c085c622deece91ed8ac9e81ba28be";
-    hash = "sha256-iBrXpLrnBL5W47Iz0Uy4nd5h/ADqSnxZt2jWQi9eYiM=";
+    rev = "a3b090c7ef9604b0d6630caedb9c204a708828ac";
+    hash = "sha256-pmxdfS8GyJneuf+ADkGyj7DZVqiyQgyNILjztxMFC0c=";
   };
-
-  passthru.updateScript = unstableGitUpdater {
-    hardcodeZeroVersion = true;
-  };
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-  ];
-
-  buildInputs = [
-    odin
-  ];
 
   postPatch = ''
-    patchShebangs build.sh
+    patchShebangs build.sh odinfmt.sh
   '';
+
+  nativeBuildInputs = [ makeBinaryWrapper ];
+
+  buildInputs = [ odin ];
 
   buildPhase = ''
     runHook preBuild
 
-    ./build.sh
+    ./build.sh && ./odinfmt.sh
 
     runHook postBuild
   '';
@@ -40,18 +36,13 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -Dm755 ols -t $out/bin/
+    install -Dm755 ols odinfmt -t $out/bin/
     wrapProgram $out/bin/ols --set-default ODIN_ROOT ${odin}/share
 
     runHook postInstall
   '';
 
-  meta = with lib; {
-    inherit (odin.meta) platforms;
-    description = "Language server for the Odin programming language";
+  meta = {
     mainProgram = "ols";
-    homepage = "https://github.com/DanielGavin/ols";
-    license = licenses.mit;
-    maintainers = with maintainers; [ astavie znaniye ];
   };
 }
