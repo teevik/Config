@@ -28,7 +28,6 @@ in
         cpp.enable = true;
         zig.enable = true;
         go.enable = true;
-        roc.enable = true;
         odin.enable = false;
         json.enable = true;
         latex.enable = true;
