@@ -32,7 +32,8 @@ in
       services = {
         autologin.enable = true;
         flatpak.enable = true;
-        podman.enable = true;
+        # podman.enable = true;
+        docker.enable = true;
         tailscale.enable = true;
         polkit.enable = true;
       };

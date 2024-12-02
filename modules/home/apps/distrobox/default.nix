@@ -23,7 +23,7 @@ in
     xdg.configFile = {
       "distrobox/distrobox.conf".text = ''
         container_always_pull="1"
-        container_manager="podman"
+        container_manager="docker"
       '';
 
       "distrobox/distrobox.ini" = {
@@ -38,7 +38,7 @@ in
         };
 
         onChange = ''
-          export PATH=${pkgs.podman}/bin:$PATH
+          export PATH=${pkgs.docker}/bin:$PATH
           ${lib.getExe' pkgs.distrobox "distrobox"} assemble create --file ${config.home.homeDirectory}/.config/distrobox/distrobox.ini
         '';
       };

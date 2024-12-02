@@ -119,11 +119,14 @@ in
           dim_strength = 0;
           dim_special = 0.5;
 
-          drop_shadow = true;
-          shadow_offset = "0 5";
-          shadow_range = 50;
-          shadow_render_power = 3;
-          "col.shadow" = "rgba(1a1a1a1a)";
+
+          shadow = {
+            enabled = true;
+            offset = "0 5";
+            range = 50;
+            render_power = 3;
+            color = "rgba(1a1a1a1a)";
+          };
 
           blur = {
             enabled = true;

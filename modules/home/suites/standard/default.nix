@@ -97,6 +97,7 @@ in
       terraform-ls
       graphviz
       ngrok
+      git-agecrypt
     ];
   };
 }

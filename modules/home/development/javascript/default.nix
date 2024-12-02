@@ -21,7 +21,8 @@ in
       typescript
       biome
       emmet-ls
-      nodePackages.typescript-language-server
+      # nodePackages.typescript-language-server
+      vtsls
       nodePackages."@prisma/language-server"
 
       yarn

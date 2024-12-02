@@ -140,28 +140,32 @@ in
       command = "emmet-ls"
       args = ["--stdio"]
 
+      [language-server.vtsls]
+      command = "vtsls"
+      args = ["--stdio"]
+
       [[language]]
       name = "html"
       language-servers = ["vscode-html-language-server", "emmet-ls"]
 
       [[language]]
       name = "javascript"
-      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      language-servers = [ { name = "vtsls", except-features = [ "format" ] }, "biome" ]
       auto-format = true
 
       [[language]]
       name = "typescript"
-      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+      language-servers = [ { name = "vtsls", except-features = [ "format" ] }, "biome" ]
       auto-format = true
 
       [[language]]
       name = "tsx"
-      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome", "emmet-ls" ]
+      language-servers = [ { name = "vtsls", except-features = [ "format" ] }, "biome", "emmet-ls" ]
       auto-format = true
 
       [[language]]
       name = "jsx"
-      language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome", "emmet-ls" ]
+      language-servers = [ { name = "vtsls", except-features = [ "format" ] }, "biome", "emmet-ls" ]
       auto-format = true
 
       [[language]]
