@@ -7,7 +7,7 @@ let
   terminal = "kitty";
   menu = "tofi-drun --drun-launch=true";
   browser = "firefox";
-  discord = "webcord --ozone-platform-hint=x11";
+  discord = "webcord";
   spotify = "spotify";
   files = "nautilus";
   editor = "code";
