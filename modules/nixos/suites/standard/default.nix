@@ -63,6 +63,7 @@ in
       networkmanagerapplet
       pavucontrol
       pulsemixer
+      config.boot.kernelPackages.perf
     ];
   };
 }

@@ -62,15 +62,43 @@ $env.PROMPT_MULTILINE_INDICATOR = {|| "::: " }
 # - converted from a string to a value on Nushell startup (from_string)
 # - converted from a value back to a string when running external commands (to_string)
 # Note: The conversions happen *after* config.nu is loaded
+def converter_by_separator [sep: string] {
+    {
+        from_string: {|s| $s | split row $sep }
+        to_string: {|v| $v | str join $sep }
+    }
+}
+
+let esep_list_converter = converter_by_separator (char esep)
+let space_list_converter = converter_by_separator (char space)
+
 $env.ENV_CONVERSIONS = {
-    "PATH": {
-        from_string: { |s| $s | split row (char esep) | path expand --no-symlink }
-        to_string: { |v| $v | path expand --no-symlink | str join (char esep) }
-    }
-    "Path": {
-        from_string: { |s| $s | split row (char esep) | path expand --no-symlink }
-        to_string: { |v| $v | path expand --no-symlink | str join (char esep) }
-    }
+    # "PATH": {
+    #     from_string: { |s| $s | split row (char esep) | path expand --no-symlink }
+    #     to_string: { |v| $v | path expand --no-symlink | str join (char esep) }
+    # }
+    # "Path": {
+    #     from_string: { |s| $s | split row (char esep) | path expand --no-symlink }
+    #     to_string: { |v| $v | path expand --no-symlink | str join (char esep) }
+    # }
+    "DIRS_LIST": $esep_list_converter
+    "GIO_EXTRA_MODULES": $esep_list_converter
+    "GTK_PATH": $esep_list_converter
+    "INFOPATH": $esep_list_converter
+    "LIBEXEC_PATH": $esep_list_converter
+    "LS_COLORS": $esep_list_converter
+    "NU_LIB_DIRS": $esep_list_converter
+    "NU_PLUGIN_DIRS": $esep_list_converter
+    "PATH": $esep_list_converter
+    "Path": $esep_list_converter
+    "QTWEBKIT_PLUGIN_PATH": $esep_list_converter
+    "SESSION_MANAGER": $esep_list_converter
+    "TERMINFO_DIRS": $esep_list_converter
+    "XCURSOR_PATH": $esep_list_converter
+    "XDG_CONFIG_DIRS": $esep_list_converter
+    "XDG_DATA_DIRS": $esep_list_converter
+
+    "NIX_PROFILES": $space_list_converter
 }
 
 # Directories to search for scripts when calling source or use
@@ -85,6 +113,7 @@ $env.NU_PLUGIN_DIRS = [
     ($nu.default-config-dir | path join 'plugins') # add <nushell-config-dir>/plugins
 ]
 
+# $env.PATH = ($env.PATH | split row (char esep) | append '~/.cargo/bin')
 # To add entries to PATH (on Windows you might use Path), you can use the following pattern:
 # $env.PATH = ($env.PATH | split row (char esep) | prepend '/some/path')
 # An alternate way to add entries to $env.PATH is to use the custom command `path add`

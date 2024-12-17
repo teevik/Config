@@ -68,11 +68,11 @@ in
             installation_mode = "force_installed";
           };
 
-          # darkreader
-          "addon@darkreader.org" = {
-            install_url = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest";
-            installation_mode = "force_installed";
-          };
+          # # darkreader
+          # "addon@darkreader.org" = {
+          #   install_url = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest";
+          #   installation_mode = "force_installed";
+          # };
 
           # 7tv
           "moz-addon-prod@7tv.app" = {

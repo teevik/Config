@@ -22,6 +22,7 @@ in
 
       # # TODO check if needed
       # environmentVariables = builtins.mapAttrs (name: value: "\"${builtins.toString value}\"") config.home.sessionVariables;
+      environmentVariables = builtins.mapAttrs (name: value: "${builtins.toString value}") config.home.sessionVariables;
 
       loginFile.text = /* nu */ ''
         if (tty) == "/dev/tty1" {
