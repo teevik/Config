@@ -103,6 +103,7 @@
   environment.systemPackages = with pkgs; [
     virt-manager
     probe-rs
+    virtiofsd
   ];
 
   # Pico probe
