@@ -11,6 +11,7 @@
       identityPaths = [ "/home/teevik/.ssh/id_rsa" ];
 
       secrets.copilot.file = ./copilot.age;
+      secrets.atuin.file = ./atuin.age;
     };
   };
 }

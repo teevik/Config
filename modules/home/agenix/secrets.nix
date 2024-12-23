@@ -5,4 +5,5 @@ let
 in
 {
   "copilot.age".publicKeys = publicKeys;
+  "atuin.age".publicKeys = publicKeys;
 }

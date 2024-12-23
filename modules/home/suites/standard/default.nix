@@ -63,6 +63,7 @@ in
         neovim.enable = true;
         yazi.enable = true;
         tealdeer.enable = true;
+        atuin.enable = true;
       };
     };
 

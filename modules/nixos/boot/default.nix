@@ -26,6 +26,9 @@ in
 
   config = mkIf cfg.enable {
     boot = {
+      supportedFilesystems = [ "bcachefs" ];
+      kernelPackages = pkgs.linuxPackages_latest;
+
       loader = {
         systemd-boot = {
           enable = true;

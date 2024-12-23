@@ -69,7 +69,7 @@ in
         theme = "Nightlight";
       };
 
-      kittyTheme = "Tokyo Night";
+      kittyTheme = "tokyo_night_night";
 
       helixTheme = "tokyonight";
     };

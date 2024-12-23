@@ -105,7 +105,7 @@ in
         };
       };
 
-      kittyTheme = "Everforest Dark Medium";
+      kittyTheme = "everforest_dark_medium";
 
       helixTheme = "everforest_dark";
     };

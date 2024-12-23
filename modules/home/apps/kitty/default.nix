@@ -28,7 +28,7 @@ in
 
       font.name = "JetBrainsMono Nerd Font";
 
-      theme = kittyTheme;
+      themeFile = kittyTheme;
 
       settings = {
         scrollback_fill_enlarged_window = "yes";

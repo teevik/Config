@@ -1,43 +1,93 @@
+# { disks, ... }: {
+#   disk = {
+#     disk0 = {
+#       device = builtins.elemAt disks 0;
+#       type = "disk";
+
+#       content = {
+#         type = "table";
+#         format = "gpt";
+
+#         partitions = [
+#           {
+#             name = "ESP";
+#             start = "1MiB";
+#             end = "512MiB";
+
+#             bootable = true;
+
+#             content = {
+#               type = "filesystem";
+#               format = "vfat";
+#               mountpoint = "/boot";
+#             };
+#           }
+
+#           {
+#             name = "root";
+#             start = "512MiB";
+#             end = "100%";
+
+#             part-type = "primary";
+#             bootable = true;
+
+#             content = {
+#               type = "filesystem";
+#               format = "bcachefs";
+#               mountpoint = "/";
+#             };
+#           }
+
+
+#         ];
+#       };
+#     };
+#   };
+# }
+
 { disks, ... }: {
   disk = {
-    disk0 = {
+    main = {
       device = builtins.elemAt disks 0;
       type = "disk";
 
       content = {
-        type = "table";
-        format = "gpt";
+        type = "gpt";
 
-        partitions = [
-          {
-            name = "ESP";
-            start = "1MiB";
-            end = "512MiB";
-
-            bootable = true;
+        partitions = {
+          ESP = {
+            type = "EF00";
+            size = "500M";
+            # priority = 1;
 
             content = {
               type = "filesystem";
               format = "vfat";
               mountpoint = "/boot";
             };
-          }
+          };
 
-          {
-            name = "root";
-            start = "512MiB";
-            end = "100%";
-
-            part-type = "primary";
-            bootable = true;
+          root = {
+            # size = "100%";
+            # priority = 2;
+            end = "-16G";
 
             content = {
               type = "filesystem";
-              format = "ext4";
+              format = "bcachefs";
               mountpoint = "/";
             };
-          }
-        ];
+          };
+
+          swap = {
+            size = "100%";
+            content = {
+              type = "swap";
+              discardPolicy = "both";
+              resumeDevice = true; # resume from hiberation from this device
+            };
+          };
+        };
       };
     };
   };

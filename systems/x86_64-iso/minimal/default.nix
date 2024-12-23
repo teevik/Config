@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   config = {
     teevik = {
@@ -12,8 +12,12 @@
       };
     };
 
+    boot.supportedFilesystems = [ "bcachefs" ];
+    boot.kernelPackages = lib.mkOverride 0 pkgs.linuxPackages_latest;
+
     system.nixos.variant_id = "installer";
     isoImage.isoName = "nixos-minimal-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.system}.iso";
+
 
     # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
     system.stateVersion = "23.11";

@@ -3,7 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
-    nixpkgs-unfree.url = "github:numtide/nixpkgs-unfree/nixos-24.05";
+
+    nixpkgs-unfree = {
+      url = "github:numtide/nixpkgs-unfree";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixpkgs-unstable-unfree.url = "github:numtide/nixpkgs-unfree/nixos-unstable";
 
     nixos-apple-silicon = {
@@ -29,7 +34,6 @@
     };
 
     nix-super.url = "github:privatevoid-net/nix-super";
-    nur.url = "github:nix-community/NUR";
     nh.url = "github:viperML/nh";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
@@ -51,7 +55,10 @@
     helix.url = "github:AlexanderDickie/helix/076d8dde4b9f7a951c1e9b74c26b79689eca5a74";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     neovim.url = "github:teevik/neovim";
-    nixarr.url = "github:rasmus-kirk/nixarr";
+    nixarr = {
+      url = "github:rasmus-kirk/nixarr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-index-database.url = "github:Mic92/nix-index-database";
     cachix-deploy-flake.url = "github:cachix/cachix-deploy-flake";
     roc.url = "github:roc-lang/roc";
@@ -84,6 +91,8 @@
 
           permittedInsecurePackages = [
             "electron-24.8.6"
+            "dotnet-sdk-6.0.428"
+            "aspnetcore-runtime-6.0.36"
           ];
         };
 

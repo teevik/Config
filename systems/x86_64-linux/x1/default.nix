@@ -22,13 +22,13 @@
     };
   };
 
-  # https://wiki.archlinux.org/title/Power_management/Suspend_and_hibernate#Hibernation_into_swap_file
-  swapDevices = [{
-    device = "/var/lib/swapfile";
-    size = 20 * 1024;
-  }];
+  # # https://wiki.archlinux.org/title/Power_management/Suspend_and_hibernate#Hibernation_into_swap_file
+  # swapDevices = [{
+  #   device = "/var/lib/swapfile";
+  #   size = 20 * 1024;
+  # }];
 
-  boot.resumeDevice = "/dev/disk/by-uuid/f2aecc17-156d-4d2a-ab9f-c6ce222b527b";
+  # boot.resumeDevice = "/dev/disk/by-uuid/f2aecc17-156d-4d2a-ab9f-c6ce222b527b";
   services.logind.lidSwitch = "suspend-then-hibernate";
   systemd.sleep.extraConfig = "HibernateDelaySec=1h";
 
