@@ -23,7 +23,7 @@ in
 
         enableBashIntegration = false;
         enableFishIntegration = false;
-        enabdleNushellIntegration = false;
+        enableNushellIntegration = false;
       };
     };
   };

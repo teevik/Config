@@ -28,13 +28,14 @@
   #   size = 20 * 1024;
   # }];
 
+  # TODO hibernate
   # boot.resumeDevice = "/dev/disk/by-uuid/f2aecc17-156d-4d2a-ab9f-c6ce222b527b";
   services.logind.lidSwitch = "suspend-then-hibernate";
   systemd.sleep.extraConfig = "HibernateDelaySec=1h";
 
-  boot.kernelParams = [
-    "resume_offset=105984000"
-  ];
+  # boot.kernelParams = [
+  #   "resume_offset=105984000"
+  # ];
 
   disko.devices = import ./disk-config.nix {
     disks = [ "/dev/nvme0n1" ];
