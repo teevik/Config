@@ -1,9 +1,10 @@
-{ config, lib, pkgs, osConfig ? { }, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.services.swayidle;
 
-  hyprland = osConfig.programs.hyprland.package;
+  # hyprland = osConfig.programs.hyprland.package;
+  hyprland = pkgs.hyprland;
   hyprctl = "${hyprland}/bin/hyprctl";
   light = lib.getExe (pkgs.light);
 in

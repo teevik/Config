@@ -1,4 +1,4 @@
-{ osConfig, lib, config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 let
   inherit (lib) types mkOption mkIf;
   cfg = config.teevik.desktop.hyprland;
@@ -52,7 +52,8 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
-      package = osConfig.programs.hyprland.package;
+      # package = osConfig.programs.hyprland.package;
+      package = pkgs.hyprland;
 
       settings = {
         exec-once = [

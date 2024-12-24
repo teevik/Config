@@ -58,7 +58,7 @@ in
 
           # 1password
           "{d634138d-c276-4fc8-924b-40a0ea21d284}" = {
-            install_url = "https://addons.mozilla.org/firefox/downloads/latest/1password_x_password_manager/latest";
+            install_url = "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager/latest";
             installation_mode = "force_installed";
           };
 

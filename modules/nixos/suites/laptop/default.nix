@@ -16,5 +16,6 @@ in
 
   config = mkIf cfg.enable {
     services.auto-cpufreq.enable = true;
+    services.tlp.enable = lib.mkForce false;
   };
 }

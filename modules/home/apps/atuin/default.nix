@@ -17,13 +17,14 @@ in
   config = mkIf cfg.enable {
     programs.atuin = {
       enable = true;
+
+      enableBashIntegration = false;
+      enableFishIntegration = false;
+      enableNushellIntegration = false;
+
       settings = {
         key_path = config.age.secrets.atuin.path;
         sync_frequency = "15m";
-
-        enableBashIntegration = false;
-        enableFishIntegration = false;
-        enableNushellIntegration = false;
       };
     };
   };

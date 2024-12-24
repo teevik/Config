@@ -64,6 +64,7 @@ in
         yazi.enable = true;
         tealdeer.enable = true;
         atuin.enable = true;
+        carapace.enable = true;
       };
     };
 

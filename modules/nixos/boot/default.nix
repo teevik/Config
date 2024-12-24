@@ -29,6 +29,9 @@ in
       supportedFilesystems = [ "bcachefs" ];
       kernelPackages = pkgs.linuxPackages_latest;
 
+      tmp.useTmpfs = true;
+      tmp.tmpfsSize = "150%";
+
       loader = {
         systemd-boot = {
           enable = true;
