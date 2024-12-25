@@ -46,13 +46,18 @@ in
 
           helix-kitty-integration = pkgs.writeScriptBin "hx" ''
             #!/usr/bin/env bash
-            ${kittyBin} @ set-spacing padding=0
-            ${kittyBin} @ set-background-opacity 1
+
+            if [ $KITTY_WINDOW_ID ]; then
+              ${kittyBin} @ set-spacing padding=0
+              ${kittyBin} @ set-background-opacity 1
+            fi
 
             ${helixBin} -a $1 $2 $3
 
-            ${kittyBin} @ set-spacing padding=10
-            ${kittyBin} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
+            if [ $KITTY_WINDOW_ID ]; then
+              ${kittyBin} @ set-spacing padding=10
+              ${kittyBin} @ set-background-opacity ${builtins.toJSON config.teevik.apps.kitty.opacity}
+            fi
           '';
         in
         pkgs.runCommand

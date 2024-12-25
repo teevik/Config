@@ -11,9 +11,9 @@
   wsl.enable = true;
   wsl.defaultUser = "teevik";
 
-    teevik.suites = {
-      standard.enable = true;
-    };
+  teevik.suites = {
+    standard.enable = true;
+  };
 
   system.stateVersion = "22.11";
 }
