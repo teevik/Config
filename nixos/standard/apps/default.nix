@@ -23,7 +23,7 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = [
     config.boot.kernelPackages.perf
   ];
 
