@@ -5,15 +5,17 @@ let
 in
 {
   imports = [
+    ./age
+    ./apps
     ./docker.nix
     ./fonts.nix
     ./hyprland.nix
     ./network.nix
     ./pipewire.nix
-    ./tailscale.nix
-    ./age
     ./polkit.nix
     ./shells.nix
+    ./ssh.nix
+    ./tailscale.nix
   ];
 
   # Nix conifg
@@ -33,6 +35,7 @@ in
 
     registry = {
       default.flake = inputs.nixpkgs;
+      default-flake.flake = inputs.nixpkgs;
       nixpkgs.flake = inputs.nixpkgs;
       teevik.flake = inputs.self;
     };

@@ -24,6 +24,7 @@
   };
 
   environment.systemPackages = [
+    pkgs.git
     config.boot.kernelPackages.perf
     inputs.home-manager.packages.${pkgs.system}.home-manager
   ];
