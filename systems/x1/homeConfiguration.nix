@@ -11,8 +11,8 @@
   #   hypridle.enable = true;
   # };
 
-  teevik.desktop.hyprland = {
-    enableHidpi = true;
-    scaling = 1.066667;
-  };
+  # teevik.desktop.hyprland = {
+  #   enableHidpi = true;
+  #   scaling = 1.066667;
+  # };
 }
