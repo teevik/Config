@@ -1,4 +1,4 @@
-{ inputs, config, pkgs, ... }:
+{ self, inputs, config, pkgs, ... }:
 let
   initialHashedPassword =
     "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
@@ -18,7 +18,8 @@ in
 
   # Nix conifg
   nix = {
-    package = pkgs.lix;
+    # package = pkgs.lix;
+    package = pkgs.callPackage "${self}/packages/lix" { };
 
     settings = {
       experimental-features = [ "nix-command" "flakes" ];

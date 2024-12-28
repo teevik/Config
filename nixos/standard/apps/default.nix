@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ inputs, config, pkgs, ... }: {
   imports = [
     ./nautilus.nix
     ./firefox.nix
@@ -25,6 +25,7 @@
 
   environment.systemPackages = [
     config.boot.kernelPackages.perf
+    inputs.home-manager.packages.${pkgs.system}.home-manager
   ];
 
   services.fwupd.enable = true;

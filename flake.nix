@@ -1,37 +1,38 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+
+    home-manager = {
+      url = "github:nix-community/home-manager/release-24.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
   };
 
-  outputs = inputs@{ self, nixpkgs, ... }: {
-    nixosConfigurations =
-      let
-        lib = nixpkgs.lib;
+  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+    let
+      lib = nixpkgs.lib;
 
-        foldersIn = path:
-          let
-            everything = builtins.readDir path;
-            directories =
-              lib.filterAttrs (name: type: type == "directory") everything;
-          in
-          builtins.attrNames directories;
+      foldersIn = path:
+        let
+          everything = builtins.readDir path;
+          directories =
+            lib.filterAttrs (name: type: type == "directory") everything;
+        in
+        builtins.attrNames directories;
 
-        archs = foldersIn ./systems;
-        hostnamesByArch = lib.genAttrs archs (arch: foldersIn ./systems/${arch});
+      systems = foldersIn ./systems;
 
-        systems = lib.flatten (lib.mapAttrsToList
-          (arch: systems: map (hostname: { inherit arch hostname; }) systems)
-          hostnamesByArch);
-
-        configurationFor = { arch, hostname }: {
+      nixosConfigurationFor = hostname:
+        let system = import ./systems/${hostname}; in {
           ${hostname} = lib.nixosSystem {
-            system = arch;
+            system = system.arch;
             modules = [
-              ./systems/${arch}/${hostname}/configuration.nix
+              system.nixosConfiguration
               { networking.hostName = hostname; }
             ];
 
@@ -39,7 +40,27 @@
           };
 
         };
-      in
-      lib.mergeAttrsList (map configurationFor systems);
-  };
+
+      homeConfigurationFor = hostname:
+        let system = import ./systems/${hostname}; in {
+          "teevik@${hostname}" = home-manager.lib.homeManagerConfiguration {
+            pkgs = nixpkgs.legacyPackages.${system.arch};
+            modules = [
+              system.homeConfiguration
+              {
+                home = {
+                  username = "teevik";
+                  homeDirectory = "/home/teevik";
+                };
+              }
+            ];
+            extraSpecialArgs = { inherit inputs self; };
+          };
+        };
+
+    in
+    {
+      nixosConfigurations = lib.mergeAttrsList (map nixosConfigurationFor systems);
+      homeConfigurations = lib.mergeAttrsList (map homeConfigurationFor systems);
+    };
 }
