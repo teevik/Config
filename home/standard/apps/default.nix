@@ -1,0 +1,29 @@
+{ pkgs, ... }: {
+  home.packages = with pkgs; [
+    bat
+    erdtree
+    flyctl
+    gcc
+    just
+    magic-wormhole
+    nurl
+    obsidian
+    ripgrep
+    sd
+    watchexec
+    xdg-utils
+    yazi
+    wrk
+    bruno
+    gh
+    gitu
+    nix-inspect
+    xournalpp
+    azure-cli
+    terraform
+    terraform-ls
+    graphviz
+    ngrok
+    git-agecrypt
+  ];
+}
