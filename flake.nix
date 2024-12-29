@@ -19,6 +19,7 @@
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
     let
       lib = nixpkgs.lib;
+      pkgsFor = arch: import nixpkgs { system = arch; config.allowUnfree = true; };
 
       foldersIn = path:
         let
@@ -33,7 +34,9 @@
       nixosConfigurationFor = hostname:
         let system = import ./systems/${hostname}; in {
           ${hostname} = lib.nixosSystem {
+            pkgs = pkgsFor system.arch;
             system = system.arch;
+
             modules = [
               system.nixosConfiguration
               { networking.hostName = hostname; }
@@ -41,13 +44,13 @@
 
             specialArgs = { inherit inputs self; };
           };
-
         };
 
       homeConfigurationFor = hostname:
         let system = import ./systems/${hostname}; in {
           "teevik@${hostname}" = home-manager.lib.homeManagerConfiguration {
-            pkgs = nixpkgs.legacyPackages.${system.arch};
+            pkgs = pkgsFor system.arch;
+
             modules = [
               system.homeConfiguration
               {
@@ -57,6 +60,7 @@
                 };
               }
             ];
+
             extraSpecialArgs = { inherit inputs self; };
           };
         };

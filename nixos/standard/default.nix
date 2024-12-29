@@ -41,7 +41,6 @@ in
     };
   };
 
-  nixpkgs.config.allowUnfree = true;
   documentation.man.generateCaches = false;
 
   # Boot
