@@ -8,6 +8,7 @@
     };
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nix-index-database.url = "github:Mic92/nix-index-database";
 
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";

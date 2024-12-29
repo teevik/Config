@@ -14,7 +14,9 @@
     # following configuration is added only when building VM with build-vm
     virtualisation = {
       memorySize = 4096; # Use 2048MiB memory.
+      diskSize = 8192; # Use 8GiB disk.
       cores = 3;
+      writableStoreUseTmpfs = false;
     };
   };
 
