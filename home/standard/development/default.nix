@@ -1,4 +1,6 @@
-{ pkgs, lib, ... }: {
+{ inputs, pkgs, lib, ... }:
+let rocPkgs = inputs.roc.packages.${pkgs.system};
+in {
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true;

@@ -12,6 +12,8 @@
 
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
+
+    roc.url = "github:roc-lang/roc";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
