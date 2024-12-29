@@ -14,6 +14,10 @@
   # Bash, start Nu
   programs.bash = {
     interactiveShellInit = ''
+      if [ -f ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then
+        source  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+      fi
+
       if [[ $(${pkgs.procps}/bin/ps --no-header --pid=$PPID --format=comm) != "nu" && -z ''${BASH_EXECUTION_STRING} ]]
       then
         shopt -q login_shell && LOGIN_OPTION='--login' || LOGIN_OPTION=""

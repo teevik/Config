@@ -3,7 +3,6 @@ let gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
 in {
   imports = [ inputs.nix-index-database.hmModules.nix-index ];
 
-
   programs = {
     fzf.enable = true;
     zoxide.enable = true;

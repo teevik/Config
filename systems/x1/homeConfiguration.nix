@@ -1,4 +1,8 @@
-{ ... }: {
+{ self, ... }: {
+  imports = [
+    "${self}/home/standard"
+  ];
+
   home.stateVersion = "24.11";
 
   # suites = {
