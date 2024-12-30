@@ -30,5 +30,7 @@
     inputs.home-manager.packages.${pkgs.system}.home-manager
   ];
 
+  environment.variables.EDITOR = "hx";
+
   services.fwupd.enable = true;
 }
