@@ -20,8 +20,8 @@ in
 
   # Nix conifg
   nix = {
-    # package = pkgs.lix;
-    package = pkgs.callPackage "${self}/packages/lix" { };
+    package = pkgs.lix;
+    # package = pkgs.callPackage "${self}/packages/lix" { };
 
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
