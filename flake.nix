@@ -1,6 +1,10 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nix = {
+      url = "github:NixOS/nix/2.26.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
@@ -14,12 +18,45 @@
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
 
     roc.url = "github:roc-lang/roc";
+    openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
+    hyprland-contrib.url = "github:hyprwm/contrib";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
     let
       lib = nixpkgs.lib;
-      pkgsFor = arch: import nixpkgs { system = arch; config.allowUnfree = true; };
+      pkgsFor = arch: import nixpkgs {
+        system = arch;
+        config.allowUnfree = true;
+      };
+
+      nixConfig = arch: {
+        package = inputs.nix.packages.${arch}.nix;
+        # package = pkgs.lix;
+        # package = pkgs.callPackage "${self}/packages/lix" { };
+
+        settings = {
+          experimental-features = [ "nix-command" "flakes" ];
+          auto-optimise-store = true;
+
+          substituters = [
+            "https://cache.nixos.org"
+            "https://teevik.cachix.org"
+          ];
+
+          trusted-public-keys = [
+            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+            "teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ="
+          ];
+        };
+
+        registry = {
+          default.flake = inputs.nixpkgs;
+          default-flake.flake = inputs.nixpkgs;
+          nixpkgs.flake = inputs.nixpkgs;
+          teevik.flake = inputs.self;
+        };
+      };
 
       foldersIn = path:
         let
@@ -40,6 +77,7 @@
             modules = [
               system.nixosConfiguration
               { networking.hostName = hostname; }
+              { nix = nixConfig system.arch; }
             ];
 
             specialArgs = { inherit inputs self; };
@@ -59,6 +97,7 @@
                   homeDirectory = "/home/teevik";
                 };
               }
+              { nix = nixConfig system.arch; }
             ];
 
             extraSpecialArgs = { inherit inputs self; };

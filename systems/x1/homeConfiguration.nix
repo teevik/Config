@@ -1,6 +1,8 @@
 { self, ... }: {
   imports = [
     "${self}/home/standard"
+    "${self}/home/linux"
+    "${self}/home/ctf"
   ];
 
   home.stateVersion = "24.11";

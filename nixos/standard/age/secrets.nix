@@ -6,4 +6,5 @@ in
 {
   "tailscale.age".publicKeys = publicKeys;
   "nix-access-tokens-github.age".publicKeys = publicKeys;
+  "cachix.age".publicKeys = publicKeys;
 }

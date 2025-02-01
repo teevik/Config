@@ -9,6 +9,7 @@
       secrets = {
         tailscale.file = ./tailscale.age;
         nix-access-tokens-github.file = ./nix-access-tokens-github.age;
+        cachix.file = ./cachix.age;
       };
     };
   };

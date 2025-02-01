@@ -82,7 +82,6 @@ in {
 
     # Zig
     zig
-
   ];
 
   home.file.".npmrc".text = ''
