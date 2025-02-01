@@ -5,9 +5,9 @@ let
 in
 {
   imports = [
-    ./cachix.nix
     ./age
     ./apps
+    ./cachix.nix
     ./docker.nix
     ./fonts.nix
     ./hyprland.nix

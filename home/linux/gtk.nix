@@ -18,7 +18,7 @@ in
 
     iconTheme = if gtkIconTheme != null then gtkIconTheme else {
       name = "Adwaita";
-      package = pkgs.gnome.adwaita-icon-theme;
+      package = pkgs.adwaita-icon-theme;
     };
 
     gtk3.extraConfig = {

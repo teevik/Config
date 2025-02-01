@@ -3,9 +3,8 @@
   services.logind.lidSwitch = "suspend-then-hibernate";
   systemd.sleep.extraConfig = "HibernateDelaySec=1h";
 
-  # # auto-cpufreq for power management
-  # services.auto-cpufreq.enable = true;
-  # services.tlp.enable = lib.mkForce false;
+  # auto-cpufreq for power management
+  services.auto-cpufreq.enable = true;
 
   # Backlight control
   programs.light.enable = true;

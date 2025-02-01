@@ -1,12 +1,12 @@
-{ pkgs, ... }: {
+{ inputs, pkgs, ... }: {
   imports = [
     ./hyprland
     ./waybar
     ./gtk.nix
+    ./hypridle.nix
     ./mako.nix
     ./qt.nix
     ./swaybg.nix
-    ./hypridle.nix
   ];
 
   home.packages = with pkgs; [

@@ -8,11 +8,11 @@
 
     # A next-generation crawling and spidering framework
     # https://github.com/projectdiscovery/katana
-    teevik.katana
+    katana
 
     # Powerful RSA cracker for CTFs. Supports RSA, X509, OPENSSH in PEM and DER formats
     # https://github.com/skyf0l/RsaCracker
-    teevik.rsa-cracker
+    # teevik.rsa-cracker
 
     # rga: ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, etc
     # https://github.com/phiresky/ripgrep-all
@@ -40,7 +40,7 @@
     # Fast password cracker
     # https://hashcat.net/hashcat/
     # hashcat
-    (hashcat.override { cudaSupport = true; })
+    # (hashcat.override { cudaSupport = true; })
 
     # Hashcat-utils are a set of small utilities that are useful in advanced password cracking
     # https://hashcat.net/wiki/doku.php?id=hashcat_utils
@@ -67,7 +67,7 @@
 
     # A simple package that helps you find meaningful lines of any given input. Especially useful in CTFs.
     # https://github.com/kamali-sina/meaningsearch
-    teevik.meaningsearch
+    # teevik.meaningsearch
 
     # Nikto web server scanner
     # https://github.com/sullo/nikto

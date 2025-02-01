@@ -1,5 +1,14 @@
-{ pkgs, ... }: {
-  teevik.theme = {
+{ lib, pkgs, ... }:
+let
+  inherit (lib) types mkOption;
+in
+{
+  # TODO actual type
+  options.teevik.theme = mkOption {
+    type = types.attrs;
+  };
+
+  config.teevik.theme = {
     background = ./background.png;
 
     borderColor = "#cba6f7";
@@ -51,10 +60,10 @@
 
     gtkIconTheme = {
       name = "Adwaita";
-      package = pkgs.gnome.adwaita-icon-theme;
+      package = pkgs.adwaita-icon-theme;
     };
 
-    cusorTheme = {
+    cursorTheme = {
       name = "catppuccin-mocha-dark-cursors";
       package = pkgs.catppuccin-cursors.mochaDark;
     };

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption;
   inherit (config.teevik.theme) borderColor cursorTheme;

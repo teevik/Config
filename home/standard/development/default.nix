@@ -55,7 +55,7 @@ in {
     # Nix
     nil
     nixd
-    nixfmt
+    nixfmt-rfc-style
     nixpkgs-fmt
 
     # Odin
