@@ -2,6 +2,7 @@
   imports = [
     ./hyprland
     ./waybar
+    ./firefox.nix
     ./gtk.nix
     ./hypridle.nix
     ./mako.nix

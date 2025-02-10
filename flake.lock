@@ -591,25 +591,21 @@
         "flake-compat": "flake-compat_3",
         "flake-parts": "flake-parts_2",
         "git-hooks-nix": "git-hooks-nix",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs_6",
         "nixpkgs-23-11": "nixpkgs-23-11",
         "nixpkgs-regression": "nixpkgs-regression"
       },
       "locked": {
         "lastModified": 1737727335,
         "narHash": "sha256-1T7WRNfUMsiiNB77BuHElzjavguL8oJx+wBtfMcobq8=",
-        "owner": "NixOS",
-        "repo": "nix",
         "rev": "36bd92736faaf81c6af3dff8f560963eb4e76b14",
-        "type": "github"
+        "revCount": 19142,
+        "type": "tarball",
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nix/2.26.1/019498e7-9120-780b-8c84-bcb5d4f73583/source.tar.gz?rev=36bd92736faaf81c6af3dff8f560963eb4e76b14&revCount=19142"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "2.26.1",
-        "repo": "nix",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://flakehub.com/f/NixOS/nix/2.tar.gz"
       }
     },
     "nix-darwin": {
@@ -657,7 +653,7 @@
     },
     "nix-index-database": {
       "inputs": {
-        "nixpkgs": "nixpkgs_6"
+        "nixpkgs": "nixpkgs_7"
       },
       "locked": {
         "lastModified": 1735443188,
@@ -761,6 +757,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_10": {
+      "locked": {
+        "lastModified": 1722403750,
+        "narHash": "sha256-tRmn6UiFAPX0m9G1AVcEPjWEOc9BtGsxGcs7Bz3MpsM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "184957277e885c06a505db112b35dfbec7c60494",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "184957277e885c06a505db112b35dfbec7c60494",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1733749988,
@@ -827,6 +839,22 @@
     },
     "nixpkgs_6": {
       "locked": {
+        "lastModified": 1739151041,
+        "narHash": "sha256-uNszcul7y++oBiyYXjHEDw/AHeLNp8B6pyWOB+RLA/4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "94792ab2a6beaec81424445bf917ca2556fbeade",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "release-24.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_7": {
+      "locked": {
         "lastModified": 1735291276,
         "narHash": "sha256-NYVcA06+blsLG6wpAbSPTCyLvxD/92Hy4vlY9WxFI1M=",
         "owner": "NixOS",
@@ -841,7 +869,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_7": {
+    "nixpkgs_8": {
       "locked": {
         "lastModified": 1737299813,
         "narHash": "sha256-Qw2PwmkXDK8sPQ5YQ/y/icbQ+TYgbxfjhgnkNJyT1X8=",
@@ -857,7 +885,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_8": {
+    "nixpkgs_9": {
       "locked": {
         "lastModified": 1719254875,
         "narHash": "sha256-ECni+IkwXjusHsm9Sexdtq8weAq/yUyt1TWIemXt3Ko=",
@@ -869,22 +897,6 @@
       "original": {
         "id": "nixpkgs",
         "type": "indirect"
-      }
-    },
-    "nixpkgs_9": {
-      "locked": {
-        "lastModified": 1722403750,
-        "narHash": "sha256-tRmn6UiFAPX0m9G1AVcEPjWEOc9BtGsxGcs7Bz3MpsM=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "184957277e885c06a505db112b35dfbec7c60494",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "184957277e885c06a505db112b35dfbec7c60494",
-        "type": "github"
       }
     },
     "nixvim": {
@@ -944,7 +956,7 @@
       "inputs": {
         "flake-utils": "flake-utils_5",
         "nix-github-actions": "nix-github-actions",
-        "nixpkgs": "nixpkgs_8",
+        "nixpkgs": "nixpkgs_9",
         "poetry2nix": "poetry2nix",
         "systems": "systems_5",
         "treefmt-nix": "treefmt-nix_2"
@@ -1006,7 +1018,7 @@
         "flake-compat": "flake-compat_4",
         "flake-utils": "flake-utils_6",
         "nixgl": "nixgl",
-        "nixpkgs": "nixpkgs_9",
+        "nixpkgs": "nixpkgs_10",
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
@@ -1034,7 +1046,7 @@
         "nix": "nix",
         "nix-index-database": "nix-index-database",
         "nixos-hardware": "nixos-hardware",
-        "nixpkgs": "nixpkgs_7",
+        "nixpkgs": "nixpkgs_8",
         "openconnect-sso": "openconnect-sso",
         "roc": "roc"
       }

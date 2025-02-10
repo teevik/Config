@@ -1,22 +1,18 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
-    nix = {
-      url = "github:NixOS/nix/2.26.1";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
-    nix-index-database.url = "github:Mic92/nix-index-database";
-
+    nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nix-index-database.url = "github:Mic92/nix-index-database";
     roc.url = "github:roc-lang/roc";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     hyprland-contrib.url = "github:hyprwm/contrib";

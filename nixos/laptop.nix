@@ -1,4 +1,4 @@
-{ lib, ... }: {
+{ ... }: {
   # Suspend when the lid is closed, then hibernate after 1 hour
   services.logind.lidSwitch = "suspend-then-hibernate";
   systemd.sleep.extraConfig = "HibernateDelaySec=1h";
