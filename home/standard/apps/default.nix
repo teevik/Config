@@ -1,7 +1,13 @@
 { inputs, pkgs, lib, ... }:
 let gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
 in {
-  imports = [ inputs.nix-index-database.hmModules.nix-index ];
+  imports = [
+    inputs.nix-index-database.hmModules.nix-index
+    ./helix
+    ./neovim.nix
+    ./nwg-displays.nix
+    ./spotify.nix
+  ];
 
   programs = {
     fzf.enable = true;
@@ -37,6 +43,43 @@ in {
         "ctrl+backspace" = "send_text all \\x17";
       };
     };
+
+    feh = {
+      enable = true;
+
+      buttons = {
+        prev_img = null;
+        next_img = null;
+
+        zoom_in = 4;
+        zoom_out = 5;
+      };
+    };
+
+    git = {
+      enable = true;
+      delta.enable = true;
+
+      userEmail = "teemu.vikoren@gmail.com";
+      userName = "teevik";
+      ignores = [
+        ".DS_Store"
+      ];
+
+      extraConfig = {
+        init.defaultBranch = "main";
+        push.autoSetupRemote = true;
+        rerere.enabled = true;
+        # pull.rebase = true;
+      };
+    };
+
+    tealdeer = {
+      enable = true;
+      settings = {
+        updates.auto_update = true;
+      };
+    };
   };
 
   home.packages = with pkgs; [
@@ -65,5 +108,6 @@ in {
     graphviz
     ngrok
     git-agecrypt
+    neofetch
   ];
 }

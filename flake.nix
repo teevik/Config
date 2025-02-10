@@ -20,6 +20,8 @@
     roc.url = "github:roc-lang/roc";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     hyprland-contrib.url = "github:hyprwm/contrib";
+    helix.url = "github:helix-editor/helix";
+    neovim.url = "github:teevik/neovim";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
@@ -40,7 +42,7 @@
           auto-optimise-store = true;
 
           substituters = [
-            "https://cache.nixos.org"
+            "https://cache.nixos.org?priority=10"
             "https://teevik.cachix.org"
           ];
 

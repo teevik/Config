@@ -7,7 +7,18 @@
     ./mako.nix
     ./qt.nix
     ./swaybg.nix
+    ./tofi.nix
   ];
+
+  programs = {
+    vscode.enable = true;
+
+    yazi = {
+      enable = true;
+      enableFishIntegration = true;
+      enableNushellIntegration = true;
+    };
+  };
 
   home.packages = with pkgs; [
     inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso

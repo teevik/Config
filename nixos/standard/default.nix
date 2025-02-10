@@ -49,7 +49,16 @@ in
   };
 
   # TimeZone
-  time.timeZone = "Europe/Oslo";
+  services.automatic-timezoned.enable = true;
+
+  services.geoclue2 = {
+    enable = true;
+    geoProviderUrl = "https://api.beacondb.net/v1/geolocate";
+    submissionUrl = "https://api.beacondb.net/v2/geosubmit";
+
+    enableNmea = false;
+  };
+  # time.timeZone = "Europe/Oslo";
 
   # User
   users.users = {
