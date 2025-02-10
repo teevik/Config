@@ -80,6 +80,15 @@ in {
         updates.auto_update = true;
       };
     };
+
+    btop = {
+      enable = true;
+
+      settings = {
+        color_theme = "TTY";
+        theme_background = false;
+      };
+    };
   };
 
   home.packages = with pkgs; [
