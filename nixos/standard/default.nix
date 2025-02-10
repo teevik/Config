@@ -7,11 +7,11 @@ in
   imports = [
     ./age
     ./apps
+    ./network
     ./cachix.nix
     ./docker.nix
     ./fonts.nix
     ./hyprland.nix
-    ./network.nix
     ./pipewire.nix
     ./polkit.nix
     ./shells.nix

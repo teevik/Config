@@ -37,6 +37,11 @@
           experimental-features = [ "nix-command" "flakes" ];
           auto-optimise-store = true;
 
+          trusted-users = [
+            "root"
+            "teevik"
+          ];
+
           substituters = [
             "https://cache.nixos.org?priority=10"
             "https://teevik.cachix.org"

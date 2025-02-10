@@ -1,6 +1,8 @@
 { self, lib, pkgs, config, ... }:
 let
-  hyprland-scratchpad = pkgs.callPackage "${self}/packages/hyprland-scratchpad" { };
+
+  hyprland-scratchpad-package = pkgs.callPackage "${self}/packages/hyprland-scratchpad" { };
+  hyprland-scratchpad = lib.getExe hyprland-scratchpad-package;
   terminal = "kitty";
   menu = "tofi-drun --drun-launch=true";
   browser = "firefox";
@@ -107,7 +109,7 @@ let
 in
 {
   home.packages = [
-    hyprland-scratchpad
+    hyprland-scratchpad-package
   ];
 
   wayland.windowManager.hyprland = {

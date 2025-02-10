@@ -1,6 +1,9 @@
 { pkgs, ... }: {
   # Nushell
   environment.shells = [ pkgs.nushell ];
+  environment.systemPackages = with pkgs; [
+    nushell
+  ];
 
   # Fish
   programs.fish = {

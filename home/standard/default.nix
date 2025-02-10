@@ -4,6 +4,7 @@
     ./development
     ./shells
     ./theme
+    ./xdg.nix
   ];
 
   systemd.user.startServices = "sd-switch";

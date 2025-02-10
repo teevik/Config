@@ -100,7 +100,6 @@ in
       keys.insert = {
         "S-tab" = "unindent";
         "C-s" = ":w";
-        "C-w" = "copilot_apply_completion";
       };
     };
   };

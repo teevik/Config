@@ -7,4 +7,6 @@ in
   "tailscale.age".publicKeys = publicKeys;
   "nix-access-tokens-github.age".publicKeys = publicKeys;
   "cachix.age".publicKeys = publicKeys;
+  "eduroam.age".publicKeys = publicKeys;
+  "eduroam-ca.age".publicKeys = publicKeys;
 }

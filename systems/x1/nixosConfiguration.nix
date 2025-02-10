@@ -10,18 +10,9 @@
 
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
 
-  virtualisation.vmVariant = {
-    # following configuration is added only when building VM with build-vm
-    virtualisation = {
-      memorySize = 4096; # Use 2048MiB memory.
-      diskSize = 8192; # Use 8GiB disk.
-      cores = 3;
-      # useBootLoader = true;
-      # mountHostNixStore = false;
-      # writableStoreUseTmpfs = false;
-
-    };
-  };
+  # Enable bluetooth
+  hardware.bluetooth.enable = true;
+  services.blueman.enable = true;
 
   system.stateVersion = "24.11";
 }
