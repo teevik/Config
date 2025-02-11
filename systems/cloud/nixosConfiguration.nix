@@ -2,6 +2,7 @@
   imports = [
     ./hardware.nix
 
+    "${self}/nixos/minimal"
     "${self}/nixos/standard"
   ];
 

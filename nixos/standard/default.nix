@@ -1,13 +1,7 @@
-{ config, pkgs, ... }:
-let
-  initialHashedPassword =
-    "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
-in
-{
+{ config, ... }: {
   imports = [
     ./age
     ./apps
-    ./network
     ./cachix.nix
     ./docker.nix
     ./fonts.nix
@@ -15,7 +9,6 @@ in
     ./pipewire.nix
     ./polkit.nix
     ./shells.nix
-    ./ssh.nix
     ./tailscale.nix
   ];
 
@@ -25,13 +18,8 @@ in
     '';
   };
 
-  documentation.man.generateCaches = false;
-
   # Boot
   boot = {
-    supportedFilesystems = [ "bcachefs" ];
-    kernelPackages = pkgs.linuxPackages_latest;
-
     tmp.useTmpfs = true;
     tmp.tmpfsSize = "150%";
 
@@ -58,23 +46,6 @@ in
 
     enableNmea = false;
   };
-  # time.timeZone = "Europe/Oslo";
-
-  # User
-  users.users = {
-    teevik = {
-      isNormalUser = true;
-      home = "/home/teevik";
-      group = "users";
-
-      extraGroups = [ "wheel" ];
-
-
-      inherit initialHashedPassword;
-    };
-
-    root = { inherit initialHashedPassword; };
-  };
 
   # Hardware
   hardware = {
@@ -86,12 +57,10 @@ in
     };
   };
 
-  # Auto login
-  services.getty.autologinUser = "teevik";
-  # TODO enable this
-  # environment.loginShellInit = ''
-  #   if [ "$(tty)" == /dev/tty1 ]; then
-  #     Hyprland
-  #   fi
-  # '';
+  # Auto hyprland
+  environment.loginShellInit = ''
+    if [ "$(tty)" == /dev/tty1 ]; then
+      Hyprland
+    fi
+  '';
 }

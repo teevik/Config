@@ -7,6 +7,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
@@ -20,7 +25,7 @@
     neovim.url = "github:teevik/neovim";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, nixos-generators, ... }:
     let
       lib = nixpkgs.lib;
       pkgsFor = arch: import nixpkgs {
@@ -30,6 +35,7 @@
 
       nixConfig = arch: {
         package = inputs.nix.packages.${arch}.nix;
+        channel.enable = false;
         # package = pkgs.lix;
         # package = pkgs.callPackage "${self}/packages/lix" { };
 
@@ -79,8 +85,10 @@
 
             modules = [
               system.nixosConfiguration
-              { networking.hostName = hostname; }
-              { nix = nixConfig system.arch; }
+              {
+                networking.hostName = hostname;
+                nix = nixConfig system.arch;
+              }
             ];
 
             specialArgs = { inherit inputs self; };
@@ -99,8 +107,8 @@
                   username = "teevik";
                   homeDirectory = "/home/teevik";
                 };
+                nix = nixConfig system.arch;
               }
-              { nix = nixConfig system.arch; }
             ];
 
             extraSpecialArgs = { inherit inputs self; };
@@ -111,5 +119,28 @@
     {
       nixosConfigurations = lib.mergeAttrsList (map nixosConfigurationFor systems);
       homeConfigurations = lib.mergeAttrsList (map homeConfigurationFor systems);
+
+      packages.x86_64-linux = let arch = "x86_64-linux"; in {
+        iso = inputs.nixos-generators.nixosGenerate {
+          system = arch;
+          format = "iso";
+
+          pkgs = pkgsFor arch;
+
+          modules = [
+            "${self}/nixos/minimal"
+            ({ config, pkgs, ... }: {
+              system.stateVersion = "24.11";
+              networking.hostName = "iso";
+              nix = nixConfig arch;
+
+              system.nixos.variant_id = "installer";
+              isoImage.isoName = "nixos-minimal-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.system}.iso";
+            })
+          ];
+
+          specialArgs = { inherit inputs self; };
+        };
+      };
     };
 }

@@ -1,6 +1,7 @@
 { pkgs, ... }: {
   # Nushell
   environment.shells = [ pkgs.nushell ];
+  users.users.teevik.shell = pkgs.nushell;
   environment.systemPackages = with pkgs; [
     nushell
   ];
