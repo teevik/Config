@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 let
   initialHashedPassword =
     "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
@@ -36,5 +36,16 @@ in
 
       root = { inherit initialHashedPassword; };
     };
+
+    # Packages
+    environment.systemPackages = with pkgs; [
+      inputs.home-manager.packages.${pkgs.system}.home-manager
+      fh
+      magic-wormhole
+      git
+      helix
+    ];
+
+    environment.variables.EDITOR = "hx";
   };
 }

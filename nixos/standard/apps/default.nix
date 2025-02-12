@@ -1,4 +1,4 @@
-{ inputs, config, pkgs, ... }: {
+{ config, pkgs, ... }: {
   imports = [
     ./nautilus.nix
     ./firefox.nix
@@ -25,12 +25,8 @@
 
   environment.systemPackages = [
     pkgs.git
-    pkgs.helix
     config.boot.kernelPackages.perf
-    inputs.home-manager.packages.${pkgs.system}.home-manager
   ];
-
-  environment.variables.EDITOR = "hx";
 
   services.fwupd.enable = true;
 }
