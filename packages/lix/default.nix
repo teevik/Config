@@ -1,5 +1,5 @@
-{ lix }:
-lix.overrideAttrs (prev: {
+{ pkgs }:
+pkgs.lix.overrideAttrs (prev: {
   pname = "lix-patched";
 
   patches =

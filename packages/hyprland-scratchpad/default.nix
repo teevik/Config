@@ -1,10 +1,9 @@
-{ fetchFromGitHub, rustPlatform }:
-
-rustPlatform.buildRustPackage {
+{ pkgs }:
+pkgs.rustPlatform.buildRustPackage {
   pname = "hyprland-scratchpad";
   version = "0.1.0";
 
-  src = fetchFromGitHub {
+  src = pkgs.fetchFromGitHub {
     owner = "teevik";
     repo = "hyprland-scratchpad";
     rev = "28e4f9f794090b195a7f2cb235ccc066298c036b";

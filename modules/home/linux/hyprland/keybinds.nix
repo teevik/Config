@@ -1,7 +1,7 @@
-{ self, lib, pkgs, config, ... }:
+{ perSystem, lib, config, ... }:
 let
 
-  hyprland-scratchpad-package = pkgs.callPackage "${self}/packages/hyprland-scratchpad" { };
+  hyprland-scratchpad-package = perSystem.self.hyprland-scratchpad;
   hyprland-scratchpad = lib.getExe hyprland-scratchpad-package;
   terminal = "kitty";
   menu = "tofi-drun --drun-launch=true";
