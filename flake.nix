@@ -27,6 +27,9 @@
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     hyprland-contrib.url = "github:hyprwm/contrib";
     helix.url = "github:helix-editor/helix";
+    iwmenu.url = "github:e-tho/iwmenu";
+    betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
+    hyprland.url = "github:hyprwm/hyprland";
   };
 
   outputs = inputs:

@@ -1,9 +1,17 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
+  imports = [ inputs.betterfox.homeManagerModules.betterfox ];
+
   programs.firefox = {
     enable = true;
+    betterfox.enable = true;
 
     profiles.default = {
+      betterfox = {
+        enable = true;
+        enableAllSections = true;
+      };
+
       settings = {
         browser.toolbars.bookmarks.visibility = "never";
 

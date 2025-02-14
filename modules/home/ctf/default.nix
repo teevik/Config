@@ -48,7 +48,7 @@
 
     # Fast password cracker
     # https://github.com/openwall/john
-    john
+    # john
 
     # OCR engine
     # https://github.com/tesseract-ocr/tesseract
@@ -84,7 +84,7 @@
 
     (
       let base = pkgs.appimageTools.defaultFhsEnvArgs; in
-      pkgs.buildFHSUserEnv (base // {
+      pkgs.buildFHSEnv (base // {
         name = "fhs";
         targetPkgs = pkgs: (
           # pkgs.buildFHSUserEnv provides only a minimal FHS environment,

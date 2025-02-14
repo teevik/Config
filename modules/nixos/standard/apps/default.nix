@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ perSystem, config, pkgs, ... }: {
   imports = [
     ./nautilus.nix
     ./firefox.nix
@@ -26,6 +26,7 @@
   environment.systemPackages = [
     pkgs.git
     config.boot.kernelPackages.perf
+    perSystem.self.vk_hdr_layer
   ];
 
   services.fwupd.enable = true;

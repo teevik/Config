@@ -1,4 +1,4 @@
-{ inputs, pkgs, lib, ... }:
+{ inputs, perSystem, config, pkgs, lib, ... }:
 let gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
 in {
   imports = [
@@ -88,6 +88,40 @@ in {
         theme_background = false;
       };
     };
+
+    fuzzel = {
+      enable = true;
+      settings = {
+        main = {
+          font = "Iosevka q Semibold-16";
+          terminal = "wezterm";
+          # icon-theme = "${config.gtk.iconTheme.name}";
+        };
+
+        border = {
+          width = 2;
+          radius = 8;
+        };
+
+        dmenu = {
+          mode = "text";
+        };
+
+        colors = {
+          background = "1e1e2edd";
+          text = "cdd6f4ff";
+          prompt = "bac2deff";
+          placeholder = "7f849cff";
+          input = "cdd6f4ff";
+          match = "cba6f7ff";
+          selection = "585b70ff";
+          selection-text = "cdd6f4ff";
+          selection-match = "cba6f7ff";
+          counter = "7f849cff";
+          border = "cba6f7ff";
+        };
+      };
+    };
   };
 
   home.packages = with pkgs; [
@@ -117,5 +151,6 @@ in {
     ngrok
     git-agecrypt
     neofetch
+    perSystem.iwmenu.default
   ];
 }

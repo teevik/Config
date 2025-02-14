@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ perSystem, config, lib, ... }:
 let
   inherit (lib) types mkOption;
   inherit (config.teevik.theme) borderColor cursorTheme;
@@ -49,7 +49,13 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
+      package = perSystem.hyprland.default;
+
       settings = {
+        experimental = {
+          xx_color_management_v4 = true;
+        };
+
         exec-once = [
           "systemctl restart --user waybar.service swaybg.service"
           "1password"
@@ -64,7 +70,6 @@ in
           new_window_takes_over_fullscreen = 2;
           middle_click_paste = false;
         };
-
 
         input = {
           kb_layout = "us,no";
