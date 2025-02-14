@@ -1,4 +1,4 @@
-{ inputs, perSystem, config, pkgs, lib, ... }:
+{ inputs, perSystem, pkgs, lib, ... }:
 let gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
 in {
   imports = [

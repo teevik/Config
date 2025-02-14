@@ -71,6 +71,12 @@ in
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/firefox-color/latest.xpi";
           installation_mode = "force_installed";
         };
+
+        # UltimaDark
+        "{7c7f6dea-3957-4bb9-9eec-2ef2b9e5bcec}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ultimadark/latest.xpi";
+          installation_mode = "force_installed";
+        };
       };
     };
   };
