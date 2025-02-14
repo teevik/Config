@@ -1,4 +1,4 @@
-{ flake, inputs, ... }: {
+{ flake, inputs, lib, ... }: {
   imports = [
     ./hardware.nix
     inputs.disko.nixosModules.disko
@@ -8,6 +8,9 @@
     flake.nixosModules.standard
     flake.nixosModules.laptop
   ];
+
+  # Disable home-manager
+  home-manager.users = lib.mkForce { };
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "x1";

@@ -47,16 +47,6 @@
     enableNmea = false;
   };
 
-  # Hardware
-  hardware = {
-    enableAllFirmware = true;
-
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-  };
-
   # Auto hyprland
   environment.loginShellInit = ''
     if [ "$(tty)" == /dev/tty1 ]; then

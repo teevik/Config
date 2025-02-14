@@ -13,9 +13,6 @@ in
     {
       documentation.man.generateCaches = false;
 
-      # Disable home-manager
-      home-manager.users = lib.mkForce { };
-
       # TODO shared with home
       nixpkgs.config = {
         allowUnfree = true;
@@ -64,6 +61,17 @@ in
         supportedFilesystems = [ "bcachefs" ];
         kernelPackages = pkgs.linuxPackages_latest;
       };
+
+      # Hardware
+      hardware = {
+        enableAllFirmware = true;
+
+        graphics = {
+          enable = true;
+          enable32Bit = true;
+        };
+      };
+
 
       # User
       users.users = {
