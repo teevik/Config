@@ -3,7 +3,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -27,7 +27,6 @@
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     hyprland-contrib.url = "github:hyprwm/contrib";
     helix.url = "github:helix-editor/helix";
-    neovim.url = "github:teevik/neovim";
   };
 
   outputs = inputs:
@@ -35,33 +34,4 @@
       inherit inputs;
       systems = [ "x86_64-linux" ];
     };
-
-  #   in
-  #   {
-  #     nixosConfigurations = lib.mergeAttrsList (map nixosConfigurationFor systems);
-  #     homeConfigurations = lib.mergeAttrsList (map homeConfigurationFor systems);
-
-  #     packages.x86_64-linux = let arch = "x86_64-linux"; in {
-  #       iso = inputs.nixos-generators.nixosGenerate {
-  #         system = arch;
-  #         format = "iso";
-
-  #         pkgs = pkgsFor arch;
-
-  #         modules = [
-  #           "${self}/nixos/minimal"
-  #           ({ config, pkgs, ... }: {
-  #             system.stateVersion = "24.11";
-  #             networking.hostName = "iso";
-  #             nix = nixConfig arch;
-
-  #             system.nixos.variant_id = "installer";
-  #             isoImage.isoName = "nixos-minimal-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.system}.iso";
-  #           })
-  #         ];
-
-  #         specialArgs = { inherit inputs self; };
-  #       };
-  #     };
-  #   };
 }

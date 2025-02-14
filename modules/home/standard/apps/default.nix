@@ -4,7 +4,6 @@ in {
   imports = [
     inputs.nix-index-database.hmModules.nix-index
     ./helix
-    ./neovim.nix
     ./nwg-displays.nix
     ./spotify.nix
   ];

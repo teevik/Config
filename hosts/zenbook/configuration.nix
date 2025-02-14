@@ -1,6 +1,10 @@
 { flake, inputs, lib, pkgs, ... }: {
   imports = [
     ./hardware.nix
+    "${inputs.nixos-hardware}/common/cpu/intel"
+    "${inputs.nixos-hardware}/common/cpu/intel/comet-lake"
+    "${inputs.nixos-hardware}/common/hidpi.nix"
+
     inputs.disko.nixosModules.disko
 
     flake.nixosModules.minimal
@@ -12,7 +16,7 @@
   home-manager.users = lib.mkForce { };
 
   nixpkgs.hostPlatform = "x86_64-linux";
-  networking.hostName = "x1";
+  networking.hostName = "zenbook";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
 
   # Enable bluetooth

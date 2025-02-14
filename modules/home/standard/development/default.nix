@@ -12,7 +12,7 @@ in {
 
     # C++
     clang-tools
-    lldb
+#TODO    lldb
 
     # Gleam
     gleam

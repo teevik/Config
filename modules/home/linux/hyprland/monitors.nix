@@ -3,7 +3,8 @@ let
   inherit (lib) mkIf mkMerge;
   cfg = config.teevik.hyprland;
 
-  inherit (cfg) scaling cursorName enableVrr;
+  inherit (config.teevik.theme) cursorTheme;
+  inherit (cfg) scaling enableVrr;
   cursorSize = builtins.floor (16 * scaling);
 in
 {
@@ -34,7 +35,7 @@ in
 
         exec-once = [
           "xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON (builtins.floor (16 * scaling))}c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON scaling}"
-          "hyprctl setcursor ${cursorName} ${builtins.toJSON cursorSize}"
+          "hyprctl setcursor ${cursorTheme.name} ${builtins.toJSON cursorSize}"
         ];
       })
     ];
