@@ -52,9 +52,9 @@ in
       package = perSystem.hyprland.default;
 
       settings = {
-        experimental = {
-          xx_color_management_v4 = true;
-        };
+        # experimental = {
+        #   xx_color_management_v4 = true;
+        # };
 
         exec-once = [
           "systemctl restart --user waybar.service swaybg.service"

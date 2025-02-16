@@ -45,7 +45,16 @@
     submissionUrl = "https://api.beacondb.net/v2/geosubmit";
 
     enableNmea = false;
+
+    # appConfig.geoshift = {
+    #   isAllowed = true;
+    #   isSystem = false;
+    #   users = [ ];
+    # };
   };
+
+  # users.users.teevik.extraGroups = [ "geoclue" ];
+
 
   # Auto hyprland
   environment.loginShellInit = ''

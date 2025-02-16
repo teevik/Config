@@ -12,24 +12,22 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
-    disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
+    # Modules
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
-
     nixos-hardware.url = "github:NixOS/nixos-hardware";
-    nix-index-database.url = "github:Mic92/nix-index-database";
-    roc.url = "github:roc-lang/roc";
-    openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
-    hyprland-contrib.url = "github:hyprwm/contrib";
-    helix.url = "github:helix-editor/helix";
-    iwmenu.url = "github:e-tho/iwmenu";
-    betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
+    disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
+
+    # Packages
+    nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
     hyprland.url = "github:hyprwm/hyprland";
+    betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
+    iwmenu.url = "github:e-tho/iwmenu";
+    helix.url = "github:helix-editor/helix";
+    hyprland-contrib.url = "github:hyprwm/contrib";
+    openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
+    roc.url = "github:roc-lang/roc";
+    nix-index-database.url = "github:Mic92/nix-index-database";
+    nix-dram.url = "github:dramforever/nix-dram";
   };
 
   outputs = inputs:
