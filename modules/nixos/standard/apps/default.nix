@@ -25,7 +25,7 @@
 
   environment.systemPackages = [
     pkgs.git
-    config.boot.kernelPackages.perf
+    # config.boot.kernelPackages.perf
     # perSystem.self.vk_hdr_layer
   ];
 

@@ -49,7 +49,7 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
-      package = perSystem.hyprland.default;
+      # package = perSystem.hyprland.default;
 
       settings = {
         # experimental = {

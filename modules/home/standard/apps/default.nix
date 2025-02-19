@@ -151,6 +151,7 @@ in {
     ngrok
     git-agecrypt
     neofetch
+    sysz
     perSystem.iwmenu.default
   ];
 }
