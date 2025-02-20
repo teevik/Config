@@ -23,11 +23,6 @@
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
-  # Asusd
-  services.asusd = {
-    enable = true;
-  };
-
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
   # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos-rc;
   # services.scx.enable = true; # by default uses scx_rustland scheduler

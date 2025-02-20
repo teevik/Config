@@ -1,10 +1,6 @@
-{ inputs, flake, lib, pkgs, ... }: {
+{ flake, lib, pkgs, ... }: {
   imports = [
     flake.nixosModules.minimal
-
-    "${inputs.nixos-hardware}/common/cpu/intel"
-    "${inputs.nixos-hardware}/common/cpu/intel/comet-lake"
-    "${inputs.nixos-hardware}/common/hidpi.nix"
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
@@ -19,7 +15,6 @@
   system.nixos.variant_id = "installer";
 
   system.stateVersion = "24.11";
-
 
   hardware.firmware = [
     (
