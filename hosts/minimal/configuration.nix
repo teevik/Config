@@ -1,14 +1,15 @@
 { flake, lib, pkgs, ... }: {
   imports = [
     flake.nixosModules.minimal
-    flake.nixosModules.standard
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "minimal";
 
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
-  networking.networkmanager.wifi.backend = lib.mkForce "wpa_supplicant";
+  networking.wireless.iwd.enable = lib.mkForce false;
+  networking.networkmanager.enable = lib.mkForce true;
+  networking.networkmanager.wifi.backend = lib.mkForce "iwd";
 
   system.nixos.variant_id = "installer";
 

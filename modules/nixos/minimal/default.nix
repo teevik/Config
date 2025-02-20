@@ -12,9 +12,9 @@ let
 in
 {
   imports = [
-    inputs.chaotic.nixosModules.nyx-cache
-    inputs.chaotic.nixosModules.nyx-overlay
-    inputs.chaotic.nixosModules.nyx-registry
+    # inputs.chaotic.nixosModules.nyx-cache
+    # inputs.chaotic.nixosModules.nyx-overlay
+    # inputs.chaotic.nixosModules.nyx-registry
 
     ./networking.nix
     ./ssh.nix
@@ -63,7 +63,6 @@ in
         teevik.flake = inputs.self;
       };
     };
-
 
     # Auto-login
     services.getty.autologinUser = "teevik";

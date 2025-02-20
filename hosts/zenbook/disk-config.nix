@@ -26,7 +26,7 @@
 
             content = {
               type = "filesystem";
-              format = "ext4";
+              format = "bcachefs";
               mountpoint = "/";
             };
           };
