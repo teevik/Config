@@ -2,20 +2,9 @@
 let
   initialHashedPassword =
     "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
-
-  # patchedNix = perSystem.nix.default.overrideAttrs (old: {
-  #   name = "patched-" + old.name;
-  #   patches = (old.patches or [ ]) ++ [
-  #     "${inputs.nix-dram}/nix-patches/nix-flake-default.patch"
-  #   ];
-  # });
 in
 {
   imports = [
-    # inputs.chaotic.nixosModules.nyx-cache
-    # inputs.chaotic.nixosModules.nyx-overlay
-    # inputs.chaotic.nixosModules.nyx-registry
-
     ./networking.nix
     ./ssh.nix
   ];
@@ -82,7 +71,6 @@ in
         enable32Bit = true;
       };
     };
-
 
     # User
     users.users = {
