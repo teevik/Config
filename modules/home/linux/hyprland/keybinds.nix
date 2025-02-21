@@ -10,7 +10,7 @@ let
   spotify = "spotify";
   files = "nautilus";
   editor = "code";
-  network = "iwmenu -m fuzzel";
+  network = "iwmenu -m custom --menu-command \"tofi --prompt-text select:\"";
 
   # XDG_SCREENSHOTS_DIR = "/home/teevik/Pictures/Screenshots";
   XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";

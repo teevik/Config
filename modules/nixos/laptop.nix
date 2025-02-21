@@ -6,6 +6,8 @@
   # auto-cpufreq for power management
   # services.auto-cpufreq.enable = true;
 
+  powerManagement.powertop.enable = true;
+
   services = {
     upower = {
       enable = true;
@@ -23,13 +25,13 @@
           governor = "powersave";
           # scaling_min_freq = mkDefault (MHz 1800);
           # scaling_max_freq = mkDefault (MHz 3900);
-          turbo = "never";
+          # turbo = "never";
         };
         charger = {
           governor = "performance";
           # scaling_min_freq = mkDefault (MHz 2000);
           # scaling_max_freq = mkDefault (MHz 4800);
-          turbo = "auto";
+          # turbo = "auto";
         };
       };
     };

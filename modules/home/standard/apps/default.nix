@@ -91,11 +91,12 @@ in {
 
     fuzzel = {
       enable = true;
+
       settings = {
         main = {
-          font = "Iosevka q Semibold-16";
-          terminal = "wezterm";
-          # icon-theme = "${config.gtk.iconTheme.name}";
+          font = "Source Sans:size=16";
+          line-height = 22;
+          terminal = "kitty";
         };
 
         border = {

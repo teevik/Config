@@ -23,9 +23,24 @@
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
-  # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos-rc;
-  # services.scx.enable = true; # by default uses scx_rustland scheduler
+  boot = {
+    kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
+    # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos-rc;
+    # services.scx.enable = true; # by default uses scx_rustland scheduler
+
+    # More power savings
+    # https://community.frame.work/t/tracking-linux-battery-life-tuning/6665/594
+    # https://discourse.ubuntu.com/t/fine-tuning-the-ubuntu-24-04-kernel-for-low-latency-throughput-and-power-efficiency/44834
+    kernelParams = [
+      "rcu_nocbs=all"
+      "rcutree.enable_rcu_lazy=1"
+    ];
+
+    # blacklistedKernelModules = [
+    #   "asus-nb-wmi" # Eats ~0.30 W
+    # ];
+  };
+
 
   hardware.firmware = [
     (
