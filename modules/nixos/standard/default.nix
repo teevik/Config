@@ -36,21 +36,32 @@
     };
   };
 
-  # TimeZone
-  services.automatic-timezoned.enable = true;
+  services = {
+    # TimeZone
+    automatic-timezoned.enable = true;
 
-  services.geoclue2 = {
-    enable = true;
-    geoProviderUrl = "https://api.beacondb.net/v1/geolocate";
-    submissionUrl = "https://api.beacondb.net/v2/geosubmit";
+    gnome = {
+      evolution-data-server.enable = true;
+      glib-networking.enable = true;
+      gnome-keyring.enable = true;
+      gnome-online-accounts.enable = true;
+      localsearch.enable = true;
+      tinysparql.enable = true;
+    };
 
-    enableNmea = false;
+    geoclue2 = {
+      enable = true;
+      geoProviderUrl = "https://api.beacondb.net/v1/geolocate";
+      submissionUrl = "https://api.beacondb.net/v2/geosubmit";
 
-    # appConfig.geoshift = {
-    #   isAllowed = true;
-    #   isSystem = false;
-    #   users = [ ];
-    # };
+      enableNmea = false;
+
+      # appConfig.geoshift = {
+      #   isAllowed = true;
+      #   isSystem = false;
+      #   users = [ ];
+      # };
+    };
   };
 
   # users.users.teevik.extraGroups = [ "geoclue" ];

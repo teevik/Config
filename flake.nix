@@ -29,6 +29,16 @@
     roc.url = "github:roc-lang/roc";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-dram.url = "github:dramforever/nix-dram";
+
+    marble = {
+      url = "git+ssh://git@github.com/marble-shell/shell.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    morewaita = {
+      url = "github:somepaulo/MoreWaita";
+      flake = false;
+    };
   };
 
   outputs = inputs:

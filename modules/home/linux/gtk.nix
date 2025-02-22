@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ inputs, config, pkgs, ... }:
 let
   inherit (config.teevik.theme) gtkTheme gtkIconTheme;
 in
@@ -17,8 +17,10 @@ in
     };
 
     iconTheme = if gtkIconTheme != null then gtkIconTheme else {
-      name = "Adwaita";
-      package = pkgs.adwaita-icon-theme;
+      name = "MoreWaita";
+      package = pkgs.morewaita-icon-theme.overrideAttrs {
+        src = inputs.morewaita;
+      };
     };
 
     gtk3.extraConfig = {

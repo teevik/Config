@@ -1,4 +1,4 @@
-{ perSystem, config, lib, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) types mkOption;
   inherit (config.teevik.theme) borderColor cursorTheme;
@@ -57,13 +57,15 @@ in
         # };
 
         exec-once = [
-          "systemctl restart --user waybar.service swaybg.service"
+          "systemctl restart --user marble.service swaybg.service"
           "1password"
         ];
 
         misc = {
           # enable_swallow = true;
           # swallow_regex = "^(kitty)$";
+          disable_splash_rendering = true;
+          force_default_wallpaper = true;
           focus_on_activate = true;
           animate_manual_resizes = true;
           close_special_on_empty = false;

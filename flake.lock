@@ -19,6 +19,28 @@
         "url": "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz"
       }
     },
+    "ags": {
+      "inputs": {
+        "astal": "astal",
+        "nixpkgs": [
+          "marble",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1735485506,
+        "narHash": "sha256-7CWr3Q83KnGiLUn0oaboafLMOXQ0X9/fjFRVY1xopbM=",
+        "owner": "aylur",
+        "repo": "ags",
+        "rev": "251d39413543264361898b02035775aa3e46fe52",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aylur",
+        "repo": "ags",
+        "type": "github"
+      }
+    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -49,6 +71,28 @@
       "original": {
         "owner": "hyprwm",
         "repo": "aquamarine",
+        "type": "github"
+      }
+    },
+    "astal": {
+      "inputs": {
+        "nixpkgs": [
+          "marble",
+          "ags",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1735576092,
+        "narHash": "sha256-fxj82J3BHVaxUG1/umATdyeLq4xiw2DowJo3g3EeYl4=",
+        "owner": "aylur",
+        "repo": "astal",
+        "rev": "ce9ba0d07b44c52700fef44ea6c9cbad33c3fe44",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aylur",
+        "repo": "astal",
         "type": "github"
       }
     },
@@ -719,6 +763,43 @@
         "type": "github"
       }
     },
+    "marble": {
+      "inputs": {
+        "ags": "ags",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1737052343,
+        "narHash": "sha256-RB9jRDFXDGrrVFVPLAu9e+jJFNU+gB/AxC2wrMrehaY=",
+        "ref": "refs/heads/main",
+        "rev": "3f5b3ac7a12ca23c608c1bf016bc61a93bafd7b1",
+        "revCount": 6,
+        "type": "git",
+        "url": "ssh://git@github.com/marble-shell/shell.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/marble-shell/shell.git"
+      }
+    },
+    "morewaita": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1736335410,
+        "narHash": "sha256-gdU4GcNrxMktsMbxRkzd3NdD7oYSAhSo29lBMWp+HQ4=",
+        "owner": "somepaulo",
+        "repo": "MoreWaita",
+        "rev": "29ddd25363bf1c4be306f3bf1ea1507b443d8dee",
+        "type": "github"
+      },
+      "original": {
+        "owner": "somepaulo",
+        "repo": "MoreWaita",
+        "type": "github"
+      }
+    },
     "nix": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -1184,6 +1265,8 @@
         "hyprland": "hyprland",
         "hyprland-contrib": "hyprland-contrib",
         "iwmenu": "iwmenu",
+        "marble": "marble",
+        "morewaita": "morewaita",
         "nix": "nix",
         "nix-dram": "nix-dram",
         "nix-index-database": "nix-index-database",

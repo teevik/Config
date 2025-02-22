@@ -6,9 +6,11 @@
     ./gtk.nix
     ./hypridle.nix
     ./mako.nix
+    ./marble.nix
     ./qt.nix
     ./swaybg.nix
     ./tofi.nix
+    ./zed.nix
   ];
 
   programs = {
@@ -33,6 +35,7 @@
   home.packages = with pkgs; [
     inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
     inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
+
     insomnia
     caligula
     mpv

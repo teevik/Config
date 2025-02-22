@@ -8,6 +8,8 @@
 
     # (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
     nerd-fonts.jetbrains-mono
+    nerd-fonts.ubuntu
+    nerd-fonts.fira-code
     source-sans
   ];
 }

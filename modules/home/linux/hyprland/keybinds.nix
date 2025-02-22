@@ -10,7 +10,8 @@ let
   spotify = "spotify";
   files = "nautilus";
   editor = "code";
-  network = "iwmenu -m custom --menu-command \"tofi --prompt-text select:\"";
+  settings = "env XDG_CURRENT_DESKTOP=gnome gnome-control-center";
+  # network = "iwmenu -m custom --menu-command \"tofi --prompt-text select:\"";
 
   # XDG_SCREENSHOTS_DIR = "/home/teevik/Pictures/Screenshots";
   XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
@@ -26,7 +27,7 @@ let
     bind."SUPER, E" = "exec, ${editor}";
     bind."SUPER, Backspace" = "exec, ${hyprland-scratchpad} toggle-exec --name discord --exec '${discord}'";
     bind."SUPER, M" = "exec, ${hyprland-scratchpad} toggle-exec --name spotify --exec '${spotify}'";
-    bind."SUPER, N" = "exec, ${network}";
+    bind."SUPER, S" = "exec, ${hyprland-scratchpad} toggle-exec --name spotify --exec '${settings}'";
 
     # Screenshot
     bind.", Print" = "exec, XDG_SCREENSHOTS_DIR=${XDG_SCREENSHOTS_DIR} grimblast --notify copysave output";

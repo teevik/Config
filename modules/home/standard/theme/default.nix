@@ -58,10 +58,11 @@ in
       };
     };
 
-    gtkIconTheme = {
-      name = "Adwaita";
-      package = pkgs.adwaita-icon-theme;
-    };
+    gtkIconTheme = null;
+    #  {
+    #   name = "Adwaita";
+    #   package = pkgs.adwaita-icon-theme;
+    # };
 
     cursorTheme = {
       name = "catppuccin-mocha-dark-cursors";

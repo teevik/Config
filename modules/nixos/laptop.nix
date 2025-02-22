@@ -8,7 +8,10 @@
 
   powerManagement.powertop.enable = true;
 
+
   services = {
+    # thermald.enable = true;
+
     upower = {
       enable = true;
       percentageLow = 15;

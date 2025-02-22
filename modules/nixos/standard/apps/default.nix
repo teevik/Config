@@ -2,7 +2,6 @@
   imports = [
     ./nautilus.nix
     ./firefox.nix
-    # ./android-studio.nix
   ];
 
   programs = {
@@ -23,8 +22,23 @@
     };
   };
 
-  environment.systemPackages = [
-    pkgs.git
+  environment.systemPackages = with pkgs; [
+    git
+
+    morewaita-icon-theme
+    adwaita-icon-theme
+    papirus-icon-theme
+    gnome-control-center
+    gnome-text-editor
+    gnome-calendar
+    gnome-boxes
+    gnome-system-monitor
+    gnome-control-center
+    gnome-weather
+    gnome-calculator
+    gnome-clocks
+    baobab
+
     # config.boot.kernelPackages.perf
     # perSystem.self.vk_hdr_layer
   ];

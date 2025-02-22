@@ -6,10 +6,10 @@
     "${inputs.nixos-hardware}/common/hidpi.nix"
 
     inputs.disko.nixosModules.disko
-
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.laptop
+    flake.nixosModules.gaming
   ];
 
   # Disable home-manager
@@ -22,6 +22,40 @@
   # Enable bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
+
+  # Fix keyboard backlight on hibernate
+  powerManagement.resumeCommands = ''
+    modprobe -r asus_nb_wmi
+    modprobe asus_nb_wmi
+  '';
+
+  #     services.tailscale.enable = lib.mkForce false;
+  # networking.wireguard.enable = true;
+  # networking.wireguard.interfaces = let
+  #   # [Peer] section -> Endpoint
+  #   server_ip = "camp13.campfiresecurity.dk";
+  # in {
+  #   wg0 = {
+  #     # [Interface] section -> Address
+  #     ips = [ "10.0.240.254/32" ];
+
+  #     # [Peer] section -> Endpoint:port
+  #     listenPort = 5000;
+
+  #     # Path to the private key file.
+  #     privateKeyFile = "/etc/campfire.key";
+
+  #     peers = [{
+  #       # [Peer] section -> PublicKey
+  #       publicKey = "BWwE1s30zX4WLoI9/DJgzRFpMhU5Un/heT5fvm7fzQQ=";
+  #       # [Peer] section -> AllowedIPs
+  #       allowedIPs = [ "10.42.9.0/24" "10.0.240.1/32" ];
+  #       # [Peer] section -> Endpoint:port
+  #       endpoint = "${server_ip}:5000";
+  #       persistentKeepalive = 25;
+  #     }];
+  #   };
+  # };
 
   boot = {
     kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
@@ -43,6 +77,7 @@
 
 
   hardware.firmware = [
+    pkgs.sof-firmware
     (
       let
         model = "37xx";

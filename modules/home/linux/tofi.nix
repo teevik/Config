@@ -1,6 +1,9 @@
 { config, pkgs, lib, ... }: {
   home.packages = with pkgs; [
-    tofi
+    # Patched 
+    (tofi.overrideAttrs (oldAttrs: {
+      patches = [ ./tofi.patch ];
+    }))
   ];
 
   xdg.configFile."tofi/config".text = ''

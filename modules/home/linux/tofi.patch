@@ -1,0 +1,13 @@
+diff --git a/src/main.c b/src/main.c
+index e91838f..7845261 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -1578,7 +1578,7 @@ int main(int argc, char *argv[])
+ 			tofi.window.surface.wl_surface,
+ 			wl_output,
+ 			ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
+-			"launcher");
++			"tofi-launcher");
+ 	zwlr_layer_surface_v1_set_keyboard_interactivity(
+ 			tofi.window.zwlr_layer_surface,
+ 			ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE);
