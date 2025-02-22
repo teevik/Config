@@ -29,8 +29,8 @@ in
 
     scaling = mkOption {
       type = types.float;
-      default = 1.;
-        description = ''
+      default = 1.0;
+      description = ''
         Amount to scale
       '';
     };
@@ -49,13 +49,7 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
-      # package = perSystem.hyprland.default;
-
       settings = {
-        # experimental = {
-        #   xx_color_management_v4 = true;
-        # };
-
         exec-once = [
           "systemctl restart --user marble.service swaybg.service"
           "1password"

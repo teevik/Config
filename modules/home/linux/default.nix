@@ -1,11 +1,9 @@
 { inputs, pkgs, ... }: {
   imports = [
     ./hyprland
-    ./waybar
     ./firefox.nix
     ./gtk.nix
     ./hypridle.nix
-    ./mako.nix
     ./marble.nix
     ./qt.nix
     ./swaybg.nix
@@ -36,6 +34,7 @@
     inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
     inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
 
+    libnotify
     insomnia
     caligula
     mpv

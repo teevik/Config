@@ -8,5 +8,4 @@
       package = pkgs.adwaita-qt;
     };
   };
-
 }

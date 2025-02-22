@@ -117,7 +117,7 @@ in
 
   wayland.windowManager.hyprland = {
     settings = builtins.mapAttrs
-      (name: binds: bindsToList binds)
+      (name: bindsToList)
       keyBinds;
   };
 }
