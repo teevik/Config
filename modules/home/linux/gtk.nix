@@ -3,6 +3,10 @@ let
   inherit (config.teevik.theme) gtkTheme gtkIconTheme;
 in
 {
+  home.packages = [
+    pkgs.catppuccin-cursors.mochaDark
+  ];
+
   gtk = {
     enable = true;
 

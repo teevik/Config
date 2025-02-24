@@ -11,7 +11,7 @@ in
   config.teevik.theme = {
     background = ./background.png;
 
-    borderColor = "cba6f7";
+    borderColor = "eba0ac";
 
     colors.withHashtag = {
       base00 = "#1e1e2e";

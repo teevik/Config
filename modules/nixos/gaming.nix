@@ -17,9 +17,8 @@ in
     enable = true;
     remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
   };
-
-  environment.sessionVariables.STEAM_EXTRA_COMPAT_TOOLS_PATHS = "${pkgs.proton-ge-bin}";
 
   environment.systemPackages = with pkgs; [
     lutris

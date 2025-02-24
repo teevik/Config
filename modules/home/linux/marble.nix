@@ -25,7 +25,7 @@
   };
 
   xdg.configFile."marble/theme.json".text = builtins.toJSON {
-    "dark.primary" = "#cba6f7";
+    "dark.primary" = "#eba0ac";
     "dark.error" = "#e55f86";
     "dark.success" = "#00D787";
     "dark.bg" = "#171717";

@@ -61,7 +61,7 @@
     binwalk
 
     # TODO
-    # (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec sigdb ]))
+    (cutter.withPlugins (plugins: with plugins;[ rz-ghidra jsdec sigdb ]))
 
     gdb
 

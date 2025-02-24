@@ -27,7 +27,7 @@ let
     bind."SUPER, E" = "exec, ${editor}";
     bind."SUPER, Backspace" = "exec, ${hyprland-scratchpad} toggle-exec --name discord --exec '${discord}'";
     bind."SUPER, M" = "exec, ${hyprland-scratchpad} toggle-exec --name spotify --exec '${spotify}'";
-    bind."SUPER, S" = "exec, ${hyprland-scratchpad} toggle-exec --name spotify --exec '${settings}'";
+    bind."SUPER, S" = "exec, ${hyprland-scratchpad} toggle-exec --name settings --exec '${settings}'";
 
     # Screenshot
     bind.", Print" = "exec, XDG_SCREENSHOTS_DIR=${XDG_SCREENSHOTS_DIR} grimblast --notify copysave output";

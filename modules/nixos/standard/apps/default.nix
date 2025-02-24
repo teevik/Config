@@ -1,5 +1,6 @@
 { perSystem, config, pkgs, ... }: {
   imports = [
+    ./android-studio.nix
     ./nautilus.nix
     ./firefox.nix
   ];

@@ -7,6 +7,7 @@
       "toml"
       "lua"
       "basher"
+      "catppuccin"
     ];
 
     userSettings = {
@@ -16,7 +17,7 @@
         enable_vim_sneak = true;
       };
 
-      # theme = "Dracula";
+      theme = "Catppuccin Mocha";
       # had to force here due to conflicts
 
       ui_font_size = lib.mkForce 12;
