@@ -1,4 +1,4 @@
-{ config, ... }: {
+{ config, pkgs, ... }: {
   imports = [
     ./age
     ./apps
@@ -73,4 +73,8 @@
       Hyprland
     fi
   '';
+
+  services.udev.packages = with pkgs; [
+      via
+  ];
 }
