@@ -1,9 +1,11 @@
-{ ... }: {
+{ config, ... }:
+{
   programs.nushell = {
     enable = true;
 
     envFile.source = ./env.nu;
     configFile.source = ./config.nu;
+    environmentVariables = config.home.sessionVariables;
   };
 
   programs.carapace.enable = true;
