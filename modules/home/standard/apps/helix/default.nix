@@ -7,7 +7,6 @@ in
     "helix/themes/catppuccin_mocha.toml".source = ./catppuccin_mocha.toml;
   };
 
-
   programs.helix = {
     enable = true;
 
@@ -101,6 +100,16 @@ in
         "S-tab" = "unindent";
         "C-s" = ":w";
       };
+    };
+
+    languages = {
+      language = [
+        {
+          name = "nix";
+          formatter = { command = "nixfmt"; };
+          auto-format = true;
+        }
+      ];
     };
   };
 }

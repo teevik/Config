@@ -23,11 +23,17 @@
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
-  # Fix keyboard backlight on hibernate
-  powerManagement.resumeCommands = ''
-    modprobe -r asus_nb_wmi
-    modprobe asus_nb_wmi
-  '';
+  # Logitech
+  hardware.logitech.wireless = {
+    enable = true;
+    enableGraphical = true;
+  };
+
+  # # Fix keyboard backlight on hibernate
+  # powerManagement.resumeCommands = ''
+  #   modprobe -r asus_nb_wmi
+  #   modprobe asus_nb_wmi
+  # '';
 
   services.tailscale.enable = lib.mkForce false;
   networking.wireguard.enable = true;

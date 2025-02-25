@@ -1,6 +1,14 @@
-{ inputs, perSystem, pkgs, lib, ... }:
-let gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
-in {
+{
+  inputs,
+  perSystem,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
+in
+{
   imports = [
     inputs.nix-index-database.hmModules.nix-index
     ./helix
@@ -154,5 +162,6 @@ in {
     neofetch
     sysz
     perSystem.iwmenu.default
+    perSystem.self.claude-code
   ];
 }

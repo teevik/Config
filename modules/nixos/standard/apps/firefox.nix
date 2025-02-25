@@ -4,10 +4,12 @@ let
     Value = false;
     Status = "locked";
   };
-  # lock-true = {
-  #   Value = true;
-  #   Status = "locked";
-  # };
+
+  lock-true = {
+    Value = true;
+    Status = "locked";
+  };
+
   lock-empty-string = {
     Value = "";
     Status = "locked";
@@ -25,6 +27,7 @@ in
       SearchBar = "unified";
 
       Preferences = {
+        "general.autoScroll" = lock-true;
         # Privacy settings
         "extensions.pocket.enabled" = lock-false;
         "browser.newtabpage.pinned" = lock-empty-string;

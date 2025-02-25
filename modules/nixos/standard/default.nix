@@ -5,7 +5,6 @@
     ./cachix.nix
     ./docker.nix
     ./fonts.nix
-    ./hyprland.nix
     ./pipewire.nix
     ./polkit.nix
     ./shells.nix

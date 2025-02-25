@@ -55,7 +55,7 @@ in
           "1password"
         ];
 
-        cursor.inactive_timeout = 5;
+        # cursor.inactive_timeout = 10;
 
         misc = {
           # enable_swallow = true;

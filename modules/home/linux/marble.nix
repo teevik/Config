@@ -124,6 +124,7 @@
 
   xdg.configFile."marble/substitutes.json".text = builtins.toJSON {
     "audio-headset-bluetooth-symbolic" = "audio-headset-symbolic";
+    "kitty terminal-symbolic" = "terminal-symbolic";
     # "external-link-symbolic" = "emblem-symbolic-link";
   };
 }
