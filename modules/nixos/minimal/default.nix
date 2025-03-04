@@ -1,7 +1,11 @@
-{ perSystem, inputs, pkgs, ... }:
+{
+  perSystem,
+  inputs,
+  pkgs,
+  ...
+}:
 let
-  initialHashedPassword =
-    "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
+  initialHashedPassword = "$6$X19Q8OhBkw8xUegs$prAFssd1NxBR1qrdMUhqZX4Xqy02bTeNfCZw24YCMClQhp8Pox65w6PF5w7hV2foKfGytsXTwCB5pQ7FLwF7o/";
 in
 {
   imports = [
@@ -24,7 +28,10 @@ in
       # package = perSystem.self.lix;
 
       settings = {
-        experimental-features = [ "nix-command" "flakes" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
         auto-optimise-store = true;
 
         trusted-users = [
@@ -80,7 +87,6 @@ in
         group = "users";
 
         extraGroups = [ "wheel" ];
-
 
         inherit initialHashedPassword;
       };

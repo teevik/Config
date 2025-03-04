@@ -1,4 +1,5 @@
-{ pkgs, perSystem, ... }: {
+{ pkgs, perSystem, ... }:
+{
   home.packages = [
     perSystem.marble.astal
     perSystem.marble.marble
@@ -8,8 +9,7 @@
   systemd.user.services.marble = {
 
     Unit = {
-      Description =
-        "Marble Shell";
+      Description = "Marble Shell";
       PartOf = [ "graphical-session.target" ];
       After = [ "graphical-session-pre.target" ];
     };
@@ -21,7 +21,9 @@
       KillMode = "mixed";
     };
 
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
 
   xdg.configFile."marble/theme.json".text = builtins.toJSON {

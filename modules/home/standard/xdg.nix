@@ -6,17 +6,32 @@ let
   audioPlayer = [ "mpv" ];
   compressionHandler = [ "org.gnome.Nautilus" ];
 
-  xdgAssociations = type: program: list:
-    builtins.listToAttrs (map
-      (e: {
+  xdgAssociations =
+    type: program: list:
+    builtins.listToAttrs (
+      map (e: {
         name = "${type}/${e}";
         value = program;
-      })
-      list);
+      }) list
+    );
 
-  image = xdgAssociations "image" imageViewer [ "png" "svg" "jpeg" "gif" ];
-  video = xdgAssociations "video" videoPlayer [ "mp4" "avi" "mkv" ];
-  audio = xdgAssociations "audio" audioPlayer [ "mp3" "flac" "wav" "aac" ];
+  image = xdgAssociations "image" imageViewer [
+    "png"
+    "svg"
+    "jpeg"
+    "gif"
+  ];
+  video = xdgAssociations "video" videoPlayer [
+    "mp4"
+    "avi"
+    "mkv"
+  ];
+  audio = xdgAssociations "audio" audioPlayer [
+    "mp3"
+    "flac"
+    "wav"
+    "aac"
+  ];
   compression = xdgAssociations "compression" compressionHandler [
     "application/bzip2"
     "application/gzip"
@@ -42,7 +57,6 @@ let
     "application/zip"
   ];
 
-
   browserTypes =
     (xdgAssociations "application" browser [
       "json"
@@ -60,17 +74,19 @@ let
       "unknown"
     ]);
 
-  associations = builtins.mapAttrs (_: v: (map (e: "${e}.desktop") v)) ({
-    "application/pdf" = [ "com.github.xournalpp.xournalpp" ];
-    "text/html" = browser;
-    "text/plain" = [ "Helix" ];
-    "inode/directory" = [ "org.gnome.Nautilus" ];
-  }
-  // image
-  // video
-  // audio
-  // compression
-  // browserTypes);
+  associations = builtins.mapAttrs (_: v: (map (e: "${e}.desktop") v)) (
+    {
+      "application/pdf" = [ "com.github.xournalpp.xournalpp" ];
+      "text/html" = browser;
+      "text/plain" = [ "Helix" ];
+      "inode/directory" = [ "org.gnome.Nautilus" ];
+    }
+    // image
+    // video
+    // audio
+    // compression
+    // browserTypes
+  );
 in
 {
   xdg = {

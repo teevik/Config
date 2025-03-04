@@ -1,4 +1,5 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, ... }:
+{
   imports = [
     ./age
     ./apps
@@ -65,7 +66,6 @@
 
   # users.users.teevik.extraGroups = [ "geoclue" ];
 
-
   # Auto hyprland
   environment.loginShellInit = ''
     if [ "$(tty)" == /dev/tty1 ]; then
@@ -74,6 +74,6 @@
   '';
 
   services.udev.packages = with pkgs; [
-      via
+    via
   ];
 }

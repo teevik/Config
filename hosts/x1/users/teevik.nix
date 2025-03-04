@@ -1,4 +1,5 @@
-{ flake, ... }: {
+{ flake, ... }:
+{
   imports = [
     flake.homeModules.standard
     flake.homeModules.linux

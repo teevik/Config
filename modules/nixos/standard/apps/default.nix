@@ -1,11 +1,15 @@
-{ perSystem, config, pkgs, ... }: {
+{
+  perSystem,
+  config,
+  pkgs,
+  ...
+}:
+{
   imports = [
     ./android-studio.nix
     ./nautilus.nix
     ./firefox.nix
   ];
-
-
 
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 

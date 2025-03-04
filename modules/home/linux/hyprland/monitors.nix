@@ -34,7 +34,9 @@ in
         ];
 
         exec-once = [
-          "xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON (builtins.floor (16 * scaling))}c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON scaling}"
+          "xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${
+            builtins.toJSON (builtins.floor (16 * scaling))
+          }c -set _XWAYLAND_GLOBAL_OUTPUT_SCALE ${builtins.toJSON scaling}"
           "hyprctl setcursor ${cursorTheme.name} ${builtins.toJSON cursorSize}"
         ];
       })

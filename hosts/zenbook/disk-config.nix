@@ -1,4 +1,5 @@
-{ disks, ... }: {
+{ disks, ... }:
+{
   disk = {
     main = {
       device = builtins.elemAt disks 0;

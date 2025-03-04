@@ -1,4 +1,10 @@
-{ pkgs, config, lib, inputs, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  inputs,
+  ...
+}:
 let
   inherit (config.teevik.theme) helixTheme;
 in
@@ -32,15 +38,11 @@ in
           fi
         '';
       in
-      pkgs.runCommand
-        "${helix.name}-kitty-integration"
-        { }
-        ''
-          mkdir -p $out/{share,bin}
-          ${pkgs.xorg.lndir}/bin/lndir -silent ${helix}/share $out/share
-          cp ${helix-kitty-integration}/bin/hx $out/bin
-        ''
-    ;
+      pkgs.runCommand "${helix.name}-kitty-integration" { } ''
+        mkdir -p $out/{share,bin}
+        ${pkgs.xorg.lndir}/bin/lndir -silent ${helix}/share $out/share
+        cp ${helix-kitty-integration}/bin/hx $out/bin
+      '';
 
     settings = {
       theme = helixTheme;
@@ -78,13 +80,22 @@ in
       keys.normal = {
         "W" = "move_prev_word_start";
 
-        esc = [ "collapse_selection" "keep_primary_selection" ];
+        esc = [
+          "collapse_selection"
+          "keep_primary_selection"
+        ];
         "C-/" = "toggle_comments";
 
         # ctrl-d from vscode
         # "C-d" = ["move_prev_word_start", move_next_word_end", "search_selection", "extend_search_next"]
         # make sure there is only one selection, select word under cursor, set search to selection, then switch to select mode
-        "C-d" = [ "keep_primary_selection" "move_prev_word_start" "move_next_word_end" "search_selection" "select_mode" ];
+        "C-d" = [
+          "keep_primary_selection"
+          "move_prev_word_start"
+          "move_next_word_end"
+          "search_selection"
+          "select_mode"
+        ];
 
         space."i" = ":toggle lsp.display-inlay-hints";
         space."e" = ":toggle inline-diagnostics.other-lines error disable";
@@ -93,7 +104,10 @@ in
       keys.select = {
         "W" = "move_prev_word_start";
         # if already in select mode, just add new selection at next occurrence
-        "C-d" = [ "search_selection" "extend_search_next" ];
+        "C-d" = [
+          "search_selection"
+          "extend_search_next"
+        ];
       };
 
       keys.insert = {
@@ -106,7 +120,9 @@ in
       language = [
         {
           name = "nix";
-          formatter = { command = "nixfmt"; };
+          formatter = {
+            command = "nixfmt";
+          };
           auto-format = true;
         }
       ];

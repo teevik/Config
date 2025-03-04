@@ -117,7 +117,6 @@ in
           dim_strength = 0;
           dim_special = 0.5;
 
-
           shadow = {
             enabled = true;
             offset = "0 5";

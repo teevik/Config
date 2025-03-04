@@ -1,4 +1,5 @@
-{ inputs, pkgs, ... }: {
+{ inputs, pkgs, ... }:
+{
   imports = [
     ./hyprland
     ./firefox.nix
@@ -50,5 +51,6 @@
     watchman
     zed-editor
     vesktop
+    wavemon
   ];
 }

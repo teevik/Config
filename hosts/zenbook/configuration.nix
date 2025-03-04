@@ -1,4 +1,11 @@
-{ flake, inputs, lib, pkgs, ... }: {
+{
+  flake,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
+{
   imports = [
     ./hardware.nix
     "${inputs.nixos-hardware}/common/cpu/intel"
@@ -40,7 +47,7 @@
   networking.wireguard.interfaces =
     let
       # [Peer] section -> Endpoint
-      server_ip = "camp09.campfiresecurity.dk";
+      server_ip = "camp11.campfiresecurity.dk";
     in
     {
       wg0 = {
@@ -53,15 +60,20 @@
         # Path to the private key file.
         privateKeyFile = "/etc/campfire.key";
 
-        peers = [{
-          # [Peer] section -> PublicKey
-          publicKey = "7D0tTYwccnlsrMfn4DDtw7HuaLQqVH8wsUoYmISHSUw=";
-          # [Peer] section -> AllowedIPs
-          allowedIPs = [ "10.42.8.0/24" "10.0.240.1/32" ];
-          # [Peer] section -> Endpoint:port
-          endpoint = "${server_ip}:5000";
-          persistentKeepalive = 25;
-        }];
+        peers = [
+          {
+            # [Peer] section -> PublicKey
+            publicKey = "NUCc3FffboVY0PxhfrQB++2DY3rJUyFETabF91Eu3Vc=";
+            # [Peer] section -> AllowedIPs
+            allowedIPs = [
+              "10.42.7.0/24"
+              "10.0.240.1/32"
+            ];
+            # [Peer] section -> Endpoint:port
+            endpoint = "${server_ip}:5000";
+            persistentKeepalive = 25;
+          }
+        ];
       };
     };
 
@@ -82,7 +94,6 @@
     #   "asus-nb-wmi" # Eats ~0.30 W
     # ];
   };
-
 
   hardware.firmware = [
     pkgs.sof-firmware

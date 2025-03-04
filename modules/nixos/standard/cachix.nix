@@ -1,4 +1,5 @@
-{ config, ... }: {
+{ config, ... }:
+{
   services.cachix-watch-store = {
     enable = true;
     cacheName = "teevik";

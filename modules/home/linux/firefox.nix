@@ -30,41 +30,66 @@
 
       search.engines =
         let
-          mkBasicSearchEngine = { aliases, url, param, icon ? null }: {
-            urls = [{
-              template = url;
-              params = [
-                { name = param; value = "{searchTerms}"; }
+          mkBasicSearchEngine =
+            {
+              aliases,
+              url,
+              param,
+              icon ? null,
+            }:
+            {
+              urls = [
+                {
+                  template = url;
+                  params = [
+                    {
+                      name = param;
+                      value = "{searchTerms}";
+                    }
+                  ];
+                }
               ];
-            }];
 
-            definedAliases = aliases;
-          } // (if icon == null then { } else { inherit icon; });
+              definedAliases = aliases;
+            }
+            // (if icon == null then { } else { inherit icon; });
         in
         {
           "Nix Packages" = mkBasicSearchEngine {
-            aliases = [ "@np" "@nix-packages" ];
+            aliases = [
+              "@np"
+              "@nix-packages"
+            ];
             url = "https://search.nixos.org/packages";
             param = "query";
             icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
           };
 
           "Nix Options" = mkBasicSearchEngine {
-            aliases = [ "@no" "@nix-options" ];
+            aliases = [
+              "@no"
+              "@nix-options"
+            ];
             url = "https://search.nixos.org/options";
             param = "query";
             icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
           };
 
           "Home Manager Options" = mkBasicSearchEngine {
-            aliases = [ "@hm" "@home-manager" ];
+            aliases = [
+              "@hm"
+              "@home-manager"
+            ];
             url = "https://home-manager-options.extranix.com";
             param = "query";
             icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
           };
 
           "NixOS Wiki" = mkBasicSearchEngine {
-            aliases = [ "@nw" "@nix-wiki" ];
+            aliases = [
+              "@nw"
+              "@nix-wiki"
+            ];
             url = "https://nixos.wiki/index.php";
             param = "search";
           };
@@ -72,19 +97,36 @@
           "Youtube" = mkBasicSearchEngine {
             url = "https://www.youtube.com/results";
             param = "search_query";
-            aliases = [ "@yt" "@youtube" ];
+            aliases = [
+              "@yt"
+              "@youtube"
+            ];
           };
 
           "Github" = mkBasicSearchEngine {
             url = "https://github.com/search";
             param = "q";
-            aliases = [ "@gh" "@github" ];
+            aliases = [
+              "@gh"
+              "@github"
+            ];
           };
 
           "docs.rs" = mkBasicSearchEngine {
             url = "https://docs.rs/releases/search";
             param = "query";
-            aliases = [ "@docs" "@docs.rs" ];
+            aliases = [
+              "@docs"
+              "@docs.rs"
+            ];
+          };
+
+          "lib.rs" = mkBasicSearchEngine {
+            url = "https://lib.rs/search";
+            param = "q";
+            aliases = [
+              "@lib"
+            ];
           };
         };
     };

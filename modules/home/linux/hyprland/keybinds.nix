@@ -1,4 +1,9 @@
-{ perSystem, lib, config, ... }:
+{
+  perSystem,
+  lib,
+  config,
+  ...
+}:
 let
 
   hyprland-scratchpad-package = perSystem.self.hyprland-scratchpad;
@@ -18,20 +23,24 @@ let
   keyBinds = {
     # Terminal
     bind."SUPER_SHIFT, Return" = "exec, ${terminal}";
-    bind."SUPER, Return" = "exec, ${hyprland-scratchpad} toggle-exec --name terminal --exec '${terminal}'";
+    bind."SUPER, Return" =
+      "exec, ${hyprland-scratchpad} toggle-exec --name terminal --exec '${terminal}'";
 
     # Apps
     bind."SUPER, D" = "exec, ${menu}";
     bind."SUPER, W" = "exec, ${browser}";
     bind."SUPER, F" = "exec, ${files}";
     bind."SUPER, E" = "exec, ${editor}";
-    bind."SUPER, Backspace" = "exec, ${hyprland-scratchpad} toggle-exec --name discord --exec '${discord}'";
+    bind."SUPER, Backspace" =
+      "exec, ${hyprland-scratchpad} toggle-exec --name discord --exec '${discord}'";
     bind."SUPER, M" = "exec, ${hyprland-scratchpad} toggle-exec --name spotify --exec '${spotify}'";
     bind."SUPER, S" = "exec, ${hyprland-scratchpad} toggle-exec --name settings --exec '${settings}'";
 
     # Screenshot
-    bind.", Print" = "exec, XDG_SCREENSHOTS_DIR=${XDG_SCREENSHOTS_DIR} grimblast --notify copysave output";
-    bind."CTRL, Print" = "exec, XDG_SCREENSHOTS_DIR=${XDG_SCREENSHOTS_DIR} grimblast --notify copysave area";
+    bind.", Print" =
+      "exec, XDG_SCREENSHOTS_DIR=${XDG_SCREENSHOTS_DIR} grimblast --notify copysave output";
+    bind."CTRL, Print" =
+      "exec, XDG_SCREENSHOTS_DIR=${XDG_SCREENSHOTS_DIR} grimblast --notify copysave area";
 
     # Hyprland
     bind."SUPER, Q" = "killactive,";
@@ -74,7 +83,6 @@ let
     bindm."SUPERSHIFT,mouse:272" = "resizewindow";
     bind."SUPER,mouse:273" = "togglesplit";
 
-
     # Resize
     bind."SUPERCTRL,left" = "resizeactive,-20 0";
     bind."SUPERCTRL,right" = "resizeactive,20 0";
@@ -106,9 +114,8 @@ let
     bind."SUPER_SHIFT,0" = "movetoworkspace,10";
   };
 
-  bindsToList = binds: lib.attrsets.mapAttrsToList
-    (binding: dispatcher: "${binding}, ${dispatcher}")
-    binds;
+  bindsToList =
+    binds: lib.attrsets.mapAttrsToList (binding: dispatcher: "${binding}, ${dispatcher}") binds;
 in
 {
   home.packages = [
@@ -116,8 +123,6 @@ in
   ];
 
   wayland.windowManager.hyprland = {
-    settings = builtins.mapAttrs
-      (name: bindsToList)
-      keyBinds;
+    settings = builtins.mapAttrs (name: bindsToList) keyBinds;
   };
 }

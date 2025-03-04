@@ -1,4 +1,10 @@
-{ flake, inputs, lib, ... }: {
+{
+  flake,
+  inputs,
+  lib,
+  ...
+}:
+{
   imports = [
     ./hardware.nix
     inputs.disko.nixosModules.disko

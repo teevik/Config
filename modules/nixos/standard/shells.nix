@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   # Nushell
   environment = {
     shells = [ pkgs.nushell ];

@@ -1,27 +1,59 @@
 { pkgs }:
 let
-  inherit (pkgs) lib stdenv fetchFromGitHub meson pkg-config vulkan-loader ninja writeText vulkan-headers vulkan-utility-libraries jq wayland wayland-scanner xorg;
+  inherit (pkgs)
+    lib
+    stdenv
+    fetchFromGitHub
+    meson
+    pkg-config
+    vulkan-loader
+    ninja
+    writeText
+    vulkan-headers
+    vulkan-utility-libraries
+    jq
+    wayland
+    wayland-scanner
+    xorg
+    ;
   inherit (xorg) libX11 libXrandr libxcb;
 in
 stdenv.mkDerivation {
   pname = "vulkan-hdr-layer";
   version = "e173f26";
 
-  src = (fetchFromGitHub {
-    owner = "Zamundaaa";
-    repo = "VK_hdr_layer";
-    rev = "e173f2617262664901039e3c821929afce05d2c1";
-    fetchSubmodules = true;
-    hash = "sha256-hBxRwbn29zFeHcRpfMF6I4piSASpN2AvZY0ci5Utj4U=";
-  }).overrideAttrs (_: {
-    GIT_CONFIG_COUNT = 1;
-    GIT_CONFIG_KEY_0 = "url.https://github.com/.insteadOf";
-    GIT_CONFIG_VALUE_0 = "git@github.com:";
-  });
+  src =
+    (fetchFromGitHub {
+      owner = "Zamundaaa";
+      repo = "VK_hdr_layer";
+      rev = "e173f2617262664901039e3c821929afce05d2c1";
+      fetchSubmodules = true;
+      hash = "sha256-hBxRwbn29zFeHcRpfMF6I4piSASpN2AvZY0ci5Utj4U=";
+    }).overrideAttrs
+      (_: {
+        GIT_CONFIG_COUNT = 1;
+        GIT_CONFIG_KEY_0 = "url.https://github.com/.insteadOf";
+        GIT_CONFIG_VALUE_0 = "git@github.com:";
+      });
 
-  nativeBuildInputs = [ vulkan-headers meson ninja pkg-config jq ];
+  nativeBuildInputs = [
+    vulkan-headers
+    meson
+    ninja
+    pkg-config
+    jq
+  ];
 
-  buildInputs = [ vulkan-headers vulkan-loader vulkan-utility-libraries libX11 libXrandr libxcb wayland wayland-scanner ];
+  buildInputs = [
+    vulkan-headers
+    vulkan-loader
+    vulkan-utility-libraries
+    libX11
+    libXrandr
+    libxcb
+    wayland
+    wayland-scanner
+  ];
 
   # Help vulkan-loader find the validation layers
   setupHook = writeText "setup-hook" ''
