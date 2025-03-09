@@ -23,6 +23,12 @@ in
   environment.systemPackages = with pkgs; [
     lutris
     dualsensectl
+    (prismlauncher.override { jdks = with pkgs; [
+      jdk23
+      jdk21
+      jdk17
+      jdk8
+    ]; })
   ];
 
   # services = {

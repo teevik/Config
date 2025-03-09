@@ -75,8 +75,8 @@ in
     ruff-lsp
 
     # Roc
-    rocPkgs.cli
-    rocPkgs.lang-server
+    # rocPkgs.cli
+    # rocPkgs.lang-server
 
     # Rust
     rustup
