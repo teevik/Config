@@ -96,7 +96,7 @@
   };
 
   hardware.firmware = [
-    pkgs.sof-firmware
+    # pkgs.sof-firmware
 
     (
       let
