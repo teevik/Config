@@ -11,6 +11,7 @@
     "${inputs.nixos-hardware}/common/cpu/intel"
     "${inputs.nixos-hardware}/common/cpu/intel/lunar-lake"
     "${inputs.nixos-hardware}/common/hidpi.nix"
+    # "${inputs.nixos-hardware}/asus/battery.nix"
 
     inputs.disko.nixosModules.disko
     flake.nixosModules.minimal
@@ -18,9 +19,6 @@
     flake.nixosModules.laptop
     flake.nixosModules.gaming
   ];
-
-  # Disable home-manager
-  home-manager.users = lib.mkForce { };
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "zenbook";
@@ -36,6 +34,9 @@
     enableGraphical = true;
   };
 
+  # Battery
+  # hardware.asus.battery.chargeUpto = 80;
+  
   # # Fix keyboard backlight on hibernate
   # powerManagement.resumeCommands = ''
   #   modprobe -r asus_nb_wmi
@@ -78,7 +79,7 @@
   #   };
 
   boot = {
-    kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
+    kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
     # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos-rc;
     # services.scx.enable = true; # by default uses scx_rustland scheduler
 

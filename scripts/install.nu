@@ -2,7 +2,7 @@
 
 def main [ip: string, flake: string, hardwarePath: string] {
   # Install NixOS on a remote machine
-  nix run github:nix-community/nixos-anywhere -- --build-on remote --phases kexec,disko,install --generate-hardware-config nixos-generate-config $hardwarePath --flake $flake root@($ip)
+  nix run github:nix-community/nixos-anywhere -- --phases kexec,disko,install --generate-hardware-config nixos-generate-config $hardwarePath --flake $flake root@($ip)
 
   # Copy ssh keys over
   ssh root@{{TARGET-IP}} "mkdir /mnt/home/teevik/.ssh"

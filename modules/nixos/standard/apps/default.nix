@@ -23,13 +23,29 @@
       polkitPolicyOwners = [ "teevik" ];
     };
 
-    nix-ld.enable = true;
+    nix-ld = {
+      enable = true;
+      libraries = with pkgs; [
+        stdenv.cc.cc.lib
+        zlib
+        # glib.dev
+        # pango.dev
+        # gtk3
+        # cairo.dev
+      ];
+    };
 
     nh = {
       enable = true;
       clean.enable = true;
       clean.extraArgs = "--keep-since 4d --keep 3";
       flake = "${config.users.users.teevik.home}/Documents/Config";
+    };
+  };
+
+  services = {
+    envfs = {
+      enable = true;
     };
   };
 

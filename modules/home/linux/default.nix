@@ -49,7 +49,6 @@
     libreoffice-qt6-fresh
     wl-clipboard
     watchman
-    zed-editor
     vesktop
     wavemon
   ];

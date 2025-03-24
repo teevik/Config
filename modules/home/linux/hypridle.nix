@@ -16,7 +16,7 @@ let
 in
 {
   services.hypridle = {
-    enable = true;
+    enable = false;
 
     settings = {
       listeners = [
