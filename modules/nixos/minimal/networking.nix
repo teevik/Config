@@ -10,6 +10,7 @@
   users.users.teevik.extraGroups = [ "networkmanager" ];
 
   environment.systemPackages = with pkgs; [
+    geteduroam-cli
     networkmanagerapplet
   ];
 

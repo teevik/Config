@@ -24,6 +24,15 @@
   # Disable the lid switch
   services.logind.lidSwitch = "ignore";
 
+  # Docker registry
+  services.dockerRegistry = {
+    enable = true;
+
+    enableDelete = true;
+    enableGarbageCollect = true;
+    listenAddress = "0.0.0.0";
+  };
+
   # Acceleration
   boot.kernelParams = [
     "i915.enable_guc=2"
