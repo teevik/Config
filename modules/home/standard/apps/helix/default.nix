@@ -18,7 +18,8 @@ in
 
     package =
       let
-        helix = inputs.helix.packages.${pkgs.system}.default;
+      helix = pkgs.helix;
+        # helix = inputs.helix.packages.${pkgs.system}.default;
         helixBin = lib.getExe helix;
         kittyBin = lib.getExe pkgs.kitty;
 

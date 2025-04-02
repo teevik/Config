@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  perSystem,
+  config,
+  lib,
+  ...
+}:
 let
   inherit (lib) types mkOption;
   inherit (config.teevik.theme) borderColor cursorTheme;
@@ -48,6 +53,8 @@ in
 
     wayland.windowManager.hyprland = {
       enable = true;
+
+      package = perSystem.hyprland.default;
 
       settings = {
         exec-once = [

@@ -1,6 +1,8 @@
 {
   inputs = {
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    unstable.url = "github:numtide/nixpkgs-unfree/nixos-unstable";
     # chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
     home-manager = {
@@ -23,7 +25,7 @@
     hyprland.url = "github:hyprwm/hyprland";
     betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
     iwmenu.url = "github:e-tho/iwmenu";
-    helix.url = "github:helix-editor/helix";
+    # helix.url = "github:helix-editor/helix";
     hyprland-contrib.url = "github:hyprwm/contrib";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     roc.url = "github:roc-lang/roc";
@@ -32,7 +34,7 @@
 
     marble = {
       url = "git+ssh://git@github.com/marble-shell/shell.git";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
 
     morewaita = {

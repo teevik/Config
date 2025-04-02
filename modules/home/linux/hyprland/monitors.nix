@@ -29,9 +29,9 @@ in
           force_zero_scaling = true;
         };
 
-        env = [
-          "GDK_SCALE,${builtins.toJSON scaling}"
-        ];
+        # env = [
+        #   "GDK_SCALE,${builtins.toJSON (builtins.ceil scaling)}"
+        # ];
 
         exec-once = [
           "xprop -root -f _XWAYLAND_GLOBAL_OUTPUT_SCALE ${

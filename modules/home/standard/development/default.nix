@@ -49,7 +49,7 @@ in
     biome
     emmet-ls
     vtsls
-    nodePackages."@prisma/language-server"
+    # nodePackages."@prisma/language-server"
     yarn
 
     # Json

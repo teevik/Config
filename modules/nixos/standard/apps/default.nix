@@ -14,18 +14,26 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   programs = {
-    hyprland.enable = true;
+    hyprland = {
+      enable = true;
+      package = perSystem.hyprland.default;
+    };
 
-    _1password.enable = true;
+    _1password = {
+      enable = true;
+      package = perSystem.unstable._1password-cli;
+    };
 
     _1password-gui = {
       enable = true;
+      package = perSystem.unstable._1password-gui;
       polkitPolicyOwners = [ "teevik" ];
     };
 
     nix-ld = {
       enable = true;
       libraries = with pkgs; [
+        hyprland
         stdenv.cc.cc.lib
         zlib
         # glib.dev

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ perSystem, pkgs, ... }:
 {
   networking.networkmanager.enable = true;
   # wifi.backend = "iwd";
@@ -9,9 +9,9 @@
 
   users.users.teevik.extraGroups = [ "networkmanager" ];
 
-  environment.systemPackages = with pkgs; [
-    geteduroam-cli
-    networkmanagerapplet
+  environment.systemPackages = [
+    perSystem.unstable.geteduroam-cli
+    pkgs.networkmanagerapplet
   ];
 
   # networking.wireless.iwd = {

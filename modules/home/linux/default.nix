@@ -41,7 +41,7 @@
     mpv
     obs-studio
     trashy
-    beekeeper-studio
+    # beekeeper-studio
     xdragon
     loupe
     koji

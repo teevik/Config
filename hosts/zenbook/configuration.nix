@@ -1,4 +1,5 @@
 {
+  perSystem,
   flake,
   inputs,
   lib,
@@ -34,9 +35,11 @@
     enableGraphical = true;
   };
 
+  networking.firewall.allowedTCPPorts = [ 9001 ];
+
   # Battery
   # hardware.asus.battery.chargeUpto = 80;
-  
+
   # # Fix keyboard backlight on hibernate
   # powerManagement.resumeCommands = ''
   #   modprobe -r asus_nb_wmi
@@ -79,6 +82,7 @@
   #   };
 
   boot = {
+    # kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
     kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
     # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos-rc;
     # services.scx.enable = true; # by default uses scx_rustland scheduler
@@ -94,10 +98,29 @@
     # blacklistedKernelModules = [
     #   "asus-nb-wmi" # Eats ~0.30 W
     # ];
+
+    extraModprobeConfig = ''
+      options snd-intel-dspcfg dsp_driver=1
+    '';
   };
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      linux-firmware = prev.linux-firmware.overrideAttrs (old: {
+        postInstall = ''
+          cp ${./firmware/ibt-0190-0291-iml.sfi} $out/lib/firmware/intel/ibt-0190-0291-iml.sfi
+          cp ${./firmware/ibt-0190-0291-usb.sfi} $out/lib/firmware/intel/ibt-0190-0291-usb.sfi
+        '';
+      });
+
+      sof-firmware = perSystem.self.sof-firmware;
+    })
+  ];
 
   hardware.firmware = [
     # pkgs.sof-firmware
+    # pkgs.alsa-firmware
+    # perSystem.self.sof-firmware
 
     (
       let

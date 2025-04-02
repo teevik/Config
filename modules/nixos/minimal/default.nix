@@ -2,6 +2,7 @@
   perSystem,
   inputs,
   pkgs,
+  lib,
   ...
 }:
 let
@@ -55,8 +56,9 @@ in
       registry = {
         default.flake = inputs.nixpkgs;
         default-flake.flake = inputs.nixpkgs;
-        nixpkgs.flake = inputs.nixpkgs;
+        nixpkgs.flake = lib.mkForce inputs.nixpkgs;
         teevik.flake = inputs.self;
+        unstable.flake = inputs.unstable;
       };
     };
 
