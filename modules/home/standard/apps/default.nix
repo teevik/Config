@@ -12,6 +12,7 @@ in
   imports = [
     inputs.nix-index-database.hmModules.nix-index
     ./helix
+    ./rio
     ./nwg-displays.nix
     ./spotify.nix
   ];
@@ -161,7 +162,6 @@ in
     git-agecrypt
     neofetch
     sysz
-    perSystem.iwmenu.default
-    perSystem.self.claude-code
+    claude-code
   ];
 }

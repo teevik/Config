@@ -32,3 +32,5 @@ $env.config = {
   keybindings: $keybindings
   history: $history
 }
+
+alias zed = zeditor

@@ -94,6 +94,14 @@
             param = "search";
           };
 
+          "nixpkgs github" = mkBasicSearchEngine {
+            aliases = [
+              "@nixpkgs"
+            ];
+            url = "https://github.com/NixOS/nixpkgs/issues";
+            param = "q";
+          };
+
           "Youtube" = mkBasicSearchEngine {
             url = "https://www.youtube.com/results";
             param = "search_query";

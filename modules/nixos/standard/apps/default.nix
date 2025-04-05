@@ -51,12 +51,6 @@
     };
   };
 
-  services = {
-    envfs = {
-      enable = true;
-    };
-  };
-
   environment.systemPackages = with pkgs; [
     git
 
@@ -65,7 +59,7 @@
     papirus-icon-theme
     gnome-control-center
     gnome-text-editor
-    gnome-calendar
+    # gnome-calendar
     gnome-boxes
     gnome-system-monitor
     gnome-control-center

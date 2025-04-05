@@ -73,6 +73,7 @@ in
     python3
     pyright
     ruff-lsp
+    uv
 
     # Roc
     # rocPkgs.cli
@@ -104,14 +105,14 @@ in
 
   home.file.".cargo/config.toml".text = # toml
     ''
-      [build]
-      rustflags = ["-Clink-arg=-fuse-ld=lld", "-Zthreads=32"]
+      # [build]
+      # rustflags = ["-Clink-arg=-fuse-ld=lld", "-Zthreads=32"]
 
       [unstable]
       codegen-backend = true
 
-      [profile.dev]
-      debug = 1
-      codegen-backend = "cranelift"
+      # [profile.dev]
+      # debug = 1
+      # codegen-backend = "cranelift"
     '';
 }

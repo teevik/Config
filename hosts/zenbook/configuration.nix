@@ -81,12 +81,27 @@
   #     };
   #   };
 
+  # Virt manager
+  programs.virt-manager.enable = true;
+  users.groups.libvirtd.members = [ "teevik" ];
+  virtualisation.libvirtd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+
+  environment.systemPackages = with pkgs; [
+    probe-rs
+    virtiofsd
+    sof-firmware
+  ];
+
   boot = {
     # kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
     kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
     # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos-rc;
     # services.scx.enable = true; # by default uses scx_rustland scheduler
-
+    blacklistedKernelModules = [
+      "snd_hda_intel"
+      "snd_soc_skl"
+    ];
     # More power savings
     # https://community.frame.work/t/tracking-linux-battery-life-tuning/6665/594
     # https://discourse.ubuntu.com/t/fine-tuning-the-ubuntu-24-04-kernel-for-low-latency-throughput-and-power-efficiency/44834
@@ -99,9 +114,23 @@
     #   "asus-nb-wmi" # Eats ~0.30 W
     # ];
 
-    extraModprobeConfig = ''
-      options snd-intel-dspcfg dsp_driver=1
-    '';
+    # extraModprobeConfig = ''
+    #   options snd-intel-dspcfg dsp_driver=1
+    # '';
+
+    # extraModprobeConfig = ''
+    #   # quirk=RT711_JD1|SOC_SDW_PCH_DMIC|SOC_SDW_CODEC_MIC
+    #   # RT711_JD1: default quirk value
+    #   # SOC_SDW_PCH_DMIC: force enumerate DMIC connected to PCH
+    #   # SOC_SDW_CODEC_MIC: don't enumerate DMIC connected to SoundWire CODEC
+    #   options snd_soc_sof_sdw quirk=0x20041
+    #   options snd_sof_pci tplg_filename=sof-lnl-cs42l43-l0-cs35l56-l23-2ch.tplg
+    # '';
+
+    # extraModprobeConfig = ''
+    #   options snd-hda-intel dmic_detect=0
+    #   options snd-hda-intel model=auto
+    # '';
   };
 
   nixpkgs.overlays = [
@@ -113,7 +142,7 @@
         '';
       });
 
-      sof-firmware = perSystem.self.sof-firmware;
+      # sof-firmware = perSystem.self.sof-firmware;
     })
   ];
 
