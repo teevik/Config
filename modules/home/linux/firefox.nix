@@ -4,7 +4,7 @@
 
   programs.firefox = {
     enable = true;
-    betterfox.enable = true;
+    betterfox.enable = false;
 
     profiles.default = {
       betterfox = {
