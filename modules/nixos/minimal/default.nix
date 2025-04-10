@@ -17,6 +17,12 @@ in
   config = {
     documentation.man.generateCaches = false;
 
+    # nixpkgs.overlays = [
+    #   (final: prev: {
+    #     nix = perSystem.nix.default;
+    #   })
+    # ];
+
     # TODO shared with home
     nixpkgs.config = {
       allowUnfree = true;

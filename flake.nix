@@ -2,7 +2,7 @@
   inputs = {
     # nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     # TODO nixos-usntable
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     unstable.url = "github:numtide/nixpkgs-unfree/nixos-unstable";
     # chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
@@ -64,8 +64,7 @@
   };
 
   outputs =
-    inputs:
-    inputs.blueprint {
+    inputs: inputs.blueprint {
       inherit inputs;
       systems = [ "x86_64-linux" ];
     };

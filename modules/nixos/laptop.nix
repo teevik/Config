@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   # Suspend when the lid is closed, then hibernate after 1 hour
   # services.logind.lidSwitch = "suspend-then-hibernate";
@@ -76,4 +76,8 @@
   # Backlight control
   programs.light.enable = true;
   users.users.teevik.extraGroups = [ "video" ];
+
+  environment.systemPackages = with pkgs; [
+    brightnessctl
+  ];
 }

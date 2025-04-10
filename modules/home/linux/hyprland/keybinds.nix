@@ -50,8 +50,8 @@ let
     bind."SUPER_SHIFT, Q" = "exec, poweroff";
 
     # Function keys
-    binde.",XF86MonBrightnessUp" = "exec, light -A 10";
-    binde.",XF86MonBrightnessDown" = "exec, light -U 10";
+    binde.",XF86MonBrightnessUp" = "exec, brightnessctl s --min-value=10 --exponent=2 7%+";
+    binde.",XF86MonBrightnessDown" = "exec, brightnessctl s --min-value=10 --exponent=2 7%-";
     binde.",XF86AudioRaiseVolume" = "exec, pulsemixer --change-volume +10";
     binde.",XF86AudioLowerVolume" = "exec, pulsemixer --change-volume -10";
     bind.",XF86AudioMute" = "exec, pulsemixer --toggle-mute";
