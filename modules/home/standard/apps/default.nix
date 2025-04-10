@@ -32,6 +32,7 @@ in
       themeFile = "Catppuccin-Mocha";
 
       settings = {
+        shell = "nu";
         scrollback_fill_enlarged_window = "yes";
         scrollback_lines = 10000;
         update_check_interval = 0;
