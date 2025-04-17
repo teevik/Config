@@ -66,6 +66,7 @@
     gnome-weather
     gnome-calculator
     gnome-clocks
+    evince
     baobab
 
     # config.boot.kernelPackages.perf

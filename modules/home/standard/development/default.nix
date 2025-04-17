@@ -57,6 +57,7 @@ in
 
     # Latex
     texlive.combined.scheme-full
+    texlab
     python312Packages.pygments
 
     # Nix

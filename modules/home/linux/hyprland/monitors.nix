@@ -12,7 +12,7 @@ in
     settings = mkMerge [
       {
         env = [
-          "XCURSOR_SIZE,${builtins.toJSON (cursorSize * 2)}"
+          "XCURSOR_SIZE,${builtins.toJSON cursorSize}"
           "HYPRCURSOR_SIZE,${builtins.toJSON (cursorSize * 2)}"
         ];
 

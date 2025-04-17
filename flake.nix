@@ -34,28 +34,7 @@
     nix-dram.url = "github:dramforever/nix-dram";
     mcp-nixos.url = "github:utensils/mcp-nixos";
 
-    pyproject-nix = {
-      url = "github:pyproject-nix/pyproject.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    uv2nix = {
-      url = "github:pyproject-nix/uv2nix";
-      inputs.pyproject-nix.follows = "pyproject-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    pyproject-build-systems = {
-      url = "github:pyproject-nix/build-system-pkgs";
-      inputs.pyproject-nix.follows = "pyproject-nix";
-      inputs.uv2nix.follows = "uv2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    marble = {
-      url = "git+ssh://git@github.com/marble-shell/shell.git";
-      # inputs.nixpkgs.follows = "nixpkgs";
-    };
+    marble.url = "git+ssh://git@github.com/marble-shell/shell.git";
 
     morewaita = {
       url = "github:somepaulo/MoreWaita";
@@ -64,7 +43,8 @@
   };
 
   outputs =
-    inputs: inputs.blueprint {
+    inputs:
+    inputs.blueprint {
       inherit inputs;
       systems = [ "x86_64-linux" ];
     };

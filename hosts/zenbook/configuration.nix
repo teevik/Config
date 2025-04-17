@@ -51,7 +51,7 @@
   ];
 
   boot = {
-    kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
+    kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
 
     extraModprobeConfig = ''
       # quirk=RT711_JD1|SOC_SDW_PCH_DMIC|SOC_SDW_CODEC_MIC
@@ -63,8 +63,9 @@
     '';
   };
 
-  system.replaceRuntimeDependencies = with pkgs.lib; [
-    { original = pkgs.alsa-ucm-conf;
+  system.replaceDependencies.replacements = [
+    {
+      original = pkgs.alsa-ucm-conf;
       replacement = pkgs.alsa-ucm-conf.overrideAttrs (old: {
         postInstall = ''
           cp ${./cs42l43.conf} $out/share/alsa/ucm2/sof-soundwire/cs42l43.conf
@@ -85,6 +86,24 @@
       });
     })
   ];
+
+  # hardware.firmware = [
+  #   (
+  #     let
+  #       model = "37xx";
+  #       version = "0.0";
+
+  #       firmware = pkgs.fetchurl {
+  #         url = "https://github.com/intel/linux-npu-driver/raw/v1.13.0/firmware/bin/vpu_${model}_v${version}.bin";
+  #         hash = "sha256-Mpoeq8HrwChjtHALsss/7QsFtDYAoFNsnhllU0xp3os=";
+  #       };
+  #     in
+  #     pkgs.runCommand "intel-vpu-firmware-${model}-${version}" { } ''
+  #       mkdir -p "$out/lib/firmware/intel/vpu"
+  #       cp '${firmware}' "$out/lib/firmware/intel/vpu/vpu_${model}_v${version}.bin"
+  #     ''
+  #   )
+  # ];
 
   system.stateVersion = "24.11";
 }
