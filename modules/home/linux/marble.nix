@@ -2,8 +2,7 @@
 {
   home.packages = [
     perSystem.marble.astal
-    perSystem.marble.marble
-    perSystem.marble.screenrecord
+    perSystem.marble.default
   ];
 
   systemd.user.services.marble = {
@@ -15,7 +14,7 @@
     };
 
     Service = {
-      ExecStart = "${perSystem.marble.marble}/bin/marble";
+      ExecStart = "${perSystem.marble.default}/bin/marble";
       ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID";
       Restart = "on-failure";
       KillMode = "mixed";

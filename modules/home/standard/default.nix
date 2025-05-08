@@ -4,7 +4,7 @@
     ./apps
     ./development
     ./shells
-    ./theme
+    ./themes
     ./xdg.nix
   ];
 

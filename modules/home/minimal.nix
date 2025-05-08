@@ -1,4 +1,11 @@
-{ inputs, pkgs, perSystem, lib, ... }: {
+{
+  inputs,
+  pkgs,
+  perSystem,
+  lib,
+  ...
+}:
+{
   programs.man.generateCaches = false;
   systemd.user.startServices = "sd-switch";
 
@@ -8,8 +15,8 @@
   };
 
   nix = {
-    # package = perSystem.nix.default;
-    package = pkgs.nix;
+    package = pkgs.nixVersions.nix_2_28;
+    # package = pkgs.nix;
     # package = perSystem.self.lix;
 
     settings = {

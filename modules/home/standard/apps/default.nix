@@ -1,12 +1,16 @@
 {
+  config,
   inputs,
-  perSystem,
   pkgs,
   lib,
   ...
 }:
 let
   gtk-launch = lib.getExe' pkgs.gtk3 "gtk-launch";
+
+  rounded = pkgs.writeShellScriptBin "roundify" ''
+    magick -   \( +clone  -alpha extract     -draw 'fill black polygon 0,0 0,15 15,0 fill white circle 15,15 15,0'     \( +clone -flip \) -compose Multiply -composite     \( +clone -flop \) -compose Multiply -composite   \) -alpha off -compose CopyOpacity -composite -
+  '';
 in
 {
   imports = [
@@ -29,7 +33,7 @@ in
 
       font.name = "JetBrainsMono Nerd Font";
 
-      themeFile = "Catppuccin-Mocha";
+      themeFile = config.teevik.theme.kittyTheme;
 
       settings = {
         shell = "nu";
@@ -37,7 +41,7 @@ in
         scrollback_lines = 10000;
         update_check_interval = 0;
         font_size = 13;
-        background_opacity = "0.5";
+        background_opacity = config.teevik.theme.kittyOpacity;
         dynamic_background_opacity = "yes";
         # background_blur = 65;
         window_padding_width = 10;
@@ -136,6 +140,7 @@ in
   };
 
   home.packages = with pkgs; [
+    rounded
     bat
     erdtree
     flyctl

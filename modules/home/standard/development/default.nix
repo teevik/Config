@@ -73,7 +73,6 @@ in
     # Python
     python3
     pyright
-    ruff-lsp
     uv
 
     # Roc

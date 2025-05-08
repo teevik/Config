@@ -22,7 +22,7 @@
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
 
     # Packages
-    nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
+    # nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
     hyprland.url = "github:hyprwm/hyprland";
     betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
     iwmenu.url = "github:e-tho/iwmenu";
@@ -32,9 +32,9 @@
     roc.url = "github:roc-lang/roc";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-dram.url = "github:dramforever/nix-dram";
-    mcp-nixos.url = "github:utensils/mcp-nixos";
 
     marble.url = "git+ssh://git@github.com/marble-shell/shell.git";
+    # marble.url = "path:/home/teevik/Documents/Projects/shell";
 
     morewaita = {
       url = "github:somepaulo/MoreWaita";

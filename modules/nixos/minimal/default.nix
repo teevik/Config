@@ -29,7 +29,7 @@ in
     };
 
     nix = {
-      package = perSystem.nix.default;
+      package = pkgs.nixVersions.nix_2_28;
       channel.enable = false;
       # package = pkgs.lix;
       # package = perSystem.self.lix;
