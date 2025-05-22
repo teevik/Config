@@ -8,7 +8,13 @@
   imports = [
     ./hardware.nix
     inputs.disko.nixosModules.disko
-    inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-7th-gen
+    "${inputs.nixos-hardware}/common/hidpi.nix"
+    "${inputs.nixos-hardware}/common/cpu/amd"
+    "${inputs.nixos-hardware}/common/cpu/amd/pstate.nix"
+    "${inputs.nixos-hardware}/common/gpu/amd"
+    "${inputs.nixos-hardware}/common/pc/laptop"
+    "${inputs.nixos-hardware}/common/pc/ssd"
+
 
     flake.nixosModules.minimal
     flake.nixosModules.standard
@@ -22,6 +28,20 @@
   # Enable bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
+
+  services = {
+    asusd.enable = true;
+
+    # fixes mic mute button
+    udev.extraHwdb = ''
+      evdev:name:*:dmi:bvn*:bvr*:bd*:svnASUS*:pn*:*
+       KEYBOARD_KEY_ff31007c=f20
+    '';
+  };
+
+  boot = {
+    kernelParams = [ "pcie_aspm.policy=powersupersave" ];
+  };
 
   system.stateVersion = "25.11";
 }

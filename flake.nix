@@ -34,11 +34,6 @@
 
     marble.url = "git+ssh://git@github.com/marble-shell/shell.git";
     # marble.url = "path:/home/teevik/Documents/Projects/shell";
-
-    morewaita = {
-      url = "github:somepaulo/MoreWaita";
-      flake = false;
-    };
   };
 
   outputs =
