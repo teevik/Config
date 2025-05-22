@@ -15,8 +15,7 @@
     flake.nixosModules.laptop
   ];
 
-  # Disable home-manager
-  home-manager.users = lib.mkForce { };
+  networking.firewall.allowedTCPPorts = [ 9001 ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "x1";
