@@ -15,7 +15,6 @@
     "${inputs.nixos-hardware}/common/pc/laptop"
     "${inputs.nixos-hardware}/common/pc/ssd"
 
-
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.laptop
@@ -30,7 +29,12 @@
   services.blueman.enable = true;
 
   services = {
-    asusd.enable = true;
+    asusd = {
+      enable = true;
+      enableUserService = true;
+    };
+
+    supergfxd.enable = true;
 
     # fixes mic mute button
     udev.extraHwdb = ''
