@@ -9,8 +9,8 @@
 
   users.users.teevik.extraGroups = [ "networkmanager" ];
 
-  environment.systemPackages = [
-    perSystem.unstable.geteduroam-cli
+  environment.systemPackages = with pkgs; [
+    geteduroam-cli
     pkgs.networkmanagerapplet
   ];
 

@@ -19,14 +19,10 @@
       package = perSystem.hyprland.default;
     };
 
-    _1password = {
-      enable = true;
-      package = perSystem.unstable._1password-cli;
-    };
+    _1password.enable = true;
 
     _1password-gui = {
       enable = true;
-      package = perSystem.unstable._1password-gui;
       polkitPolicyOwners = [ "teevik" ];
     };
 

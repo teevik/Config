@@ -64,7 +64,6 @@ in
         default-flake.flake = inputs.nixpkgs;
         nixpkgs.flake = lib.mkForce inputs.nixpkgs;
         teevik.flake = inputs.self;
-        unstable.flake = inputs.unstable;
       };
     };
 
