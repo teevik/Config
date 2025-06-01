@@ -1,6 +1,3 @@
 # NixOS Config
 
-## Todo
-
-- [ ] nu script to copy files over
-- [ ] nu script to nixos-anywhere install
+![image](https://github.com/user-attachments/assets/0ac9bd38-ffd5-432a-b7fe-a9820098e336)
