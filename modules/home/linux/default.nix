@@ -2,6 +2,7 @@
 {
   imports = [
     ./hyprland
+    ./zed
     ./firefox.nix
     ./gtk.nix
     ./hypridle.nix
@@ -9,7 +10,6 @@
     ./qt.nix
     ./swaybg.nix
     ./tofi.nix
-    ./zed.nix
   ];
 
   programs = {

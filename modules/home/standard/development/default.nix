@@ -8,6 +8,8 @@ let
   rocPkgs = inputs.roc.packages.${pkgs.system};
 in
 {
+  imports = [ ./cargo ];
+
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true;
@@ -102,17 +104,4 @@ in
   '';
 
   home.sessionVariables.PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-
-  home.file.".cargo/config.toml".text = # toml
-    ''
-      # [build]
-      # rustflags = ["-Clink-arg=-fuse-ld=lld", "-Zthreads=32"]
-
-      [unstable]
-      codegen-backend = true
-
-      # [profile.dev]
-      # debug = 1
-      # codegen-backend = "cranelift"
-    '';
 }

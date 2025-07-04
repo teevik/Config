@@ -2,6 +2,8 @@
 {
   imports = [ inputs.betterfox.homeManagerModules.betterfox ];
 
+  programs.firefox.nativeMessagingHosts = [ pkgs.vdhcoapp ];
+
   programs.firefox = {
     enable = true;
     betterfox.enable = false;

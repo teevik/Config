@@ -10,6 +10,8 @@ let
 in
 {
   imports = [
+    inputs.chaotic.nixosModules.default
+
     ./networking.nix
     ./ssh.nix
   ];

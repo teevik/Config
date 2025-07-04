@@ -17,18 +17,20 @@ in
     enable = true;
     remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-    extraCompatPackages = [ pkgs.proton-ge-bin ];
+    extraCompatPackages = [ pkgs.proton-ge-custom ];
   };
 
   environment.systemPackages = with pkgs; [
     lutris
     dualsensectl
-    (prismlauncher.override { jdks = with pkgs; [
-      jdk23
-      jdk21
-      jdk17
-      jdk8
-    ]; })
+    (prismlauncher.override {
+      jdks = with pkgs; [
+        jdk23
+        jdk21
+        jdk17
+        jdk8
+      ];
+    })
   ];
 
   # services = {

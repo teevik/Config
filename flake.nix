@@ -3,6 +3,7 @@
     # nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     # TODO nixos-usntable
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     # chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
     home-manager = {
@@ -31,6 +32,7 @@
     roc.url = "github:roc-lang/roc";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-dram.url = "github:dramforever/nix-dram";
+    zed.url = "github:zed-industries/zed";
 
     marble.url = "git+ssh://git@github.com/marble-shell/shell.git";
     # marble.url = "path:/home/teevik/Documents/Projects/shell";

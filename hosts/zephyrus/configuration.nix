@@ -1,6 +1,7 @@
 {
   flake,
   inputs,
+  pkgs,
   lib,
   ...
 }:
@@ -18,11 +19,15 @@
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.laptop
+    flake.nixosModules.gaming
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "zephyrus";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
+
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos;
+  services.scx.enable = true;
 
   # Enable bluetooth
   hardware.bluetooth.enable = true;
@@ -43,8 +48,17 @@
     '';
   };
 
+  programs.rog-control-center = {
+    enable = true;
+    autoStart = true;
+  };
+
   boot = {
     kernelParams = [ "pcie_aspm.policy=powersupersave" ];
+    kernelModules = [
+      "asus-wmi"
+      "asus-armoury"
+    ];
   };
 
   system.stateVersion = "25.11";
