@@ -1,13 +1,15 @@
 {
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     # TODO nixos-usntable
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     # chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
+    nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
+
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
