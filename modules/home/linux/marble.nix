@@ -6,7 +6,6 @@
   ];
 
   systemd.user.services.marble = {
-
     Unit = {
       Description = "Marble Shell";
       PartOf = [ "graphical-session.target" ];
@@ -64,19 +63,20 @@
   xdg.configFile."marble/bar.json".text = builtins.toJSON {
     "bold" = true;
     "position" = "top";
-    "corners" = "md";
+    "corners" = "xl";
     "transparent" = false;
     "layout.start" = [
       "workspaces"
-      "spacer"
+      # "spacer"
       "messages"
-    ];
-    "layout.center" = [
       "date"
     ];
+    "layout.center" = [
+      # "date"
+    ];
     "layout.end" = [
-      "media"
       "spacer"
+      "media"
       "systray"
       "screenrecord"
       "system"

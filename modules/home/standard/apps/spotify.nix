@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    spotify
+  #WIP    spotify
   ];
 
   xdg.configFile."spotify/Users/vikoren123-user/prefs" = {

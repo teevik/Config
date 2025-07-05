@@ -6,7 +6,7 @@
 }:
 {
   imports = [
-    ./android-studio.nix
+    # ./android-studio.nix
     ./nautilus.nix
     ./firefox.nix
   ];
@@ -16,7 +16,7 @@
   programs = {
     hyprland = {
       enable = true;
-      package = perSystem.hyprland.default;
+      # package = perSystem.hyprland.default;
     };
 
     _1password.enable = true;

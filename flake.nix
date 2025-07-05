@@ -7,6 +7,7 @@
     # chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
     nixos-apple-silicon.url = "github:nix-community/nixos-apple-silicon";
+    nixos-apple-silicon.inputs.nixpkgs.follows = "nixpkgs";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";
@@ -25,7 +26,7 @@
 
     # Packages
     # nix.url = "https://flakehub.com/f/NixOS/nix/2.tar.gz";
-    hyprland.url = "github:hyprwm/hyprland";
+    # hyprland.url = "github:hyprwm/hyprland";
     betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
     iwmenu.url = "github:e-tho/iwmenu";
     # helix.url = "github:helix-editor/helix";
@@ -35,8 +36,10 @@
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-dram.url = "github:dramforever/nix-dram";
     zed.url = "github:zed-industries/zed";
+    titdb.url = "github:GarrettGR/titdb-nix";
 
-    marble.url = "git+ssh://git@github.com/marble-shell/shell.git";
+    # TODO non aarch64
+    marble.url = "git+ssh://git@github.com/teevik/shell.git";
     # marble.url = "path:/home/teevik/Documents/Projects/shell";
   };
 
@@ -44,6 +47,9 @@
     inputs:
     inputs.blueprint {
       inherit inputs;
-      systems = [ "x86_64-linux" ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
     };
 }

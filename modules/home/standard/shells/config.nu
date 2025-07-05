@@ -33,4 +33,4 @@ $env.config = {
   history: $history
 }
 
-# alias zed = zeditor
+alias zed = zeditor

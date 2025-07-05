@@ -1,12 +1,15 @@
-{ config, perSystem, ... }:
+{ config, pkgs, ... }:
 {
   home.packages = [
-    perSystem.zed.default
+    pkgs.zed-editor
   ];
 
   # TODO:  Reusable outofstore path
-  xdg.configFile."zed/settings.json".source = builtins.trace ./. (config.lib.file.mkOutOfStoreSymlink "/home/teevik/Documents/Config/modules/home/linux/zed/settings.json");
-  xdg.configFile."zed/keymap.json".source = config.lib.file.mkOutOfStoreSymlink "/home/teevik/Documents/Config/modules/home/linux/zed/keymap.json";
+  xdg.configFile."zed/settings.json".source = builtins.trace ./. (
+    config.lib.file.mkOutOfStoreSymlink "/home/teevik/Documents/Config/modules/home/linux/zed/settings.json"
+  );
+  xdg.configFile."zed/keymap.json".source =
+    config.lib.file.mkOutOfStoreSymlink "/home/teevik/Documents/Config/modules/home/linux/zed/keymap.json";
 
   # xdg.
 

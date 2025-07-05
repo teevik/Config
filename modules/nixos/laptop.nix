@@ -7,10 +7,10 @@
   # auto-cpufreq for power management
   # services.auto-cpufreq.enable = true;
 
-  powerManagement.powertop.enable = true;
+  # powerManagement.powertop.enable = true;
 
   services = {
-    thermald.enable = true;
+    # thermald.enable = true;
 
     upower = {
       enable = true;
@@ -20,24 +20,24 @@
       criticalPowerAction = "Hibernate";
     };
 
-    auto-cpufreq = {
-      enable = true;
+    # auto-cpufreq = {
+    #   enable = true;
 
-      settings = {
-        battery = {
-          governor = "powersave";
-          # scaling_min_freq = mkDefault (MHz 1800);
-          # scaling_max_freq = mkDefault (MHz 3900);
-          # turbo = "never";
-        };
-        charger = {
-          governor = "performance";
-          # scaling_min_freq = mkDefault (MHz 2000);
-          # scaling_max_freq = mkDefault (MHz 4800);
-          # turbo = "auto";
-        };
-      };
-    };
+    #   settings = {
+    #     battery = {
+    #       governor = "powersave";
+    #       # scaling_min_freq = mkDefault (MHz 1800);
+    #       # scaling_max_freq = mkDefault (MHz 3900);
+    #       # turbo = "never";
+    #     };
+    #     charger = {
+    #       governor = "performance";
+    #       # scaling_min_freq = mkDefault (MHz 2000);
+    #       # scaling_max_freq = mkDefault (MHz 4800);
+    #       # turbo = "auto";
+    #     };
+    #   };
+    # };
 
     # tlp = {
     #   enable = true;

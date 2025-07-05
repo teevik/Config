@@ -73,10 +73,10 @@ in
     services.getty.autologinUser = "teevik";
 
     # Boot
-    boot = {
-      supportedFilesystems = [ "bcachefs" ];
-      kernelPackages = pkgs.linuxPackages_latest;
-    };
+#    boot = {
+ #     supportedFilesystems = [ "bcachefs" ];
+  #    kernelPackages = pkgs.linuxPackages_latest;
+   # };
 
     # Hardware
     hardware = {
@@ -84,7 +84,7 @@ in
 
       graphics = {
         enable = true;
-        enable32Bit = true;
+#        enable32Bit = true;
       };
     };
 

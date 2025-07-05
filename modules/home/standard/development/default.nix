@@ -30,7 +30,7 @@ in
 
     # Glsl
     glsl_analyzer
-    renderdoc
+#    renderdoc
 
     # Go
     go
