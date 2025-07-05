@@ -36,7 +36,6 @@
     inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
 
     libnotify
-    # insomnia
     caligula
     mpv
     obs-studio

@@ -54,8 +54,6 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
 
-      # package = perSystem.hyprland.default;
-
       settings = {
         exec-once = [
           "systemctl restart --user marble.service swaybg.service"
