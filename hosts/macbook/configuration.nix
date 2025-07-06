@@ -54,6 +54,7 @@
     };
   };
 
+  # Touchpad is too damn big
   services.titdb = {
     enable = true;
     device = "/dev/input/event2";
@@ -63,19 +64,17 @@
     options hid_apple swap_opt_cmd=1 swap_fn_leftctrl=1
   '';
 
-  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
-  hardware.asahi.useExperimentalGPUDriver = true;
-  hardware.asahi.setupAsahiSound = true;
+  hardware.asahi = {
+    peripheralFirmwareDirectory = ./firmware;
+    useExperimentalGPUDriver = true;
+    setupAsahiSound = true;
+  };
 
   # Enable bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
-  boot.loader = {
-    systemd-boot.enable = lib.mkForce true;
-    grub.enable = lib.mkForce false;
-    efi.canTouchEfiVariables = lib.mkForce false;
-  };
+  boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
   system.stateVersion = "25.11";
 }
