@@ -2,6 +2,7 @@
   flake,
   inputs,
   lib,
+  perSystem,
   ...
 }:
 {
@@ -35,6 +36,24 @@
     }
   ];
 
+  # DRM
+  environment.sessionVariables.MOZ_GMP_PATH = "${perSystem.self.widevine-firefox}/gmp-widevinecdm/system-installed";
+
+  programs.firefox = {
+    policies = {
+
+      Preferences = {
+        "media.gmp-widevinecdm.version" = "system-installed";
+        "media.gmp-widevinecdm.visible" = true;
+        "media.gmp-widevinecdm.enabled" = true;
+        "media.gmp-widevinecdm.autoupdate" = false;
+
+        "media.eme.enabled" = true;
+        "media.eme.encrypted-media-encryption-scheme.enabled" = true;
+      };
+    };
+  };
+
   services.titdb = {
     enable = true;
     device = "/dev/input/event2";
@@ -53,8 +72,8 @@
   services.blueman.enable = true;
 
   boot.loader = {
-    systemd-boot.enable = lib.mkForce false;
-    grub.enable = lib.mkForce true;
+    systemd-boot.enable = lib.mkForce true;
+    grub.enable = lib.mkForce false;
     efi.canTouchEfiVariables = lib.mkForce false;
   };
 
