@@ -24,7 +24,7 @@
     "apple_dcp.show_notch=1"
     # Enable zswap
     "zswap.enabled=1"
-    "zswap.compressor=zstd"
+    # "zswap.compressor=zstd"
     "zswap.zpool=zsmalloc"
     "zswap.max_pool_percent=50"
   ];
