@@ -44,6 +44,7 @@
       evolution-data-server.enable = true;
       glib-networking.enable = true;
       gnome-keyring.enable = true;
+      gcr-ssh-agent.enable = false;
       gnome-online-accounts.enable = true;
       localsearch.enable = true;
       tinysparql.enable = true;
