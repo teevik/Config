@@ -11,7 +11,6 @@
     enableHidpi = true;
     scaling = 1.333333;
   };
-  wayland.windowManager.hyprland.settings.render.explicit_sync = 0;
 
   home.stateVersion = "25.05";
 }

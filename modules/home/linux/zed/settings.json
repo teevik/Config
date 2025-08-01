@@ -24,14 +24,12 @@
   "ui_font_size": 16,
   "buffer_font_size": 16,
   "theme": "Catppuccin Mocha - No Italics",
-
   "languages": {
     "Typst": {
       "soft_wrap": "bounded",
       "show_wrap_guides": false
     }
   },
-
   "lsp": {
     "nil": {
       // or "nixd":
@@ -43,6 +41,18 @@
     }
   },
 
+  "context_servers": {
+    "rust-docs": {
+      "source": "custom",
+      "command": {
+        "path": "nix",
+        "args": ["run", "github:snowmead/rust-docs-mcp"]
+      },
+      "enabled": true
+    }
+  },
+
+  "helix_mode": true,
   "auto_install_extensions": {
     "nix": true,
     "html": true,
@@ -50,6 +60,8 @@
     "toml": true,
     "dockerfile": true,
     "latex": true,
-    "sql": true
+    "sql": true,
+    "cargo-appraiser": true,
+    "crates-lsp": true
   }
 }

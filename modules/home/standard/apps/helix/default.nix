@@ -3,6 +3,7 @@
   config,
   lib,
   inputs,
+  perSystem,
   ...
 }:
 let
@@ -18,7 +19,7 @@ in
 
     package =
       let
-      helix = pkgs.helix;
+        helix = perSystem.helix.default;
         # helix = inputs.helix.packages.${pkgs.system}.default;
         helixBin = lib.getExe helix;
         kittyBin = lib.getExe pkgs.kitty;

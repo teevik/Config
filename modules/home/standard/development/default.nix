@@ -30,7 +30,7 @@ in
 
     # Glsl
     glsl_analyzer
-#    renderdoc
+    #    renderdoc
 
     # Go
     go
@@ -58,9 +58,9 @@ in
     vscode-langservers-extracted
 
     # Latex
-    texlive.combined.scheme-full
-    texlab
-    python312Packages.pygments
+    # texlive.combined.scheme-full
+    # texlab
+    # python312Packages.pygments
 
     # Nix
     nil

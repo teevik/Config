@@ -1,5 +1,5 @@
 {
-  perSystem,
+  inputs,
   config,
   lib,
   ...
@@ -13,6 +13,8 @@ in
     ./keybinds.nix
     ./monitors.nix
     ./windowrules.nix
+
+    inputs.automatic-sunset.homeModules.default
   ];
 
   options.teevik.hyprland = {
@@ -50,6 +52,8 @@ in
       XCURSOR_THEME = cursorTheme.name;
       HYPRCURSOR_THEME = cursorTheme.name;
     };
+
+    services.automatic-sunset.enable = true;
 
     wayland.windowManager.hyprland = {
       enable = true;

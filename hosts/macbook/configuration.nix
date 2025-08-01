@@ -29,10 +29,12 @@
     "zswap.max_pool_percent=50"
   ];
 
+  hardware.graphics.enable32Bit = lib.mkForce false;
+
   swapDevices = [
     {
       device = "/swapfile";
-      size = 16 * 1024;
+      size = 32 * 1024;
     }
   ];
 

@@ -160,14 +160,15 @@ in
     gitu
     nix-inspect
     xournalpp
-    azure-cli
-    terraform
-    terraform-ls
+    # azure-cli
+    # terraform
+    # terraform-ls
     graphviz
     ngrok
     git-agecrypt
     neofetch
     sysz
     claude-code
+    stremio
   ];
 }
