@@ -11,6 +11,7 @@
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.gaming
+    flake.nixosModules.nvidia
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";

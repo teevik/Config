@@ -28,6 +28,10 @@ in
     # TODO shared with home
     nixpkgs.config = {
       allowUnfree = true;
+
+      permittedInsecurePackages = [
+        "qtwebengine-5.15.19"
+      ];
     };
 
     nix = {

@@ -1,8 +1,7 @@
 install TARGET-IP HOST:
   # Run disko and install nixos
   nix run github:numtide/nixos-anywhere -- \
-    --build-on remote \
-    --phases kexec,install \
+    --phases kexec,disko,install \
     --generate-hardware-config nixos-generate-config ./hosts/{{HOST}}/hardware.nix \
     --flake '.#{{HOST}}' \
     root@{{TARGET-IP}}
