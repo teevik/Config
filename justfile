@@ -1,15 +1,16 @@
 install TARGET-IP HOST:
   # Run disko and install nixos
   nix run github:numtide/nixos-anywhere -- \
+    --build-on remote \
     --phases kexec,disko,install \
     --generate-hardware-config nixos-generate-config ./hosts/{{HOST}}/hardware.nix \
     --flake '.#{{HOST}}' \
     root@{{TARGET-IP}}
 
   # Copy ssh keys over
-  ssh root@{{TARGET-IP}} "mkdir /mnt/home/teevik/.ssh"
-  scp /home/teevik/.ssh/id_rsa root@{{TARGET-IP}}:/mnt/home/teevik/.ssh/id_rsa
-  scp /home/teevik/.ssh/id_rsa.pub root@{{TARGET-IP}}:/mnt/home/teevik/.ssh/id_rsa.pub
+  ssh teevik@{{TARGET-IP}} "mkdir /mnt/home/teevik/.ssh"
+  scp /home/teevik/.ssh/id_rsa teevik@{{TARGET-IP}}:/mnt/home/teevik/.ssh/id_rsa
+  scp /home/teevik/.ssh/id_rsa.pub teevik@{{TARGET-IP}}:/mnt/home/teevik/.ssh/id_rsa.pub
 
   # Clone config repo
   ssh teevik@{{TARGET-IP}} "mkdir /mnt/home/teevik/Documents"

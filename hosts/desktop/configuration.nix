@@ -8,6 +8,7 @@
   imports = [
     ./hardware.nix
 
+    inputs.disko.nixosModules.disko
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.gaming
@@ -16,6 +17,7 @@
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "desktop";
+  disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme1n1" ]; };
 
   # For dualbooting with windows
   time.hardwareClockInLocalTime = true;
