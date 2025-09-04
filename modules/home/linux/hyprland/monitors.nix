@@ -18,7 +18,7 @@ in
 
         monitor = [
           "Unknown-1,disable"
-          ", highrr, auto, ${builtins.toJSON scaling}"
+          ", highres, auto, ${builtins.toJSON scaling}"
         ];
 
         misc.vrr = enableVrr;

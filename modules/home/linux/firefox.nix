@@ -1,19 +1,20 @@
 { pkgs, inputs, ... }:
 {
-  imports = [ inputs.betterfox.homeManagerModules.betterfox ];
+  imports = [ inputs.betterfox.homeModules.betterfox ];
 
   programs.firefox.nativeMessagingHosts = [ pkgs.vdhcoapp ];
 
   programs.firefox = {
     enable = true;
-    betterfox.enable = false;
+    betterfox = {
+      enable = true;
 
-    profiles.default = {
-      betterfox = {
-        enable = true;
+      profiles.default = {
         enableAllSections = true;
       };
+    };
 
+    profiles.default = {
       settings = {
         browser.toolbars.bookmarks.visibility = "never";
 
