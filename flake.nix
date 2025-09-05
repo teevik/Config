@@ -36,6 +36,7 @@
     nix-dram.url = "github:dramforever/nix-dram";
     zed.url = "github:zed-industries/zed/nightly";
     titdb.url = "github:GarrettGR/titdb-nix";
+    nix-userstyles.url = "github:knoopx/nix-userstyles";
   };
 
   outputs =

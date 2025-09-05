@@ -19,6 +19,10 @@
   nixpkgs.hostPlatform = "aarch64-linux";
   networking.hostName = "macbook";
 
+  boot.binfmt.emulatedSystems = [
+    "x86_64-linux"
+  ];
+
   boot.kernelParams = [
     # Use whole display
     "apple_dcp.show_notch=1"
@@ -67,9 +71,10 @@
   '';
 
   hardware.asahi = {
+    enable = true;
     peripheralFirmwareDirectory = ./firmware;
     useExperimentalGPUDriver = true;
-    setupAsahiSound = true;
+    # setupAsahiSound = true;
   };
 
   # Enable bluetooth

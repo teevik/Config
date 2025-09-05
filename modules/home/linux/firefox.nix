@@ -1,4 +1,34 @@
-{ pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
+let
+  palette = config.teevik.theme.colors.withoutHashtag;
+  # https://github.com/catppuccin/userstyles/tree/main/styles
+  userStyles = [
+    "brave-search"
+    "bsky"
+    "chatgpt"
+    "cinny"
+    "duckduckgo"
+    "github"
+    "google"
+    "hacker-news"
+    "lobste.rs"
+    "nixos-*"
+    "npm"
+    "ollama"
+    "perplexity"
+    "reddit"
+    "spotify-web"
+    "stack-overflow"
+    "whatsapp-web"
+    "wikipedia"
+    "youtube"
+  ];
+in
 {
   imports = [ inputs.betterfox.homeModules.betterfox ];
 
@@ -30,6 +60,12 @@
       };
 
       search.force = true;
+
+      userContent = ''
+        ${builtins.readFile "${inputs.nix-userstyles.packages.${pkgs.system}.mkUserStyles palette
+          userStyles
+        }"}
+      '';
 
       search.engines =
         let
