@@ -107,6 +107,42 @@
               # pkgs.appimageTools provides basic packages required by most software.
               (base.targetPkgs pkgs)
               ++ (with pkgs; [
+                (python3.withPackages (
+                  ps: with ps; [
+                    (matplotlib.override {
+                      enableQt = true;
+                    })
+                    tkinter
+                    pygobject3
+                    ipython
+                    pyqt6
+                    pip
+
+                  ]
+                ))
+                gtk3 # for Gtk3Agg matplotlib backend
+                gobject-introspection # for Gtk3Agg matplotlib backend
+                librsvg # for Gtk3Agg matplotlib backend
+                file # for libmagic
+                zlib # for numpy
+                dbus # libdbus-1.so.3
+                fontconfig # libfontconfig.so.1
+                freetype # libfreetype.so.6
+                glib # libglib-2.0.so.0
+                libGL # libGL.so.1
+                libxkbcommon # libxkbcommon.so.0
+                xorg.libX11 # libX11.so.6
+                wayland
+
+                pkgs.glib
+                pkgs.zlib
+                pkgs.libGL
+                pkgs.fontconfig
+                pkgs.xorg.libX11
+                pkgs.libxkbcommon
+                pkgs.freetype
+                pkgs.dbus
+
                 pkg-config
                 ncurses
                 # Feel free to add more packages here if needed.
