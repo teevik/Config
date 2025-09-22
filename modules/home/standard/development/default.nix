@@ -92,6 +92,10 @@ in
 
     # Zig
     zig
+
+    (jetbrains.idea-ultimate.override {
+      forceWayland = true;
+    })
   ];
 
   home.file.".npmrc".text = ''
