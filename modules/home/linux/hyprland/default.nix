@@ -98,9 +98,9 @@ in
           sensitivity = 0.75;
         };
 
-        gestures = {
-          workspace_swipe = true;
-        };
+        gesture = [
+          "3, horizontal, workspace"
+        ];
 
         general = {
           layout = "dwindle";
