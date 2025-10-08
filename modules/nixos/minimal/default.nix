@@ -1,5 +1,4 @@
 {
-  perSystem,
   inputs,
   pkgs,
   lib,
@@ -10,6 +9,7 @@ let
 in
 {
   imports = [
+    inputs.determinate.nixosModules.default
     inputs.chaotic.nixosModules.default
 
     ./networking.nix
@@ -36,7 +36,7 @@ in
     };
 
     nix = {
-      package = pkgs.nixVersions.latest;
+      # package = pkgs.nixVersions.latest;
       channel.enable = false;
       # package = pkgs.lix;
       # package = perSystem.self.lix;
@@ -45,6 +45,10 @@ in
         experimental-features = [
           "nix-command"
           "flakes"
+
+          "ca-derivations"
+          "dynamic-derivations"
+          "parallel-eval"
         ];
         auto-optimise-store = true;
 
@@ -53,12 +57,16 @@ in
           "teevik"
         ];
 
+        eval-cores = 0;
+        lazy-trees = true;
+
         substituters = [
           "https://cache.nixos.org?priority=10"
           "https://teevik.cachix.org"
           "https://hyprland.cachix.org"
           "https://zed.cachix.org"
           "https://helix.cachix.org"
+          "https://install.determinate.systems"
         ];
 
         trusted-public-keys = [
@@ -67,13 +75,14 @@ in
           "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
           "zed.cachix.org-1:/pHQ6dpMsAZk2DiP4WCL0p9YDNKWj2Q5FL20bNmw1cU="
           "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
+          "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
         ];
       };
 
       registry = {
-        default.flake = inputs.nixpkgs;
-        default-flake.flake = inputs.nixpkgs;
-        nixpkgs.flake = lib.mkForce inputs.nixpkgs;
+        # default.flake = nixpkgs;
+        # default-flake.flake = nixpkgs;
+        # nixpkgs.flake = lib.mkForce nixpkgs;
         teevik.flake = inputs.self;
       };
     };

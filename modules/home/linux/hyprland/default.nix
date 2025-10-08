@@ -119,6 +119,11 @@ in
           smart_split = true;
         };
 
+        master = {
+          orientation = "center";
+          slave_count_for_center_master = 0;
+        };
+
         decoration = {
           rounding = 4;
 

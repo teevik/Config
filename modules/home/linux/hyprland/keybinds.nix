@@ -49,6 +49,9 @@ let
     bind."SUPER, Space" = "togglefloating,";
     bind."SUPER_SHIFT, Q" = "exec, poweroff";
 
+    bind."SUPER, L" = "exec, hyprctl keyword general:layout \"dwindle\"";
+    bind."SUPER_SHIFT, L" = "exec, hyprctl keyword general:layout \"master\"";
+
     # Function keys
     binde.",XF86MonBrightnessUp" = "exec, brightnessctl s --min-value=10 --exponent=2 7%+";
     binde.",XF86MonBrightnessDown" = "exec, brightnessctl s --min-value=10 --exponent=2 7%-";

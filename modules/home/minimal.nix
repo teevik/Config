@@ -15,7 +15,7 @@
   };
 
   nix = {
-    package = pkgs.nixVersions.nix_2_28;
+    # package = pkgs.nixVersions.nix_2_28;
     # package = pkgs.nix;
     # package = perSystem.self.lix;
 
@@ -37,6 +37,7 @@
         "https://hyprland.cachix.org"
         "https://zed.cachix.org"
         "https://helix.cachix.org"
+        "https://install.determinate.systems"
       ];
 
       trusted-public-keys = [
@@ -45,6 +46,7 @@
         "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
         "zed.cachix.org-1:/pHQ6dpMsAZk2DiP4WCL0p9YDNKWj2Q5FL20bNmw1cU="
         "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
+        "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
       ];
     };
 

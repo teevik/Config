@@ -75,7 +75,9 @@ in
     # Python
     python3
     pyright
+    basedpyright
     uv
+    python313Packages.ipykernel
 
     # Roc
     # rocPkgs.cli
@@ -93,9 +95,9 @@ in
     # Zig
     zig
 
-    (jetbrains.idea-ultimate.override {
-      forceWayland = true;
-    })
+    # (jetbrains.idea-ultimate.override {
+    #   forceWayland = true;
+    # })
   ];
 
   home.file.".npmrc".text = ''

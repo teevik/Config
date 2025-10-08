@@ -1,4 +1,9 @@
 {
+  "agent_servers": {
+    "claude": {
+      "default_mode": "bypassPermissions"
+    }
+  },
   "edit_predictions": {
     "mode": "subtle",
     "copilot": {
@@ -18,9 +23,8 @@
     "model_parameters": [],
     "default_model": {
       "provider": "zed.dev",
-      "model": "claude-opus-4-1-thinking"
-    },
-    "version": "2"
+      "model": "claude-sonnet-4"
+    }
   },
   "ui_font_size": 16,
   "buffer_font_size": 16,
@@ -42,16 +46,7 @@
     }
   },
 
-  "context_servers": {
-    "rust-docs": {
-      "source": "custom",
-      "command": {
-        "path": "nix",
-        "args": ["run", "github:snowmead/rust-docs-mcp"]
-      },
-      "enabled": true
-    }
-  },
+  "context_servers": {},
 
   "helix_mode": true,
   "auto_install_extensions": {

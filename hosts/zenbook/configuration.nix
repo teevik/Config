@@ -50,6 +50,15 @@
     sof-firmware
   ];
 
+  # TODO: remove when https://nixpk.gs/pr-tracker.html?pr=449133 is merged
+  hardware.graphics.extraPackages = lib.mkForce (
+    with pkgs;
+    [
+      intel-media-driver
+      vpl-gpu-rt
+    ]
+  );
+
   boot = {
     kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
 

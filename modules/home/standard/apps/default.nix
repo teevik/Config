@@ -169,6 +169,6 @@ in
     neofetch
     sysz
     claude-code
-    stremio
+    # stremio
   ];
 }
