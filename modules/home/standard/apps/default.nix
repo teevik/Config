@@ -1,5 +1,6 @@
 {
   config,
+  perSystem,
   inputs,
   pkgs,
   lib,
@@ -169,6 +170,6 @@ in
     neofetch
     sysz
     claude-code
-    # stremio
+    perSystem.self.stremio
   ];
 }

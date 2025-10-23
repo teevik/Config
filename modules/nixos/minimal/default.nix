@@ -2,6 +2,7 @@
   inputs,
   pkgs,
   lib,
+  perSystem,
   ...
 }:
 let
@@ -9,7 +10,7 @@ let
 in
 {
   imports = [
-    inputs.determinate.nixosModules.default
+    # inputs.determinate.nixosModules.default
     inputs.chaotic.nixosModules.default
 
     ./networking.nix
@@ -35,8 +36,13 @@ in
       ];
     };
 
+    nixpkgs.flake = {
+      setFlakeRegistry = false;
+      setNixPath = false;
+    };
+
     nix = {
-      # package = pkgs.nixVersions.latest;
+      package = perSystem.determinate-nix.default;
       channel.enable = false;
       # package = pkgs.lix;
       # package = perSystem.self.lix;
@@ -82,7 +88,7 @@ in
       registry = {
         # default.flake = nixpkgs;
         # default-flake.flake = nixpkgs;
-        # nixpkgs.flake = lib.mkForce nixpkgs;
+        nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
         teevik.flake = inputs.self;
       };
     };

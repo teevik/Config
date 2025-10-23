@@ -1,1 +1,1 @@
-{ pkgs }: pkgs.nixfmt-rfc-style
+{ pkgs }: pkgs.nixfmt

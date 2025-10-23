@@ -1,6 +1,12 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    nixpkgs-unfree = {
+      url = "github:numtide/nixpkgs-unfree";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
     nixos-apple-silicon = {
@@ -19,7 +25,7 @@
     };
 
     # Modules
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
@@ -27,6 +33,7 @@
     automatic-sunset.url = "github:teevik/automatic-sunset";
 
     # Packages
+    determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
     betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
     iwmenu.url = "github:e-tho/iwmenu";
     helix.url = "github:helix-editor/helix";

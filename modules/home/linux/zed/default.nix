@@ -2,6 +2,7 @@
   flake,
   config,
   pkgs,
+  perSystem,
   ...
 }:
 let
@@ -10,6 +11,7 @@ in
 {
   home.packages = [
     pkgs.zed-editor
+    # perSystem.zed.default
   ];
 
   xdg.configFile = {

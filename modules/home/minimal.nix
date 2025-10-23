@@ -53,7 +53,7 @@
     registry = {
       default.flake = inputs.nixpkgs;
       default-flake.flake = inputs.nixpkgs;
-      nixpkgs.flake = lib.mkForce inputs.nixpkgs;
+      nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
       teevik.flake = inputs.self;
       unstable.flake = inputs.unstable;
     };
