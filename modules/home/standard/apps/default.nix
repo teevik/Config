@@ -70,22 +70,26 @@ in
       };
     };
 
+    delta = {
+      enable = true;
+      enableGitIntegration = true;
+    };
+
     git = {
       enable = true;
-      delta.enable = true;
 
-      userEmail = "teemu.vikoren@gmail.com";
-      userName = "teevik";
-      ignores = [
-        ".DS_Store"
-      ];
-
-      extraConfig = {
+      settings = {
+        user.email = "teemu.vikoren@gmail.com";
+        user.name = "teevik";
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
         rerere.enabled = true;
         # pull.rebase = true;
       };
+
+      ignores = [
+        ".DS_Store"
+      ];
     };
 
     tealdeer = {
