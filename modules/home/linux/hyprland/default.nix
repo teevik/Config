@@ -53,7 +53,7 @@ in
       HYPRCURSOR_THEME = cursorTheme.name;
     };
 
-    services.automatic-sunset.enable = true;
+    services.automatic-sunset.enable = false;
 
     wayland.windowManager.hyprland = {
       enable = true;

@@ -41,7 +41,7 @@
     obs-studio
     trashy
     # beekeeper-studio
-    xdragon
+    dragon-drop
     loupe
     koji
     super-productivity

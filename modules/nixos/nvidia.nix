@@ -1,6 +1,6 @@
 { config, ... }:
 {
-  nixpkgs.config.cudaSupport = true;
+  # nixpkgs.config.cudaSupport = true;
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
