@@ -4,6 +4,7 @@
       "default_mode": "bypassPermissions"
     }
   },
+  "load_direnv": "direct",
   "edit_predictions": {
     "mode": "subtle",
     "copilot": {
@@ -19,11 +20,11 @@
       "model": "claude-sonnet-4"
     },
     "play_sound_when_agent_done": true,
-    "default_profile": "write",
+    "default_profile": "ask",
     "model_parameters": [],
     "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-sonnet-4"
+      "provider": "anthropic",
+      "model": "claude-opus-4-1-latest"
     }
   },
   "ui_font_size": 16,
@@ -42,6 +43,13 @@
         "formatting": {
           "command": ["nixfmt"]
         }
+      }
+    },
+
+    "tinymist": {
+      "settings": {
+        "exportPdf": "onSave",
+        "outputPath": "$root/$name"
       }
     }
   },

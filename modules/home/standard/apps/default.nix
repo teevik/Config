@@ -148,7 +148,6 @@ in
     rounded
     bat
     erdtree
-    flyctl
     gcc
     just
     magic-wormhole

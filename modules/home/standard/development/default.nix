@@ -78,6 +78,7 @@ in
     basedpyright
     uv
     python313Packages.ipykernel
+    python313Packages.jupytext
 
     # Roc
     # rocPkgs.cli

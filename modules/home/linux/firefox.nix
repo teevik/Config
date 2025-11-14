@@ -57,6 +57,8 @@ in
         "media.ffmpeg.vaapi.enabled" = true;
         "gfx.webrender.all" = true;
         "middlemouse.paste" = false;
+        "browser.urlbar.suggest.openpage" = false; # Don't suggest open tabs
+        "browser.tabs.firefox-view" = false; # Don't show Firefox View
       };
 
       search.force = true;

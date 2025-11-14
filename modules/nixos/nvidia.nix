@@ -9,4 +9,6 @@
     # package = config.boot.kernelPackages.nvidiaPackages.stable;
     modesetting.enable = true;
   };
+
+  hardware.nvidia-container-toolkit.enable = true;
 }

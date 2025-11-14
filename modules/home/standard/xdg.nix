@@ -76,7 +76,7 @@ let
 
   associations = builtins.mapAttrs (_: v: (map (e: "${e}.desktop") v)) (
     {
-      "application/pdf" = [ "com.github.xournalpp.xournalpp" ];
+      "application/pdf" = [ "org.gnome.Evince" ];
       "text/html" = browser;
       "text/plain" = [ "Helix" ];
       "inode/directory" = [ "org.gnome.Nautilus" ];

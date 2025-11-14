@@ -36,10 +36,10 @@ in
       ];
     };
 
-    nixpkgs.flake = {
-      setFlakeRegistry = false;
-      setNixPath = false;
-    };
+    # nixpkgs.flake = {
+    #   setFlakeRegistry = false;
+    #   setNixPath = false;
+    # };
 
     nix = {
       package = perSystem.determinate-nix.default;
@@ -88,7 +88,7 @@ in
       registry = {
         # default.flake = nixpkgs;
         # default-flake.flake = nixpkgs;
-        nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
+        # nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
         teevik.flake = inputs.self;
       };
     };

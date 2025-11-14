@@ -25,7 +25,7 @@ in
     dualsensectl
     (prismlauncher.override {
       jdks = with pkgs; [
-        jdk23
+        jdk25
         jdk21
         jdk17
         jdk8
