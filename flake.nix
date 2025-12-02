@@ -31,6 +31,7 @@
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
     marble.url = "git+ssh://git@github.com/teevik/shell.git";
     automatic-sunset.url = "github:teevik/automatic-sunset";
+    niri.url = "github:sodiboo/niri-flake";
 
     # Packages
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
@@ -46,6 +47,7 @@
     titdb.url = "github:GarrettGR/titdb-nix";
     nix-userstyles.url = "github:knoopx/nix-userstyles";
     nwg-display.url = "github:nwg-piotr/nwg-displays";
+    antigravity.url = "github:jacopone/antigravity-nix";
   };
 
   outputs =

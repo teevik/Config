@@ -68,7 +68,7 @@ in
 
         misc = {
           # enable_swallow = true;
-          # swallow_regex = "^(kitty)$";
+          # swallow_regex = "^(the-editor)$";
           disable_splash_rendering = true;
           force_default_wallpaper = true;
           focus_on_activate = true;

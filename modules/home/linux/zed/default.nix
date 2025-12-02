@@ -10,8 +10,8 @@ let
 in
 {
   home.packages = [
-    pkgs.zed-editor
-    # perSystem.zed.default
+    # pkgs.zed-editor
+    perSystem.zed.default
   ];
 
   xdg.configFile = {

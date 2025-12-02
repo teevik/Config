@@ -2,10 +2,12 @@
   perSystem,
   config,
   pkgs,
+  inputs,
   ...
 }:
 {
   imports = [
+    inputs.niri.nixosModules.niri
     # ./android-studio.nix
     ./nautilus.nix
     ./firefox.nix
@@ -14,10 +16,8 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   programs = {
-    hyprland = {
-      enable = true;
-      # package = perSystem.hyprland.default;
-    };
+    hyprland.enable = true;
+    niri.enable = true;
 
     _1password.enable = true;
 
@@ -64,6 +64,7 @@
     gnome-clocks
     evince
     baobab
+    xwayland-satellite
 
     # config.boot.kernelPackages.perf
     # perSystem.self.vk_hdr_layer

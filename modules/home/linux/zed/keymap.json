@@ -15,7 +15,39 @@
   {
     "context": "Editor",
     "bindings": {
-      // "j k": ["workspace::SendKeystrokes", "escape"]
+      "ctrl-d": ["editor::SelectNext", { "replace_newest": false }],
+      "ctrl-shift-l": "editor::SelectAllMatches"
+    }
+  },
+  {
+    "context": "vim_mode == helix_normal || vim_mode == helix_select",
+    "bindings": {
+      "shift-w": "vim::PreviousWordStart"
+    }
+  },
+  {
+    "bindings": {
+      "ctrl-alt-o": [
+        "agent::NewExternalAgentThread",
+        {
+          "agent": {
+            "custom": {
+              "name": "OpenCode"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "alt-f": null
+    }
+  },
+  {
+    "bindings": {
+      "alt-f": "workspace::ToggleZoom"
     }
   }
 ]

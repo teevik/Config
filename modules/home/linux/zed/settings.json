@@ -1,31 +1,27 @@
 {
+  "features": {
+    "edit_prediction_provider": "codestral"
+  },
   "agent_servers": {
     "claude": {
       "default_mode": "bypassPermissions"
+    },
+    "OpenCode": {
+      "command": "opencode",
+      "args": ["acp"],
+      "default_model": "anthropic/claude-opus-4-5"
     }
   },
   "load_direnv": "direct",
   "edit_predictions": {
-    "mode": "subtle",
-    "copilot": {
-      "proxy": null,
-      "proxy_no_verify": null
-    },
-    "enabled_in_text_threads": false
+    "mode": "subtle"
   },
   "agent": {
-    "always_allow_tool_actions": true,
-    "inline_assistant_model": {
-      "provider": "zed.dev",
-      "model": "claude-sonnet-4"
-    },
-    "play_sound_when_agent_done": true,
-    "default_profile": "ask",
-    "model_parameters": [],
     "default_model": {
       "provider": "anthropic",
-      "model": "claude-opus-4-1-latest"
-    }
+      "model": "claude-opus-4-5-thinking-latest"
+    },
+    "model_parameters": []
   },
   "ui_font_size": 16,
   "buffer_font_size": 16,

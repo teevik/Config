@@ -63,6 +63,9 @@ in
           "teevik"
         ];
 
+        max-substitution-jobs = 128;
+        http-connections = 128;
+
         eval-cores = 0;
         lazy-trees = true;
 

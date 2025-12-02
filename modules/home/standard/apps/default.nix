@@ -173,6 +173,17 @@ in
     neofetch
     sysz
     claude-code
-    perSystem.self.stremio
+    opencode
+    dioxus-cli
+    # stremio
+    (import
+      (builtins.fetchTarball {
+        url = "https://github.com/NixOS/nixpkgs/archive/5135c59491985879812717f4c9fea69604e7f26f.tar.gz";
+        sha256 = "09qy7zv80bkd9ighsw0bdxjq70dw3qjnyvg7il1fycrsgs5x1gan";
+      })
+      {
+        system = pkgs.system;
+      }
+    ).stremio
   ];
 }

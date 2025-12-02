@@ -1,4 +1,9 @@
-{ inputs, pkgs, ... }:
+{
+  inputs,
+  pkgs,
+  perSystem,
+  ...
+}:
 {
   imports = [
     ./hyprland
@@ -6,7 +11,9 @@
     ./firefox.nix
     ./gtk.nix
     ./hypridle.nix
+    ./kanshi.nix
     ./marble.nix
+    ./niri.nix
     ./qt.nix
     ./swaybg.nix
     ./tofi.nix
@@ -20,6 +27,10 @@
       enableFishIntegration = true;
       enableNushellIntegration = true;
     };
+  };
+
+  services = {
+    cliphist.enable = true;
   };
 
   xdg.desktopEntries."org.gnome.Settings" = {
@@ -50,5 +61,7 @@
     watchman
     vesktop
     wavemon
+    perSystem.antigravity.default
+    kiro-fhs
   ];
 }
