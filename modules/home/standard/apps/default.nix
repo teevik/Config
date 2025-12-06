@@ -45,8 +45,12 @@ in
         background_opacity = config.teevik.theme.kittyOpacity;
         dynamic_background_opacity = "yes";
         # background_blur = 65;
+        shell_integration = "enabled";
         window_padding_width = 10;
         allow_remote_control = "yes";
+        listen_on = "unix:@mykitty";
+        cursor_trail = 3;
+        cursor_trail_decay = "0.1 0.4";
       };
 
       keybindings = {
@@ -173,7 +177,6 @@ in
     neofetch
     sysz
     claude-code
-    opencode
     dioxus-cli
     # stremio
     (import

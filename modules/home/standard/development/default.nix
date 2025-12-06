@@ -8,7 +8,11 @@ let
   rocPkgs = inputs.roc.packages.${pkgs.system};
 in
 {
-  imports = [ ./cargo ];
+  imports = [
+    ./cargo
+    ./neovim
+    ./opencode.nix
+  ];
 
   programs.direnv = {
     enable = true;
@@ -16,8 +20,10 @@ in
   };
 
   home.packages = with pkgs; [
+    copilot-language-server
     samply
     hyperfine
+    fd
 
     # Devenv
     devenv
@@ -48,6 +54,9 @@ in
     # ]))
 
     # JavaScript
+    prettierd
+    prettier
+    pnpm
     nodejs
     bun
     typescript
@@ -82,6 +91,8 @@ in
     uv
     python313Packages.ipykernel
     python313Packages.jupytext
+    isort
+    black
 
     # Roc
     # rocPkgs.cli
@@ -98,6 +109,10 @@ in
 
     # Zig
     zig
+
+    # Lua
+    lua-language-server
+    stylua
 
     # (jetbrains.idea-ultimate.override {
     #   forceWayland = true;

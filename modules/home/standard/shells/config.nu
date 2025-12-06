@@ -1,9 +1,3 @@
-# let fish_completer = {|spans|
-#   fish --command $'complete "--do-complete=($spans | str join " ")"'
-#     | $"value(char tab)description(char newline)" + $in
-#     | from tsv --flexible --no-infer
-# }
-
 let menus = []
 
 let keybindings = [
@@ -31,6 +25,22 @@ $env.config = {
   menus: $menus
   keybindings: $keybindings
   history: $history
+  use_kitty_protocol: true
 }
 
 alias zed = zeditor
+
+def with-clean-term [cmd: string, ...args] {
+    kitty @ set-spacing padding=0
+    kitty @ set-background-opacity 1
+
+    try {
+        ^$cmd ...$args
+    }
+
+    kitty @ set-spacing padding=default  
+    kitty @ set-background-opacity 0.5
+}
+
+def --wrapped opencode [...args] { with-clean-term "opencode" ...$args }
+def --wrapped nvim [...args] { with-clean-term "nvim" ...$args }

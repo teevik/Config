@@ -1,8 +1,8 @@
 {
   inputs,
   config,
-  lib,
   pkgs,
+  perSystem,
   ...
 }:
 let
@@ -26,10 +26,11 @@ let
     "gnome-control-center"
   ];
 
-  XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
-
   # List of apps that should float
   floatingApps = [
+    "confirm"
+    "blueman"
+    "org.gnome.PowerStats"
     "yad"
     "nm-connection-editor"
     "pavucontrol"
@@ -48,6 +49,7 @@ let
     "Color Picker"
     "xdg-desktop-portal"
     "xdg-desktop-portal-gnome"
+    "xdg-desktop-portal-gtk"
     "de.haeckerfelix.Fragments"
   ];
 
@@ -56,11 +58,14 @@ let
     matches = [ { app-id = "^${appId}$"; } ];
     open-floating = true;
   }) floatingApps;
+
+  openScratch = app: "nscratch --multi-monitor --app-id ${app} --spawn ${app}";
 in
 {
   config = {
     home.packages = [
       cursorTheme.package
+      perSystem.niri-scratchpad.default
     ];
 
     home.sessionVariables = {
@@ -71,10 +76,11 @@ in
     programs.niri = {
       settings = {
         # Startup commands
-        # spawn-at-startup = [
-        #   { sh = "systemctl restart --user marble.service swaybg.service"; }
-        #   { argv = [ "1password" ]; }
-        # ];
+        spawn-at-startup = [
+          { sh = "systemctl restart --user marble.service swaybg.service kanshi.service"; }
+        ];
+
+        outputs."Samsung Electric Company Odyssey G85SB H1AK500000".focus-at-startup = true;
 
         # Cursor settings
         cursor = {
@@ -112,8 +118,13 @@ in
         # Prefer server-side decorations
         prefer-no-csd = true;
 
+        workspaces."scratch" = {
+
+        };
+
         # Layout settings
         layout = {
+          always-center-single-column = true;
           gaps = 12; # Average of gaps_in (8) and gaps_out (12)
 
           # Focus ring (similar to border)
@@ -145,10 +156,9 @@ in
 
           # Preset column widths for cycling
           preset-column-widths = [
-            { proportion = 1.0 / 3.0; }
-            { proportion = 0.5; }
-            { proportion = 2.0 / 3.0; }
             { proportion = 1.0; }
+            { proportion = 1.0 / 2.0; }
+            { proportion = 1.0 / 4.0; }
           ];
 
           # Preset window heights
@@ -224,6 +234,14 @@ in
             clip-to-geometry = true;
             draw-border-with-background = false;
           }
+          {
+            matches = [ { app-id = "^spotify|vesktop$"; } ];
+            open-on-workspace = "scratch";
+            open-floating = true;
+            open-focused = false;
+            default-column-width.proportion = 0.618;
+            default-window-height.proportion = 0.75;
+          }
         ];
 
         # Keybindings
@@ -239,6 +257,8 @@ in
           "Mod+E".action.spawn = editor;
           "Mod+S".action.spawn = settings;
           "Mod+V".action.spawn = "${copyHistory}";
+          "Mod+M".action.spawn-sh = openScratch "spotify";
+          "Mod+Backspace".action.spawn-sh = openScratch "vesktop";
 
           # Screenshot
           "Print".action.screenshot-screen = { };
@@ -247,9 +267,7 @@ in
 
           # Window management
           "Mod+Q".action.close-window = { };
-          "Ctrl+Alt+Delete".action.quit = {
-            skip-confirmation = true;
-          };
+          "Ctrl+Alt+Delete".action.quit = { };
           "Mod+A".action.fullscreen-window = { };
           "Mod+Space".action.toggle-window-floating = { };
           "Mod+Shift+Q".action.spawn = [ "poweroff" ];
@@ -266,6 +284,10 @@ in
           "Mod+Shift+Up".action.move-window-up = { };
           "Mod+Shift+Down".action.move-window-down = { };
 
+          "Mod+Comma".action.consume-or-expel-window-left = { };
+          "Mod+Period".action.consume-or-expel-window-right = { };
+          "Mod+C".action.center-column = { };
+
           # Resize
           "Mod+Ctrl+Left".action.set-column-width = "-10%";
           "Mod+Ctrl+Right".action.set-column-width = "+10%";
@@ -273,7 +295,7 @@ in
           "Mod+Ctrl+Down".action.set-window-height = "+10%";
 
           # Column width presets
-          "Mod+R".action.switch-preset-column-width = { };
+          "Mod+Tab".action.switch-preset-column-width = { };
           "Mod+Shift+R".action.switch-preset-window-height = { };
           "Mod+Ctrl+F".action.maximize-column = { };
 
@@ -282,28 +304,28 @@ in
           "Mod+BracketRight".action.expel-window-from-column = { };
 
           # Workspaces
-          "Mod+1".action.focus-workspace = 1;
-          "Mod+2".action.focus-workspace = 2;
-          "Mod+3".action.focus-workspace = 3;
-          "Mod+4".action.focus-workspace = 4;
-          "Mod+5".action.focus-workspace = 5;
-          "Mod+6".action.focus-workspace = 6;
-          "Mod+7".action.focus-workspace = 7;
-          "Mod+8".action.focus-workspace = 8;
-          "Mod+9".action.focus-workspace = 9;
-          "Mod+0".action.focus-workspace = 10;
+          "Mod+1".action.focus-workspace = 2;
+          "Mod+2".action.focus-workspace = 3;
+          "Mod+3".action.focus-workspace = 4;
+          "Mod+4".action.focus-workspace = 5;
+          "Mod+5".action.focus-workspace = 6;
+          "Mod+6".action.focus-workspace = 7;
+          "Mod+7".action.focus-workspace = 8;
+          "Mod+8".action.focus-workspace = 9;
+          "Mod+9".action.focus-workspace = 10;
+          "Mod+0".action.focus-workspace = 11;
 
           # Move to workspace
-          "Mod+Shift+1".action.move-column-to-workspace = 1;
-          "Mod+Shift+2".action.move-column-to-workspace = 2;
-          "Mod+Shift+3".action.move-column-to-workspace = 3;
-          "Mod+Shift+4".action.move-column-to-workspace = 4;
-          "Mod+Shift+5".action.move-column-to-workspace = 5;
-          "Mod+Shift+6".action.move-column-to-workspace = 6;
-          "Mod+Shift+7".action.move-column-to-workspace = 7;
-          "Mod+Shift+8".action.move-column-to-workspace = 8;
-          "Mod+Shift+9".action.move-column-to-workspace = 9;
-          "Mod+Shift+0".action.move-column-to-workspace = 10;
+          "Mod+Shift+1".action.move-column-to-workspace = 2;
+          "Mod+Shift+2".action.move-column-to-workspace = 3;
+          "Mod+Shift+3".action.move-column-to-workspace = 4;
+          "Mod+Shift+4".action.move-column-to-workspace = 5;
+          "Mod+Shift+5".action.move-column-to-workspace = 6;
+          "Mod+Shift+6".action.move-column-to-workspace = 7;
+          "Mod+Shift+7".action.move-column-to-workspace = 8;
+          "Mod+Shift+8".action.move-column-to-workspace = 9;
+          "Mod+Shift+9".action.move-column-to-workspace = 10;
+          "Mod+Shift+0".action.move-column-to-workspace = 11;
 
           # Workspace navigation
           "Mod+Page_Down".action.focus-workspace-down = { };
@@ -312,72 +334,28 @@ in
           "Mod+Shift+Page_Up".action.move-column-to-workspace-up = { };
 
           # Mouse scroll workspaces
+          "Alt+WheelScrollDown".action.focus-column-left = { };
+          "Alt+WheelScrollUp".action.focus-column-right = { };
           "Mod+WheelScrollDown".action.focus-workspace-down = { };
           "Mod+WheelScrollUp".action.focus-workspace-up = { };
 
           # Function keys
-          "XF86MonBrightnessUp".action.spawn = [
-            "brightnessctl"
-            "s"
-            "--min-value=10"
-            "--exponent=2"
-            "7%+"
-          ];
-          "XF86MonBrightnessDown".action.spawn = [
-            "brightnessctl"
-            "s"
-            "--min-value=10"
-            "--exponent=2"
-            "7%-"
-          ];
-          "XF86AudioRaiseVolume".action.spawn = [
-            "pulsemixer"
-            "--change-volume"
-            "+10"
-          ];
-          "XF86AudioLowerVolume".action.spawn = [
-            "pulsemixer"
-            "--change-volume"
-            "-10"
-          ];
-          "XF86AudioMute".action.spawn = [
-            "pulsemixer"
-            "--toggle-mute"
-          ];
-          "XF86AudioNext".action.spawn = [
-            "playerctl"
-            "next"
-          ];
-          "XF86AudioPrev".action.spawn = [
-            "playerctl"
-            "previous"
-          ];
-          "XF86AudioPlay".action.spawn = [
-            "playerctl"
-            "play-pause"
-          ];
-          "XF86AudioStop".action.spawn = [
-            "playerctl"
-            "stop"
-          ];
+          "XF86MonBrightnessUp".action.spawn-sh = "brightnessctl s --min-value=10 --exponent=2 7%+";
+          "XF86MonBrightnessDown".action.spawn-sh = "brightnessctl s --min-value=10 --exponent=2 7%-";
+          "XF86AudioRaiseVolume".action.spawn-sh = "pulsemixer --change-volume +10";
+          "XF86AudioLowerVolume".action.spawn-sh = "pulsemixer --change-volume -10";
+          "XF86AudioMute".action.spawn-sh = "pulsemixer --toggle-mute";
+          "XF86AudioNext".action.spawn-sh = "playerctl next";
+          "XF86AudioPrev".action.spawn-sh = "playerctl previous";
+          "XF86AudioPlay".action.spawn-sh = "playerctl play-pause";
+          "XF86AudioStop".action.spawn-sh = "playerctl stop";
 
           # Overview (niri-specific)
-          "Mod+Tab".action.toggle-overview = { };
+          "Alt+Tab".action.toggle-overview = { };
 
           # Tabbed columns (niri-specific)
           "Mod+T".action.toggle-column-tabbed-display = { };
         };
-
-        # # Environment variables
-        # environment = {
-        #   DISPLAY = null; # Unset DISPLAY to avoid XWayland conflicts
-        # };
-
-        # # Outputs configuration (will be overridden per-host)
-        # outputs."*" = mkIf (scaling != 1.0) {
-        #   scale = scaling;
-        #   variable-refresh-rate = enableVrr;
-        # };
 
         # Hotkey overlay settings
         hotkey-overlay.skip-at-startup = true;

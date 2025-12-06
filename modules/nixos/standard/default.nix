@@ -73,7 +73,7 @@
   # Auto hyprland
   environment.loginShellInit = ''
     if [ "$(tty)" == /dev/tty1 ]; then
-      Hyprland
+      niri-session
     fi
   '';
 

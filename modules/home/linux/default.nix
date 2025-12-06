@@ -6,7 +6,7 @@
 }:
 {
   imports = [
-    ./hyprland
+    # ./hyprland
     ./zed
     ./firefox.nix
     ./gtk.nix

@@ -29,7 +29,7 @@
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
-    marble.url = "git+ssh://git@github.com/teevik/shell.git";
+    marble.url = "git+ssh://git@github.com/teevik/marble-shell.git";
     automatic-sunset.url = "github:teevik/automatic-sunset";
     niri.url = "github:sodiboo/niri-flake";
 
@@ -48,6 +48,8 @@
     nix-userstyles.url = "github:knoopx/nix-userstyles";
     nwg-display.url = "github:nwg-piotr/nwg-displays";
     antigravity.url = "github:jacopone/antigravity-nix";
+    niri-scratchpad.url = "github:gvolpe/niri-scratchpad";
+    neovim.url = "github:nix-community/neovim-nightly-overlay";
   };
 
   outputs =
