@@ -1,6 +1,6 @@
 {
   "features": {
-    "edit_prediction_provider": "codestral"
+    "edit_prediction_provider": "zed"
   },
   "agent_servers": {
     "claude": {
@@ -23,10 +23,52 @@
   "ui_font_size": 16,
   "buffer_font_size": 16,
   "theme": "Catppuccin Mocha - No Italics",
+
+  // Editor settings (from nvim config)
+  "vim_mode": true,
+  "relative_line_numbers": "enabled",
+  "tab_size": 2,
+  "preferred_line_length": 80,
+  "current_line_highlight": "all",
+  "cursor_blink": false,
+  "format_on_save": "on",
+  "show_whitespaces": "boundary",
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true
+  },
+
+  "vim": {
+    "use_system_clipboard": "never"
+  },
+
   "languages": {
     "Typst": {
       "soft_wrap": "bounded",
       "show_wrap_guides": false
+    },
+    "Lua": {
+      "tab_size": 2,
+      "formatter": "language_server"
+    },
+    "Python": {
+      "tab_size": 4,
+      "formatter": "language_server"
+    },
+    "Rust": {
+      "tab_size": 4,
+      "formatter": "language_server"
+    },
+    "JavaScript": {
+      "tab_size": 2,
+      "formatter": {
+        "external": {
+          "command": "prettierd",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
+      }
     }
   },
   "lsp": {
@@ -38,7 +80,6 @@
         }
       }
     },
-
     "tinymist": {
       "settings": {
         "exportPdf": "onSave",
@@ -49,7 +90,6 @@
 
   "context_servers": {},
 
-  "helix_mode": true,
   "auto_install_extensions": {
     "nix": true,
     "html": true,

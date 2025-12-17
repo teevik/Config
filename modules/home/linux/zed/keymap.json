@@ -7,23 +7,73 @@
 // from the command palette.
 [
   {
-    "context": "Workspace",
+    "context": "vim_mode == normal",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
-    }
+      // File/Project navigation (from nvim <leader>f...)
+      "space f f": "file_finder::Toggle",
+      "space f g": "pane::DeploySearch",
+      "space /": "pane::DeploySearch",
+      "space f b": "tab_switcher::Toggle",
+      "space f r": "projects::OpenRecent",
+
+      // Explorer (from nvim <leader>e)
+      "space e": "workspace::ToggleLeftDock",
+
+      // Git (from nvim <leader>g...)
+      "space g s": "git_panel::ToggleFocus",
+      "space g b": "git::Branch",
+
+      // Diagnostics (from nvim <leader>sd)
+      "space s d": "diagnostics::Deploy",
+    },
   },
   {
     "context": "Editor",
     "bindings": {
       "ctrl-d": ["editor::SelectNext", { "replace_newest": false }],
-      "ctrl-shift-l": "editor::SelectAllMatches"
-    }
+      "ctrl-shift-l": "editor::SelectAllMatches",
+
+      // Toggle comment (from nvim <C-/>)
+      "ctrl-/": "editor::ToggleComments",
+    },
   },
   {
-    "context": "vim_mode == helix_normal || vim_mode == helix_select",
+    "context": "vim_mode == normal || vim_mode == visual",
     "bindings": {
-      "shift-w": "vim::PreviousWordStart"
-    }
+      // Yank to system clipboard (from nvim <leader>y)
+      "space y": ["workspace::SendKeystrokes", "\" + y"],
+
+      // LSP navigation (from nvim gd, gr, gI, gy)
+      "g d": "editor::GoToDefinition",
+      "g r": "editor::FindAllReferences",
+      "g shift-i": "editor::GoToImplementation",
+      "g y": "editor::GoToTypeDefinition",
+
+      // Code action (from nvim <leader>a)
+      "space a": "editor::ToggleCodeActions",
+
+      // LSP symbols (from nvim <leader>ss, <leader>sS)
+      "space s s": "outline::Toggle",
+      "space s shift-s": "project_symbols::Toggle",
+
+      // Buffer operations (from nvim <leader>bc, gn, gp)
+      "space b c": "pane::CloseActiveItem",
+      "g n": "pane::ActivateNextItem",
+      "g p": "pane::ActivatePreviousItem",
+
+      // Rename file (from nvim <leader>cR)
+      "space c shift-r": "project_panel::Rename",
+
+      // Clear search highlight (from nvim <Esc> in normal mode)
+      "escape": "editor::Cancel",
+    },
+  },
+  {
+    "context": "vim_mode == visual",
+    "bindings": {
+      // Surround with S (vim-surround style)
+      "shift-s": "vim::PushAddSurrounds",
+    },
   },
   {
     "bindings": {
@@ -32,22 +82,22 @@
         {
           "agent": {
             "custom": {
-              "name": "OpenCode"
-            }
-          }
-        }
-      ]
-    }
+              "name": "OpenCode",
+            },
+          },
+        },
+      ],
+    },
   },
   {
     "context": "Terminal",
     "bindings": {
-      "alt-f": null
-    }
+      "alt-f": null,
+    },
   },
   {
     "bindings": {
-      "alt-f": "workspace::ToggleZoom"
-    }
-  }
+      "alt-f": "workspace::ToggleZoom",
+    },
+  },
 ]
