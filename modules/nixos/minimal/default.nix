@@ -69,6 +69,9 @@ in
         eval-cores = 0;
         lazy-trees = true;
 
+        keep-derivations = true;
+        keep-outputs = true;
+
         substituters = [
           "https://cache.nixos.org?priority=10"
           "https://teevik.cachix.org"
