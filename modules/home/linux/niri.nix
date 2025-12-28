@@ -1,11 +1,14 @@
 {
-  inputs,
   config,
   pkgs,
   perSystem,
+  lib,
+  osConfig,
   ...
 }:
 let
+  inherit (lib) mkIf;
+  enabled = osConfig.programs.niri.enable;
   inherit (config.teevik.theme) borderColor cursorTheme colors;
 
   # Applications
@@ -62,7 +65,7 @@ let
   openScratch = app: "nscratch --multi-monitor --app-id ${app} --spawn ${app}";
 in
 {
-  config = {
+  config = mkIf enabled {
     home.packages = [
       cursorTheme.package
       perSystem.niri-scratchpad.default
@@ -155,7 +158,7 @@ in
           };
 
           # Preset column widths for cycling
-          preset-column-widths = [
+          preset-column-widths = lib.mkDefault [
             { proportion = 1.0; }
             { proportion = 1.0 / 2.0; }
             { proportion = 1.0 / 4.0; }
@@ -239,8 +242,8 @@ in
             open-on-workspace = "scratch";
             open-floating = true;
             open-focused = false;
-            default-column-width.proportion = 0.618;
-            default-window-height.proportion = 0.75;
+            default-column-width.proportion = 1.0;
+            default-window-height.proportion = 1.0;
           }
         ];
 

@@ -32,6 +32,10 @@
     marble.url = "git+ssh://git@github.com/teevik/marble-shell.git";
     automatic-sunset.url = "github:teevik/automatic-sunset";
     niri.url = "github:sodiboo/niri-flake";
+    mango = {
+      url = "github:DreamMaoMao/mangowc";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Packages
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
@@ -50,6 +54,7 @@
     antigravity.url = "github:jacopone/antigravity-nix";
     niri-scratchpad.url = "github:gvolpe/niri-scratchpad";
     neovim.url = "github:nix-community/neovim-nightly-overlay";
+    opencode.url = "github:sst/opencode";
   };
 
   outputs =

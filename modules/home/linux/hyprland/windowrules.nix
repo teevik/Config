@@ -1,5 +1,7 @@
-{ lib, ... }:
+{ lib, osConfig, ... }:
 let
+  inherit (lib) mkIf;
+  enabled = osConfig.programs.hyprland.enable;
   float = [
     "yad"
     "nm-connection-editor"
@@ -26,17 +28,19 @@ let
   ];
 in
 {
-  wayland.windowManager.hyprland.settings = {
-    windowrulev2 = [
-      "float, class:^(${lib.strings.concatStringsSep "|" float})$"
-      "suppressevent maximize, class:^(libreoffice.*)$"
-    ];
+  config = mkIf enabled {
+    wayland.windowManager.hyprland.settings = {
+      windowrulev2 = [
+        "float, class:^(${lib.strings.concatStringsSep "|" float})$"
+        "suppressevent maximize, class:^(libreoffice.*)$"
+      ];
 
-    layerrule = [
-      "blur, bar"
-      "blur, osd"
-      "blur, notifications"
-      "blur, launcher"
-    ];
+      layerrule = [
+        "blur, bar"
+        "blur, osd"
+        "blur, notifications"
+        "blur, launcher"
+      ];
+    };
   };
 }

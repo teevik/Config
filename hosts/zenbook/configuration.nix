@@ -45,7 +45,6 @@
   virtualisation.spiceUSBRedirection.enable = true;
 
   environment.systemPackages = with pkgs; [
-    probe-rs
     virtiofsd
     sof-firmware
   ];

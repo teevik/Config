@@ -6,11 +6,5 @@
     # flake.homeModules.ctf
   ];
 
-  teevik.hyprland = {
-    enableVrr = true;
-    enableHidpi = true;
-    scaling = 1.333333;
-  };
-
   home.stateVersion = "25.05";
 }

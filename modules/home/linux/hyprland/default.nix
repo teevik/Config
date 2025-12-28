@@ -2,48 +2,23 @@
   inputs,
   config,
   lib,
+  osConfig,
   ...
 }:
 let
-  inherit (lib) types mkOption;
+  inherit (lib) mkIf;
   inherit (config.teevik.theme) borderColor cursorTheme;
+  enabled = osConfig.programs.hyprland.enable;
 in
 {
   imports = [
     ./keybinds.nix
-    ./monitors.nix
     ./windowrules.nix
 
     inputs.automatic-sunset.homeModules.default
   ];
 
-  options.teevik.hyprland = {
-    enableVrr = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Whether to enable vrr
-      '';
-    };
-
-    enableHidpi = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Whether to enable scaling
-      '';
-    };
-
-    scaling = mkOption {
-      type = types.float;
-      default = 1.0;
-      description = ''
-        Amount to scale
-      '';
-    };
-  };
-
-  config = {
+  config = mkIf enabled {
     home.packages = [
       cursorTheme.package
     ];
@@ -91,6 +66,10 @@ in
           };
 
           sensitivity = 0; # -1.0 - 1.0, 0 means no modification.
+        };
+
+        xwayland = {
+          force_zero_scaling = true;
         };
 
         device = {

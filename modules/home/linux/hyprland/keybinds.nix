@@ -2,9 +2,12 @@
   perSystem,
   lib,
   config,
+  osConfig,
   ...
 }:
 let
+  inherit (lib) mkIf;
+  enabled = osConfig.programs.hyprland.enable;
 
   hyprland-scratchpad-package = perSystem.self.hyprland-scratchpad;
   hyprland-scratchpad = lib.getExe hyprland-scratchpad-package;
@@ -121,11 +124,13 @@ let
     binds: lib.attrsets.mapAttrsToList (binding: dispatcher: "${binding}, ${dispatcher}") binds;
 in
 {
-  home.packages = [
-    hyprland-scratchpad-package
-  ];
+  config = mkIf enabled {
+    home.packages = [
+      hyprland-scratchpad-package
+    ];
 
-  wayland.windowManager.hyprland = {
-    settings = builtins.mapAttrs (name: bindsToList) keyBinds;
+    wayland.windowManager.hyprland = {
+      settings = builtins.mapAttrs (name: bindsToList) keyBinds;
+    };
   };
 }

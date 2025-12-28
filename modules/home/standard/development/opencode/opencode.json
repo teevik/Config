@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "catppuccin",
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  },
+  "lsp": {
+    "tailwind": {
+      "command": ["bun", "x", "tailwindcss-language-server", "--stdio"],
+      "extensions": [".tsx"]
+    }
+  }
+}

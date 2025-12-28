@@ -11,7 +11,7 @@ in
   imports = [
     ./cargo
     ./neovim
-    ./opencode.nix
+    ./opencode
   ];
 
   programs.direnv = {
@@ -65,6 +65,7 @@ in
     vtsls
     # nodePackages."@prisma/language-server"
     yarn
+    oxlint
 
     # Json
     vscode-langservers-extracted

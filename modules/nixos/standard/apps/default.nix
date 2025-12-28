@@ -7,7 +7,6 @@
 }:
 {
   imports = [
-    inputs.niri.nixosModules.niri
     # ./android-studio.nix
     ./nautilus.nix
     ./firefox.nix
@@ -16,9 +15,6 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   programs = {
-    hyprland.enable = true;
-    niri.enable = true;
-
     _1password.enable = true;
 
     _1password-gui = {

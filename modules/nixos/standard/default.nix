@@ -1,9 +1,12 @@
 {
+  inputs,
   config,
   ...
 }:
 {
   imports = [
+    inputs.niri.nixosModules.niri
+    inputs.mango.nixosModules.mango
     ./age
     ./apps
     ./cachix.nix
@@ -20,6 +23,33 @@
       !include ${config.age.secrets.nix-access-tokens-github.path}
     '';
   };
+
+  programs = {
+    hyprland.enable = true;
+    niri.enable = false;
+    mango.enable = false;
+  };
+
+  # # # Auto niri
+  # environment.loginShellInit = ''
+  #   if [ "$(tty)" == /dev/tty1 ]; then
+  #     niri-session
+  #   fi
+  # '';
+
+  # Auto hyprland
+  environment.loginShellInit = ''
+    if [ "$(tty)" == /dev/tty1 ]; then
+      Hyprland
+    fi
+  '';
+
+  # Auto mango
+  # environment.loginShellInit = ''
+  #   if [ "$(tty)" == /dev/tty1 ]; then
+  #     mango
+  #   fi
+  # '';
 
   # Boot
   boot = {
@@ -69,15 +99,4 @@
   };
 
   # users.users.teevik.extraGroups = [ "geoclue" ];
-
-  # Auto hyprland
-  environment.loginShellInit = ''
-    if [ "$(tty)" == /dev/tty1 ]; then
-      niri-session
-    fi
-  '';
-
-  # services.udev.packages = with pkgs; [
-  #   via
-  # ];
 }

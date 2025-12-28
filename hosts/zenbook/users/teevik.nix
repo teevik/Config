@@ -6,11 +6,10 @@
     flake.homeModules.ctf
   ];
 
-  teevik.hyprland = {
-    enableVrr = true;
-    enableHidpi = true;
-    scaling = 1.5;
-  };
+  programs.niri.settings.layout.preset-column-widths = [
+    { proportion = 1.0; }
+    { proportion = 1.0 / 2.0; }
+  ];
 
   home.stateVersion = "24.11";
 }
