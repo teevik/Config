@@ -54,18 +54,16 @@ in
     # ]))
 
     # JavaScript
-    prettierd
-    prettier
     pnpm
     nodejs
     bun
-    typescript
-    biome
+    typescript-go
     emmet-ls
     vtsls
     # nodePackages."@prisma/language-server"
     yarn
     oxlint
+    oxfmt
 
     # Json
     vscode-langservers-extracted

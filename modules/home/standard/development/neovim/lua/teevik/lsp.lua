@@ -20,15 +20,14 @@ require("lazy-lsp").setup({
 
 	excluded_servers = {
 		"ccls", -- prefer clangd
-		"denols", -- prefer eslint and ts_ls
+		"denols", -- prefer vtsls
 		"docker_compose_language_service", -- yamlls should be enough?
-		"flow", -- prefer eslint and ts_ls
+		"flow", -- prefer vtsls
 		"ltex", -- grammar tool using too much CPU
-		"quick_lint_js", -- prefer eslint and ts_ls
+		"quick_lint_js", -- prefer oxlint and vtsls
 		"scry", -- archived on Jun 1, 2023
 		"tailwindcss", -- associates with too many filetypes
-		"biome", -- not mature enough to be default
-		"oxlint", -- prefer eslint
+		"biome", -- using oxlint instead
 	},
 	preferred_servers = {
 		markdown = {},
