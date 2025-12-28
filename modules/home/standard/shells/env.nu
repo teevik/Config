@@ -428,3 +428,6 @@
 # $env.TRANSIENT_PROMPT_INDICATOR_VI_NORMAL = {|| "" }
 # $env.TRANSIENT_PROMPT_MULTILINE_INDICATOR = {|| "" }
 # $env.TRANSIENT_PROMPT_COMMAND_RIGHT = {|| "" }
+
+# Load secrets from agenix
+$env.SUPERMEMORY_API_KEY = (open /run/agenix/supermemory-api-key | str trim)

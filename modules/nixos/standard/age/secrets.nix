@@ -9,4 +9,5 @@ in
   "cachix.age".publicKeys = publicKeys;
   "eduroam.age".publicKeys = publicKeys;
   "eduroam-ca.age".publicKeys = publicKeys;
+  "supermemory-api-key.age".publicKeys = publicKeys;
 }
