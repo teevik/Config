@@ -18,8 +18,8 @@ in
     inputs.nix-index-database.homeModules.nix-index
     ./helix
     ./rio
+    ./spotify
     ./nwg-displays.nix
-    ./spotify.nix
   ];
 
   programs = {
@@ -163,7 +163,7 @@ in
     xdg-utils
     yazi
     wrk
-    bruno
+    # bruno
     gh
     gitu
     nix-inspect

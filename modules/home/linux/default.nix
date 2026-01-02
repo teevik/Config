@@ -56,7 +56,7 @@
     dragon-drop
     loupe
     koji
-    super-productivity
+    # super-productivity
     libreoffice-qt6-fresh
     wl-clipboard
     watchman

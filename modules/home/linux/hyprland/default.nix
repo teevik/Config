@@ -49,7 +49,7 @@ in
           focus_on_activate = true;
           animate_manual_resizes = true;
           close_special_on_empty = false;
-          new_window_takes_over_fullscreen = 2;
+          on_focus_under_fullscreen = 2;
           middle_click_paste = false;
         };
 
