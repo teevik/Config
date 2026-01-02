@@ -55,6 +55,7 @@
     niri-scratchpad.url = "github:gvolpe/niri-scratchpad";
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     opencode.url = "github:sst/opencode";
+    hyprland-scratchpad.url = "github:teevik/hyprland-scratchpad";
   };
 
   outputs =

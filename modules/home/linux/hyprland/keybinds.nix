@@ -9,7 +9,7 @@ let
   inherit (lib) mkIf;
   enabled = osConfig.programs.hyprland.enable;
 
-  hyprland-scratchpad-package = perSystem.self.hyprland-scratchpad;
+  hyprland-scratchpad-package = perSystem.hyprland-scratchpad.default;
   hyprland-scratchpad = lib.getExe hyprland-scratchpad-package;
   terminal = "kitty";
   menu = "tofi-drun --drun-launch=true";
