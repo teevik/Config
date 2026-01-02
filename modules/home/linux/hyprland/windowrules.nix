@@ -30,16 +30,16 @@ in
 {
   config = mkIf enabled {
     wayland.windowManager.hyprland.settings = {
-      windowrulev2 = [
-        "float, class:^(${lib.strings.concatStringsSep "|" float})$"
-        "suppressevent maximize, class:^(libreoffice.*)$"
+      windowrule = [
+        "match:class ^(${lib.strings.concatStringsSep "|" float})$, float on"
+        "match:class ^(libreoffice.*)$, suppress_event maximize"
       ];
 
       layerrule = [
-        "blur, bar"
-        "blur, osd"
-        "blur, notifications"
-        "blur, launcher"
+        "match:namespace bar, blur on"
+        "match:namespace osd, blur on"
+        "match:namespace notifications, blur on"
+        "match:namespace launcher, blur on"
       ];
     };
   };
