@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "Sisyphus": {
+      "model": "anthropic/claude-opus-4-5"
+    },
+    "Planner-Sisyphus": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    "oracle": {
+      "model": "github-copilot/gpt-5.2"
+    },
+    "librarian": {
+      "model": "anthropic/claude-sonnet-4.5"
+    },
+    "explore": {
+      "model": "github-copilot/grok-code-fast-1"
+    },
+    "frontend-ui-ux-engineer": {
+      "model": "github-copilot/gemini-3-pro-preview"
+    },
+    "document-writer": {
+      "model": "github-copilot/gemini-3-pro-preview"
+    },
+    "multimodal-looker": {
+      "model": "github-copilot/gemini-3-flash-preview"
+    }
+  },
+  "experimental": {
+    "auto_resume": true,
+    "preemptive_compaction": true,
+    "preemptive_compaction_threshold": 0.8,
+    "truncate_all_tool_outputs": true
+  },
+  "google_auth": false
+}
