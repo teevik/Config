@@ -5,8 +5,7 @@
       "model": "anthropic/claude-opus-4-5"
     },
     "Planner-Sisyphus": {
-      "model": "anthropic/claude-sonnet-4-5",
-      "temperature": 0.3
+      "model": "anthropic/claude-opus-4-5"
     },
     "oracle": {
       "model": "github-copilot/gpt-5.2"
@@ -30,7 +29,6 @@
   "experimental": {
     "auto_resume": true,
     "preemptive_compaction": true,
-    "preemptive_compaction_threshold": 0.8,
     "truncate_all_tool_outputs": true
   },
   "google_auth": false
