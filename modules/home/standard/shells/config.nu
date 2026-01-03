@@ -26,6 +26,22 @@ $env.config = {
   keybindings: $keybindings
   history: $history
   use_kitty_protocol: true
+  hooks: {
+    pre_execution: [
+      {|| $env.repl_commandline = (commandline) }
+    ]
+    pre_prompt: [
+      {||
+        let threshold_ms = 10000
+        let duration_ms = ($env.CMD_DURATION_MS | into int)
+        if $duration_ms > $threshold_ms {
+          let duration_secs = ($duration_ms / 1000 | math round)
+          let cmd = ($env.repl_commandline? | default "Command")
+          notify-send "Command finished" $"($cmd) completed in ($duration_secs)s"
+        }
+      }
+    ]
+  }
 }
 
 alias zed = zeditor
