@@ -44,9 +44,17 @@
   virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
 
+  networking.firewall.checkReversePath = false;
+  services.resolved.enable = true;
+
+  services.mullvad-vpn.enable = true;
+  services.mullvad-vpn.package = pkgs.mullvad-vpn;
+
   environment.systemPackages = with pkgs; [
     virtiofsd
     sof-firmware
+    wireguard-tools
+    protonvpn-gui
   ];
 
   # TODO: remove when https://nixpk.gs/pr-tracker.html?pr=449133 is merged
