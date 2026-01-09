@@ -16,7 +16,7 @@ let
 in
 {
   services.hypridle = {
-    enable = false;
+    enable = true;
 
     settings = {
       listeners = [
@@ -32,10 +32,10 @@ in
           on-resume = "${hyprctl} dispatch dpms on";
         }
 
-        {
-          timeout = 4 * 60;
-          on-timeout = checkAudio "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
-        }
+        # {
+        #   timeout = 4 * 60;
+        #   on-timeout = checkAudio "${hyprctl} dispatch dpms on && ${hyprctl} dispatch exec 'systemctl suspend-then-hibernate'";
+        # }
       ];
     };
   };
