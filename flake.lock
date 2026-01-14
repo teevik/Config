@@ -867,11 +867,11 @@
         "nixpkgs": "nixpkgs_13"
       },
       "locked": {
-        "lastModified": 1767288410,
-        "narHash": "sha256-GNKiLHtw2qu9gOI6M3Lq8JgkvfNi0OCCc/OM8oZXfzg=",
+        "lastModified": 1767972532,
+        "narHash": "sha256-3AhD3ruJbU4D/wwoFi2eG/PDcIVSahFpwBQ9SsVDwRs=",
         "ref": "refs/heads/main",
-        "rev": "dc98f6c65c4e4288a0e08371d593dbdf5ca06e65",
-        "revCount": 16,
+        "rev": "25ec73fc242e4da7db9173ac4e5816721cf63e5e",
+        "revCount": 17,
         "submodules": true,
         "type": "git",
         "url": "ssh://git@github.com/teevik/marble-shell.git"
@@ -893,17 +893,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1764289796,
-        "narHash": "sha256-QU1xTXdlmU88aM4bKLfhiSHiteh9s5uxREzv1r9t2l8=",
+        "lastModified": 1767972414,
+        "narHash": "sha256-QMVA3DIYoRY8NJqZ7KcGY77KmHTWnDd50/1OZD3fAR4=",
         "ref": "refs/heads/main",
-        "rev": "0842703d4755836594decaa59162c47177fb6bbb",
-        "revCount": 135,
+        "rev": "c25bfa0dd18b2712cd1dcf692709f75d8492bc65",
+        "revCount": 136,
         "type": "git",
-        "url": "ssh://git@github.com/marble-shell/kit"
+        "url": "ssh://git@github.com/teevik/kit"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@github.com/marble-shell/kit"
+        "url": "ssh://git@github.com/teevik/kit"
       }
     },
     "neovim": {
@@ -1712,11 +1712,11 @@
         "nixpkgs": "nixpkgs_22"
       },
       "locked": {
-        "lastModified": 1767779806,
-        "narHash": "sha256-ielZH5CUC2a4TqeubBLvQRn7rT4gqSMTH83lzBfe4Z4=",
+        "lastModified": 1767973998,
+        "narHash": "sha256-Kv26RiLhW1vF/tqVpTVl0+lFecp7O7KRZMODurQ5CAY=",
         "owner": "sst",
         "repo": "opencode",
-        "rev": "24c933ae605b8637482b0f63b8a2555954c9a86a",
+        "rev": "030b14ac4e037b410d993a5ef79b561b011855f6",
         "type": "github"
       },
       "original": {

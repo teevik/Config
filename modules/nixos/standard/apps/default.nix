@@ -61,6 +61,7 @@
     evince
     baobab
     xwayland-satellite
+    wakatime-cli
 
     # config.boot.kernelPackages.perf
     # perSystem.self.vk_hdr_layer

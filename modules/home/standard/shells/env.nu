@@ -431,3 +431,6 @@
 
 # Load secrets from agenix
 $env.SUPERMEMORY_API_KEY = (open /run/agenix/supermemory-api-key | str trim)
+
+# Add cargo bin to PATH
+$env.PATH = ($env.PATH | split row (char esep) | prepend $"($nu.home-path)/.cargo/bin")

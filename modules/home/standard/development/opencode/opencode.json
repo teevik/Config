@@ -5,8 +5,11 @@
     // "oh-my-opencode",
     "opencode-supermemory@latest",
     "@nick-vi/opencode-type-inject@latest",
-    "@mohak34/opencode-notifier@latest"
+    "@mohak34/opencode-notifier@latest",
+    // "@plannotator/opencode@latest",
+    "opencode-wakatime@latest"
   ],
+
   "experimental": {},
 
   "mcp": {

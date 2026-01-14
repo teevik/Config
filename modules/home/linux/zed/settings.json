@@ -1,4 +1,7 @@
 {
+  "session": {
+    "trust_all_worktrees": true
+  },
   "features": {
     "edit_prediction_provider": "zed"
   },
@@ -195,6 +198,8 @@
     "sql": true,
     "cargo-appraiser": true,
     "crates-lsp": true,
-    "tsgo": true
+    "tsgo": true,
+    "wakatime": true,
+    "ron": true
   }
 }
