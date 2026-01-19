@@ -1,7 +1,7 @@
 { config, ... }:
 {
   services.cachix-watch-store = {
-    enable = false;
+    enable = true;
     cacheName = "teevik";
     cachixTokenFile = config.age.secrets.cachix.path;
   };
