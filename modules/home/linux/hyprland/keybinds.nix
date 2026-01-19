@@ -67,12 +67,12 @@ let
     bind.",XF86AudioStop" = "exec, playerctl stop";
 
     # Scroll through existing workspaces with SUPER + scroll
-    bind."SUPER, mouse_down" = "workspace, e+1";
-    bind."SUPER, mouse_up" = "workspace, e-1";
+    bind."SUPER, mouse_down" = "split-cycleworkspaces, +1";
+    bind."SUPER, mouse_up" = "split-cycleworkspaces, -1";
 
     # Use mouse scroll left and right
-    bind.", mouse_right" = "workspace, e+1";
-    bind.", mouse_left" = "workspace, e-1";
+    bind.", mouse_right" = "split-cycleworkspaces, +1";
+    bind.", mouse_left" = "split-cycleworkspaces, -1";
 
     # Focus
     bind."SUPER,left" = "movefocus, l";
@@ -96,28 +96,28 @@ let
     bind."SUPERCTRL,down" = "resizeactive,0 20";
 
     # Workspaces
-    bind."SUPER,1" = "workspace,1";
-    bind."SUPER,2" = "workspace,2";
-    bind."SUPER,3" = "workspace,3";
-    bind."SUPER,4" = "workspace,4";
-    bind."SUPER,5" = "workspace,5";
-    bind."SUPER,6" = "workspace,6";
-    bind."SUPER,7" = "workspace,7";
-    bind."SUPER,8" = "workspace,8";
-    bind."SUPER,9" = "workspace,9";
-    bind."SUPER,0" = "workspace,10";
+    bind."SUPER,1" = "split-workspace,1";
+    bind."SUPER,2" = "split-workspace,2";
+    bind."SUPER,3" = "split-workspace,3";
+    bind."SUPER,4" = "split-workspace,4";
+    bind."SUPER,5" = "split-workspace,5";
+    bind."SUPER,6" = "split-workspace,6";
+    bind."SUPER,7" = "split-workspace,7";
+    bind."SUPER,8" = "split-workspace,8";
+    bind."SUPER,9" = "split-workspace,9";
+    bind."SUPER,0" = "split-workspace,10";
 
     # Send to Workspaces
-    bind."SUPER_SHIFT,1" = "movetoworkspace,1";
-    bind."SUPER_SHIFT,2" = "movetoworkspace,2";
-    bind."SUPER_SHIFT,3" = "movetoworkspace,3";
-    bind."SUPER_SHIFT,4" = "movetoworkspace,4";
-    bind."SUPER_SHIFT,5" = "movetoworkspace,5";
-    bind."SUPER_SHIFT,6" = "movetoworkspace,6";
-    bind."SUPER_SHIFT,7" = "movetoworkspace,7";
-    bind."SUPER_SHIFT,8" = "movetoworkspace,8";
-    bind."SUPER_SHIFT,9" = "movetoworkspace,9";
-    bind."SUPER_SHIFT,0" = "movetoworkspace,10";
+    bind."SUPER_SHIFT,1" = "split-movetoworkspacesilent,1";
+    bind."SUPER_SHIFT,2" = "split-movetoworkspacesilent,2";
+    bind."SUPER_SHIFT,3" = "split-movetoworkspacesilent,3";
+    bind."SUPER_SHIFT,4" = "split-movetoworkspacesilent,4";
+    bind."SUPER_SHIFT,5" = "split-movetoworkspacesilent,5";
+    bind."SUPER_SHIFT,6" = "split-movetoworkspacesilent,6";
+    bind."SUPER_SHIFT,7" = "split-movetoworkspacesilent,7";
+    bind."SUPER_SHIFT,8" = "split-movetoworkspacesilent,8";
+    bind."SUPER_SHIFT,9" = "split-movetoworkspacesilent,9";
+    bind."SUPER_SHIFT,0" = "split-movetoworkspacesilent,10";
   };
 
   bindsToList =

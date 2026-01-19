@@ -59,6 +59,12 @@
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     opencode.url = "github:sst/opencode";
     hyprland-scratchpad.url = "github:teevik/hyprland-scratchpad";
+
+    hyprland.url = "github:hyprwm/Hyprland";
+    split-monitor-workspaces = {
+      url = "github:Duckonaut/split-monitor-workspaces";
+      inputs.hyprland.follows = "hyprland";
+    };
   };
 
   outputs =

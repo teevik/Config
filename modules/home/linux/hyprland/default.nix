@@ -1,5 +1,6 @@
 {
   inputs,
+  perSystem,
   config,
   lib,
   osConfig,
@@ -32,6 +33,11 @@ in
 
     wayland.windowManager.hyprland = {
       enable = true;
+      package = inputs.hyprland.packages.x86_64-linux.hyprland;
+      portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
+      plugins = [
+        perSystem.split-monitor-workspaces.split-monitor-workspaces
+      ];
 
       settings = {
         exec-once = [
@@ -138,6 +144,15 @@ in
           "fade, 1, 7, default"
           "workspaces, 1, 6, default"
         ];
+
+        plugin = {
+          split-monitor-workspaces = {
+            count = 10;
+            keep_focused = 0;
+            enable_notifications = 0;
+            enable_persistent_workspaces = 1;
+          };
+        };
       };
     };
   };
