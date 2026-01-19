@@ -57,6 +57,7 @@
     loupe
     koji
     # super-productivity
+    solidtime-desktop
     libreoffice-qt6-fresh
     wl-clipboard
     watchman
