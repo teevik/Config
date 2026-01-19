@@ -1,0 +1,3 @@
+[submodule "marble-shell"]
+	path = marble-shell
+	url = git@github.com:teevik/marble-shell.git

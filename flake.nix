@@ -1,5 +1,7 @@
 {
   inputs = {
+    self.submodules = true;
+
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     nixpkgs-unfree = {
@@ -29,7 +31,8 @@
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
-    marble.url = "git+ssh://git@github.com/teevik/marble-shell.git";
+    # marble.url = "git+ssh://git@github.com/teevik/marble-shell.git";
+    marble.url = "path:./marble-shell";
     automatic-sunset.url = "github:teevik/automatic-sunset";
     niri.url = "github:sodiboo/niri-flake";
     mango = {

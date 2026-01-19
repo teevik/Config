@@ -867,19 +867,14 @@
         "nixpkgs": "nixpkgs_13"
       },
       "locked": {
-        "lastModified": 1767972532,
-        "narHash": "sha256-3AhD3ruJbU4D/wwoFi2eG/PDcIVSahFpwBQ9SsVDwRs=",
-        "ref": "refs/heads/main",
-        "rev": "25ec73fc242e4da7db9173ac4e5816721cf63e5e",
-        "revCount": 17,
-        "submodules": true,
-        "type": "git",
-        "url": "ssh://git@github.com/teevik/marble-shell.git"
+        "path": "./marble-shell",
+        "type": "path"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/teevik/marble-shell.git"
-      }
+        "path": "./marble-shell",
+        "type": "path"
+      },
+      "parent": []
     },
     "marble_2": {
       "inputs": {
