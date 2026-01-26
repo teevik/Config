@@ -7,8 +7,7 @@
 {
   programs.opencode = {
     enable = true;
-    # FIXME: uncomment after nix build is fixed by https://github.com/anomalyco/opencode/pull/8865
-    # package = perSystem.opencode.default;
+    package = perSystem.opencode.default;
   };
 
   xdg.configFile = {
