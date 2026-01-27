@@ -58,7 +58,7 @@ in
     allowedHosts = domain;
 
     settings = {
-      title = domain;
+      title = "Dashboard";
       favicon = "https://cdn-icons-png.flaticon.com/512/1946/1946488.png";
       headerStyle = "clean";
       color = "gray"; # Required for Catppuccin theme

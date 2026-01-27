@@ -9,7 +9,7 @@
 {
   imports = [
     ./hardware.nix
-    ./services
+    ./lab
 
     inputs.disko.nixosModules.disko
     flake.nixosModules.minimal
