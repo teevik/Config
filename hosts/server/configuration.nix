@@ -119,8 +119,7 @@ in
     ldapPort = config.shb.lldap.ldapPort;
     dcdomain = config.shb.lldap.dcdomain;
 
-    # Use filesystem for notifications (no SMTP setup needed initially)
-    smtp = "/var/lib/authelia-notifications";
+    # smtp = { ... }; # Configure SMTP later for real email notifications
 
     secrets = {
       jwtSecret.result = config.shb.sops.secret."authelia/jwt_secret".result;
