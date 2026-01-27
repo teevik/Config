@@ -15,6 +15,12 @@
     flake.nixosModules.laptop
   ];
 
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:teevik/Config";
+    allowReboot = true;
+  };
+
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "server";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
