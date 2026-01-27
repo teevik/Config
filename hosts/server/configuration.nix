@@ -74,7 +74,6 @@ in
       "chat.${domain}"
       "grafana.${domain}"
       "uptime.${domain}"
-      "homepage.${domain}"
     ];
     dnsProvider = "cloudflare";
     dnsResolver = "1.1.1.1:53";
@@ -231,15 +230,59 @@ in
   environment.etc."grafana-dashboards/node-exporter-full.json".source =
     ./dashboards/node-exporter-full.json;
 
-  # Uptime Kuma (Service Status Monitoring)
-  services.uptime-kuma = {
+  # Gatus (Service Status Monitoring) - Declarative uptime monitoring
+  services.gatus = {
     enable = true;
     settings = {
-      PORT = "3010"; # Avoid conflict with Prometheus (3001)
+      web.port = 3010;
+
+      # Persistent storage for uptime history
+      storage = {
+        type = "sqlite";
+        path = "/var/lib/gatus/data.db";
+      };
+
+      endpoints = [
+        {
+          name = "Open WebUI";
+          group = "Services";
+          url = "https://chat.${domain}";
+          interval = "5m";
+          conditions = [ "[STATUS] == 200" ];
+        }
+        {
+          name = "LLDAP";
+          group = "Services";
+          url = "https://ldap.${domain}";
+          interval = "5m";
+          conditions = [ "[STATUS] == 200" ];
+        }
+        {
+          name = "Authelia";
+          group = "Services";
+          url = "https://auth.${domain}";
+          interval = "5m";
+          conditions = [ "[STATUS] == 200" ];
+        }
+        {
+          name = "Grafana";
+          group = "Monitoring";
+          url = "https://grafana.${domain}";
+          interval = "5m";
+          conditions = [ "[STATUS] == 200" ];
+        }
+        {
+          name = "Homepage";
+          group = "Services";
+          url = "https://${domain}";
+          interval = "5m";
+          conditions = [ "[STATUS] == 200" ];
+        }
+      ];
     };
   };
 
-  # Nginx reverse proxy for Uptime Kuma with SSL and Authelia protection
+  # Nginx reverse proxy for Gatus with SSL
   services.nginx.virtualHosts."uptime.${domain}" = {
     forceSSL = true;
     sslCertificate = config.shb.certs.certs.letsencrypt.${domain}.paths.cert;
@@ -253,7 +296,6 @@ in
 
     locations."/" = {
       proxyPass = "http://127.0.0.1:3010";
-      proxyWebsockets = true;
       extraConfig = ''
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -267,7 +309,7 @@ in
   services.homepage-dashboard = {
     enable = true;
     listenPort = 8082;
-    allowedHosts = "homepage.${domain}";
+    allowedHosts = domain;
 
     settings = {
       title = "lab.teevik.no";
@@ -337,8 +379,8 @@ in
             };
           }
           {
-            "Uptime Kuma" = {
-              icon = "uptime-kuma";
+            "Gatus" = {
+              icon = "gatus";
               href = "https://uptime.${domain}";
               description = "Service Status";
             };
@@ -349,7 +391,7 @@ in
   };
 
   # Nginx reverse proxy for Homepage Dashboard with SSL
-  services.nginx.virtualHosts."homepage.${domain}" = {
+  services.nginx.virtualHosts.${domain} = {
     forceSSL = true;
     sslCertificate = config.shb.certs.certs.letsencrypt.${domain}.paths.cert;
     sslCertificateKey = config.shb.certs.certs.letsencrypt.${domain}.paths.key;
