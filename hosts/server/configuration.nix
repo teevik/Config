@@ -300,7 +300,7 @@ in
             }
             {
               "LLDAP" = {
-                icon = "lldap"; # No Catppuccin icon available
+                icon = "lldap-dark";
                 href = "https://ldap.${domain}";
                 description = "User Management";
                 siteMonitor = "http://127.0.0.1:17170"; # SHB default port
@@ -323,7 +323,7 @@ in
                 icon = catppuccinIcon "grafana.png";
                 href = "https://grafana.${domain}";
                 description = "Metrics & Dashboards";
-                siteMonitor = "http://127.0.0.1:3000"; # Grafana default port
+                siteMonitor = "http://127.0.0.1:3000/api/health"; # Grafana health endpoint
               };
             }
           ];
