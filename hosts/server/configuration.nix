@@ -151,6 +151,12 @@
             model = "anthropic/claude-sonnet-4-5";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 16000;
+            };
+            max_tokens = 64000;
+            merge_reasoning_content_in_choices = true;
           };
         }
         {
@@ -159,6 +165,12 @@
             model = "anthropic/claude-opus-4-5";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 16000;
+            };
+            max_tokens = 64000;
+            merge_reasoning_content_in_choices = true;
           };
         }
         {
@@ -167,6 +179,12 @@
             model = "anthropic/claude-opus-4-1";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 16000;
+            };
+            max_tokens = 32000;
+            merge_reasoning_content_in_choices = true;
           };
         }
         {
@@ -175,6 +193,12 @@
             model = "anthropic/claude-sonnet-4";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 16000;
+            };
+            max_tokens = 64000;
+            merge_reasoning_content_in_choices = true;
           };
         }
         {
@@ -183,6 +207,12 @@
             model = "anthropic/claude-haiku-4-5";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 8192;
+            };
+            max_tokens = 64000;
+            merge_reasoning_content_in_choices = true;
           };
         }
         {
@@ -259,6 +289,12 @@
             model = "openai/big-pickle";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen/v1";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 8192;
+            };
+            max_tokens = 128000;
+            merge_reasoning_content_in_choices = true;
           };
         }
 
@@ -269,6 +305,12 @@
             model = "gemini/gemini-3-pro";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen/v1";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 16000;
+            };
+            max_tokens = 65536;
+            merge_reasoning_content_in_choices = true;
           };
         }
         {
@@ -277,6 +319,12 @@
             model = "gemini/gemini-3-flash";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
             api_base = "https://opencode.ai/zen/v1";
+            thinking = {
+              type = "enabled";
+              budget_tokens = 8192;
+            };
+            max_tokens = 65536;
+            merge_reasoning_content_in_choices = true;
           };
         }
       ];
