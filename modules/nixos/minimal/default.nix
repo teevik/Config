@@ -19,7 +19,6 @@ in
 
   config = {
     documentation.man.generateCaches = false;
-    home-manager.backupFileExtension = "backup";
 
     # nixpkgs.overlays = [
     #   (final: prev: {

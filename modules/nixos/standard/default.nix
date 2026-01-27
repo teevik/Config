@@ -18,6 +18,8 @@
     ./tailscale.nix
   ];
 
+  home-manager.backupFileExtension = "backup";
+
   nix = {
     extraOptions = ''
       !include ${config.age.secrets.nix-access-tokens-github.path}
