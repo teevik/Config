@@ -73,7 +73,6 @@ in
       "auth.${domain}"
       "chat.${domain}"
       "grafana.${domain}"
-      "uptime.${domain}"
     ];
     dnsProvider = "cloudflare";
     dnsResolver = "1.1.1.1:53";
@@ -230,81 +229,6 @@ in
   environment.etc."grafana-dashboards/node-exporter-full.json".source =
     ./dashboards/node-exporter-full.json;
 
-  # Gatus (Service Status Monitoring) - Declarative uptime monitoring
-  services.gatus = {
-    enable = true;
-    settings = {
-      web.port = 3010;
-
-      # Persistent storage for uptime history
-      storage = {
-        type = "sqlite";
-        path = "/var/lib/gatus/data.db";
-      };
-
-      endpoints = [
-        {
-          name = "Open WebUI";
-          group = "Services";
-          url = "https://chat.${domain}";
-          interval = "5m";
-          conditions = [ "[STATUS] == 200" ];
-        }
-        {
-          name = "LLDAP";
-          group = "Services";
-          url = "https://ldap.${domain}";
-          interval = "5m";
-          conditions = [ "[STATUS] == 200" ];
-        }
-        {
-          name = "Authelia";
-          group = "Services";
-          url = "https://auth.${domain}";
-          interval = "5m";
-          conditions = [ "[STATUS] == 200" ];
-        }
-        {
-          name = "Grafana";
-          group = "Monitoring";
-          url = "https://grafana.${domain}";
-          interval = "5m";
-          conditions = [ "[STATUS] == 200" ];
-        }
-        {
-          name = "Homepage";
-          group = "Services";
-          url = "https://${domain}";
-          interval = "5m";
-          conditions = [ "[STATUS] == 200" ];
-        }
-      ];
-    };
-  };
-
-  # Nginx reverse proxy for Gatus with SSL
-  services.nginx.virtualHosts."uptime.${domain}" = {
-    forceSSL = true;
-    sslCertificate = config.shb.certs.certs.letsencrypt.${domain}.paths.cert;
-    sslCertificateKey = config.shb.certs.certs.letsencrypt.${domain}.paths.key;
-
-    # Restrict to Tailscale network
-    extraConfig = ''
-      allow 100.64.0.0/10;
-      deny all;
-    '';
-
-    locations."/" = {
-      proxyPass = "http://127.0.0.1:3010";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
-  };
-
   # Homepage Dashboard
   services.homepage-dashboard = {
     enable = true;
@@ -324,7 +248,7 @@ in
         };
         Monitoring = {
           style = "row";
-          columns = 2;
+          columns = 1;
         };
       };
     };
