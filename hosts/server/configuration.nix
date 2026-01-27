@@ -72,6 +72,7 @@ in
       "ldap.${domain}"
       "auth.${domain}"
       "chat.${domain}"
+      "grafana.${domain}"
     ];
     dnsProvider = "cloudflare";
     dnsResolver = "1.1.1.1:53";
@@ -101,6 +102,8 @@ in
     ensureGroups = {
       open-webui_user = { };
       open-webui_admin = { };
+      monitoring_user = { };
+      monitoring_admin = { };
     };
   };
 
@@ -176,6 +179,55 @@ in
     request = config.shb.open-webui.sso.sharedSecretForAuthelia.request;
     settings.key = "open-webui/oidc_secret"; # Same secret, different permissions
   };
+
+  # Monitoring (Grafana, Prometheus, Loki)
+  shb.monitoring = {
+    enable = true;
+    subdomain = "grafana";
+    inherit domain;
+
+    ssl = config.shb.certs.certs.letsencrypt.${domain};
+
+    # Admin password for initial setup
+    adminPassword.result = config.shb.sops.secret."monitoring/admin_password".result;
+    secretKey.result = config.shb.sops.secret."monitoring/secret_key".result;
+
+    # SSO integration with Authelia
+    sso = {
+      enable = true;
+      authEndpoint = "https://${config.shb.authelia.subdomain}.${config.shb.authelia.domain}";
+
+      sharedSecret.result = config.shb.sops.secret."monitoring/oidc_secret".result;
+      sharedSecretForAuthelia.result = config.shb.sops.secret."monitoring/oidc_secret_authelia".result;
+    };
+  };
+
+  # Wire up Monitoring secrets via shb.sops
+  shb.sops.secret."monitoring/admin_password".request = config.shb.monitoring.adminPassword.request;
+  shb.sops.secret."monitoring/secret_key".request = config.shb.monitoring.secretKey.request;
+  shb.sops.secret."monitoring/oidc_secret".request = config.shb.monitoring.sso.sharedSecret.request;
+  shb.sops.secret."monitoring/oidc_secret_authelia" = {
+    request = config.shb.monitoring.sso.sharedSecretForAuthelia.request;
+    settings.key = "monitoring/oidc_secret"; # Same secret, different permissions
+  };
+
+  # Grafana Home Dashboard (Node Exporter Full)
+  services.grafana.provision.dashboards.settings.providers = [
+    {
+      name = "home";
+      orgId = 1;
+      folder = "";
+      type = "file";
+      disableDeletion = true;
+      options.path = "/etc/grafana-dashboards";
+    }
+  ];
+
+  services.grafana.settings.dashboards.default_home_dashboard_path =
+    "/etc/grafana-dashboards/node-exporter-full.json";
+
+  environment.etc."grafana-dashboards/node-exporter-full.json".source =
+    ./dashboards/node-exporter-full.json;
 
   # DNS (dnsmasq for Tailscale)
   services.dnsmasq = {
