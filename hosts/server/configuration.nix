@@ -73,6 +73,8 @@ in
       "auth.${domain}"
       "chat.${domain}"
       "grafana.${domain}"
+      "uptime.${domain}"
+      "homepage.${domain}"
     ];
     dnsProvider = "cloudflare";
     dnsResolver = "1.1.1.1:53";
@@ -228,6 +230,146 @@ in
 
   environment.etc."grafana-dashboards/node-exporter-full.json".source =
     ./dashboards/node-exporter-full.json;
+
+  # Uptime Kuma (Service Status Monitoring)
+  services.uptime-kuma = {
+    enable = true;
+    settings = {
+      PORT = "3010"; # Avoid conflict with Prometheus (3001)
+    };
+  };
+
+  # Nginx reverse proxy for Uptime Kuma with SSL and Authelia protection
+  services.nginx.virtualHosts."uptime.${domain}" = {
+    forceSSL = true;
+    sslCertificate = config.shb.certs.certs.letsencrypt.${domain}.paths.cert;
+    sslCertificateKey = config.shb.certs.certs.letsencrypt.${domain}.paths.key;
+
+    # Restrict to Tailscale network
+    extraConfig = ''
+      allow 100.64.0.0/10;
+      deny all;
+    '';
+
+    locations."/" = {
+      proxyPass = "http://127.0.0.1:3010";
+      proxyWebsockets = true;
+      extraConfig = ''
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+      '';
+    };
+  };
+
+  # Homepage Dashboard
+  services.homepage-dashboard = {
+    enable = true;
+    listenPort = 8082;
+    allowedHosts = "homepage.${domain}";
+
+    settings = {
+      title = "lab.teevik.no";
+      favicon = "https://cdn-icons-png.flaticon.com/512/1946/1946488.png";
+      headerStyle = "clean";
+      layout = {
+        Services = {
+          style = "row";
+          columns = 3;
+        };
+        Monitoring = {
+          style = "row";
+          columns = 2;
+        };
+      };
+    };
+
+    widgets = [
+      {
+        resources = {
+          cpu = true;
+          memory = true;
+          disk = "/";
+        };
+      }
+      {
+        search = {
+          provider = "duckduckgo";
+          target = "_blank";
+        };
+      }
+    ];
+
+    services = [
+      {
+        Services = [
+          {
+            "Open WebUI" = {
+              icon = "open-webui";
+              href = "https://chat.${domain}";
+              description = "AI Chat Interface";
+            };
+          }
+          {
+            "LLDAP" = {
+              icon = "lldap";
+              href = "https://ldap.${domain}";
+              description = "User Management";
+            };
+          }
+          {
+            "Authelia" = {
+              icon = "authelia";
+              href = "https://auth.${domain}";
+              description = "Single Sign-On";
+            };
+          }
+        ];
+      }
+      {
+        Monitoring = [
+          {
+            "Grafana" = {
+              icon = "grafana";
+              href = "https://grafana.${domain}";
+              description = "Metrics & Dashboards";
+            };
+          }
+          {
+            "Uptime Kuma" = {
+              icon = "uptime-kuma";
+              href = "https://uptime.${domain}";
+              description = "Service Status";
+            };
+          }
+        ];
+      }
+    ];
+  };
+
+  # Nginx reverse proxy for Homepage Dashboard with SSL
+  services.nginx.virtualHosts."homepage.${domain}" = {
+    forceSSL = true;
+    sslCertificate = config.shb.certs.certs.letsencrypt.${domain}.paths.cert;
+    sslCertificateKey = config.shb.certs.certs.letsencrypt.${domain}.paths.key;
+
+    # Restrict to Tailscale network
+    extraConfig = ''
+      allow 100.64.0.0/10;
+      deny all;
+    '';
+
+    locations."/" = {
+      proxyPass = "http://127.0.0.1:8082";
+      extraConfig = ''
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+      '';
+    };
+  };
 
   # DNS (dnsmasq for Tailscale)
   services.dnsmasq = {
