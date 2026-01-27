@@ -39,8 +39,15 @@
       url = "github:DreamMaoMao/mangowc";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Uses patched nixpkgs via hosts/server/default.nix escape hatch
-    selfhostblocks.url = "github:ibizaman/selfhostblocks";
+    selfhostblocks = {
+      # Uses patched nixpkgs via hosts/server/default.nix escape hatch
+      url = "github:ibizaman/selfhostblocks";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Packages
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";

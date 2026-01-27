@@ -8,9 +8,13 @@ install TARGET-IP HOST:
     root@{{TARGET-IP}}
 
   # Copy ssh keys over
-  ssh teevik@{{TARGET-IP}} "mkdir /mnt/home/teevik/.ssh"
+  ssh teevik@{{TARGET-IP}} "mkdir -p /mnt/home/teevik/.ssh"
   scp /home/teevik/.ssh/id_rsa teevik@{{TARGET-IP}}:/mnt/home/teevik/.ssh/id_rsa
   scp /home/teevik/.ssh/id_rsa.pub teevik@{{TARGET-IP}}:/mnt/home/teevik/.ssh/id_rsa.pub
+
+  # Copy sops age key for secret decryption
+  ssh teevik@{{TARGET-IP}} "mkdir -p /mnt/home/teevik/.config/sops/age"
+  scp /home/teevik/.config/sops/age/keys.txt teevik@{{TARGET-IP}}:/mnt/home/teevik/.config/sops/age/keys.txt
 
   # Clone config repo
   ssh teevik@{{TARGET-IP}} "mkdir /mnt/home/teevik/Documents"

@@ -41,7 +41,16 @@ in
     inherit system specialArgs;
     modules = [
       # Self Host Blocks modules
-      inputs.selfhostblocks.nixosModules.default
+      inputs.selfhostblocks.nixosModules.ssl
+      inputs.selfhostblocks.nixosModules.nginx
+      inputs.selfhostblocks.nixosModules.postgresql
+      inputs.selfhostblocks.nixosModules.lldap
+      inputs.selfhostblocks.nixosModules.authelia
+      inputs.selfhostblocks.nixosModules.open-webui
+      inputs.selfhostblocks.nixosModules.sops
+
+      # sops-nix for secret management
+      inputs.sops-nix.nixosModules.sops
 
       # Home Manager integration
       inputs.home-manager.nixosModules.default

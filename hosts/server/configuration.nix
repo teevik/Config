@@ -6,6 +6,9 @@
   config,
   ...
 }:
+let
+  domain = "lab.teevik.no";
+in
 {
   imports = [
     ./hardware.nix
@@ -29,23 +32,14 @@
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
 
   # Disable the lid switch
-  services.logind.lidSwitch = "ignore";
-
-  # # Docker registry
-  # services.dockerRegistry = {
-  #   enable = true;
-
-  #   enableDelete = true;
-  #   enableGarbageCollect = true;
-  #   listenAddress = "0.0.0.0";
-  # };
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
 
   # Acceleration
   boot.kernelParams = [
     "i915.enable_guc=2"
   ];
 
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
 
     extraPackages = with pkgs; [
@@ -57,62 +51,133 @@
     ];
   };
 
-  security.acme = {
-    acceptTerms = true;
-    defaults.email = "teemuvikoren1@gmail.com";
+  # SOPS Secrets Configuration
+  sops = {
+    defaultSopsFile = ./secrets.yaml;
+    age.keyFile = "/home/teevik/.config/sops/age/keys.txt";
 
-    certs."lab.teevik.no" = {
-      domain = "*.lab.teevik.no";
-      extraDomainNames = [ "lab.teevik.no" ];
-      dnsProvider = "cloudflare";
-      dnsResolver = "1.1.1.1:53";
-      environmentFile = config.age.secrets.cloudflare.path;
+    secrets = {
+      # Cloudflare DNS credentials for Let's Encrypt (CF_DNS_API_TOKEN=xxx)
+      "cloudflare/api_token" = { };
+
+      # LiteLLM environment (OPENCODE_ZEN_API_KEY=xxx)
+      "litellm/env" = { };
     };
   };
 
-  services.nginx = {
-    enable = true;
-    recommendedTlsSettings = true;
-    recommendedProxySettings = true;
-    recommendedGzipSettings = true;
-    recommendedOptimisation = true;
-
-    # Catch-all that returns 404 for undefined subdomains
-    virtualHosts."_" = {
-      default = true;
-      forceSSL = true;
-      useACMEHost = "lab.teevik.no";
-      locations."/".return = "404";
-    };
-
-    # open-webui
-    virtualHosts."chat.lab.teevik.no" = {
-      forceSSL = true;
-      useACMEHost = "lab.teevik.no";
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:8080";
-        proxyWebsockets = true;
-        extraConfig = ''
-          proxy_buffering off;
-          proxy_read_timeout 300s;
-          proxy_connect_timeout 300s;
-          proxy_send_timeout 300s;
-        '';
-      };
-    };
-  };
-
-  # Allow nginx to read ACME certificates
-  users.users.nginx.extraGroups = [ "acme" ];
-
-  # Open firewall for HTTPS (only on Tailscale interface)
-  networking.firewall.interfaces."tailscale0" = {
-    allowedTCPPorts = [
-      80
-      443
+  # SSL Certificates (Let's Encrypt)
+  shb.certs.certs.letsencrypt.${domain} = {
+    inherit domain;
+    extraDomains = [
+      "ldap.${domain}"
+      "auth.${domain}"
+      "chat.${domain}"
     ];
+    dnsProvider = "cloudflare";
+    dnsResolver = "1.1.1.1:53";
+    credentialsFile = config.sops.secrets."cloudflare/api_token".path;
+    adminEmail = "teemuvikoren1@gmail.com";
+    group = "nginx";
+    reloadServices = [ "nginx.service" ];
   };
 
+  # LLDAP (User Management)
+  shb.lldap = {
+    enable = true;
+    subdomain = "ldap";
+    inherit domain;
+    dcdomain = "dc=lab,dc=teevik,dc=no";
+
+    ssl = config.shb.certs.certs.letsencrypt.${domain};
+
+    # Use shb.sops for contract-based secrets
+    jwtSecret.result = config.shb.sops.secret."lldap/jwt_secret".result;
+    ldapUserPassword.result = config.shb.sops.secret."lldap/user_password".result;
+
+    # Restrict LLDAP UI access to Tailscale network
+    restrictAccessIPRange = "100.64.0.0/10";
+
+    # Define groups for services
+    ensureGroups = {
+      open-webui_user = { };
+      open-webui_admin = { };
+    };
+  };
+
+  # Wire up LLDAP secrets via shb.sops
+  shb.sops.secret."lldap/jwt_secret".request = config.shb.lldap.jwtSecret.request;
+  shb.sops.secret."lldap/user_password".request = config.shb.lldap.ldapUserPassword.request;
+
+  # Authelia (SSO/Authentication)
+  shb.authelia = {
+    enable = true;
+    subdomain = "auth";
+    inherit domain;
+    ssl = config.shb.certs.certs.letsencrypt.${domain};
+
+    ldapHostname = "127.0.0.1";
+    ldapPort = config.shb.lldap.ldapPort;
+    dcdomain = config.shb.lldap.dcdomain;
+
+    # Use filesystem for notifications (no SMTP setup needed initially)
+    smtp = "/var/lib/authelia-notifications";
+
+    secrets = {
+      jwtSecret.result = config.shb.sops.secret."authelia/jwt_secret".result;
+      ldapAdminPassword.result = config.shb.sops.secret."authelia/ldap_admin_password".result;
+      sessionSecret.result = config.shb.sops.secret."authelia/session_secret".result;
+      storageEncryptionKey.result = config.shb.sops.secret."authelia/storage_encryption_key".result;
+      identityProvidersOIDCHMACSecret.result = config.shb.sops.secret."authelia/hmac_secret".result;
+      identityProvidersOIDCIssuerPrivateKey.result = config.shb.sops.secret."authelia/private_key".result;
+    };
+  };
+
+  # Wire up Authelia secrets via shb.sops
+  shb.sops.secret."authelia/jwt_secret".request = config.shb.authelia.secrets.jwtSecret.request;
+  shb.sops.secret."authelia/ldap_admin_password" = {
+    request = config.shb.authelia.secrets.ldapAdminPassword.request;
+    settings.key = "lldap/user_password"; # Reuse LLDAP admin password
+  };
+  shb.sops.secret."authelia/session_secret".request =
+    config.shb.authelia.secrets.sessionSecret.request;
+  shb.sops.secret."authelia/storage_encryption_key".request =
+    config.shb.authelia.secrets.storageEncryptionKey.request;
+  shb.sops.secret."authelia/hmac_secret".request =
+    config.shb.authelia.secrets.identityProvidersOIDCHMACSecret.request;
+  shb.sops.secret."authelia/private_key".request =
+    config.shb.authelia.secrets.identityProvidersOIDCIssuerPrivateKey.request;
+
+  # Open-WebUI with SSO
+  shb.open-webui = {
+    enable = true;
+    inherit domain;
+    subdomain = "chat";
+
+    ssl = config.shb.certs.certs.letsencrypt.${domain};
+
+    sso = {
+      enable = true;
+      authEndpoint = "https://${config.shb.authelia.subdomain}.${config.shb.authelia.domain}";
+
+      sharedSecret.result = config.shb.sops.secret."open-webui/oidc_secret".result;
+      sharedSecretForAuthelia.result = config.shb.sops.secret."open-webui/oidc_secret_authelia".result;
+    };
+
+    # Connect to LiteLLM proxy
+    environment = {
+      OPENAI_API_BASE_URL = "http://127.0.0.1:4000/v1";
+      OPENAI_API_KEY = "dummy"; # LiteLLM doesn't require auth by default
+    };
+  };
+
+  # Wire up Open-WebUI secrets via shb.sops
+  shb.sops.secret."open-webui/oidc_secret".request = config.shb.open-webui.sso.sharedSecret.request;
+  shb.sops.secret."open-webui/oidc_secret_authelia" = {
+    request = config.shb.open-webui.sso.sharedSecretForAuthelia.request;
+    settings.key = "open-webui/oidc_secret"; # Same secret, different permissions
+  };
+
+  # DNS (dnsmasq for Tailscale)
   services.dnsmasq = {
     enable = true;
     settings = {
@@ -139,12 +204,11 @@
     enable = true;
     host = "127.0.0.1";
     port = 4000;
-    environmentFile = config.age.secrets.opencode-zen.path;
+    environmentFile = config.sops.secrets."litellm/env".path;
 
     settings = {
       model_list = [
         # Claude models via OpenCode Zen (Anthropic Messages API)
-        # LiteLLM auto-appends /v1/messages, so base should be https://opencode.ai/zen
         {
           model_name = "Claude Sonnet 4.5";
           litellm_params = {
@@ -224,7 +288,7 @@
           };
         }
 
-        # GPT models via OpenCode Zen (OpenAI Responses API)
+        # GPT models via OpenCode Zen
         {
           model_name = "GPT 5.2";
           litellm_params = {
@@ -266,7 +330,7 @@
           };
         }
 
-        # OpenAI-compatible models (chat/completions)
+        # OpenAI-compatible models
         {
           model_name = "Kimi K2";
           litellm_params = {
@@ -328,18 +392,6 @@
           };
         }
       ];
-    };
-  };
-
-  # OpenWebUI pointing to LiteLLM
-  services.open-webui = {
-    enable = true;
-    host = "0.0.0.0";
-    port = 8080;
-    environment = {
-      OPENAI_API_BASE_URL = "http://127.0.0.1:4000/v1";
-      OPENAI_API_KEY = "dummy"; # LiteLLM doesn't require auth by default
-      # TODO: Declarative MCPs
     };
   };
 
