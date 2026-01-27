@@ -148,6 +148,7 @@ in
 
   # Open-WebUI with SSO
   shb.open-webui = {
+    # TODO: declarative mcps if possible
     enable = true;
     inherit domain;
     subdomain = "chat";
@@ -165,7 +166,7 @@ in
     # Connect to LiteLLM proxy
     environment = {
       OPENAI_API_BASE_URL = "http://127.0.0.1:4000/v1";
-      OPENAI_API_KEY = "dummy"; # LiteLLM doesn't require auth by default
+      OPENAI_API_KEY = "dummy";
     };
   };
 
