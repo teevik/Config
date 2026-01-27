@@ -46,6 +46,17 @@ $env.config = {
 
 alias zed = zeditor
 
+$env.PROMPT_COMMAND = {||
+  let path = ($env.PWD | str replace $env.HOME '~')
+  let ssh_prefix = if ($env.SSH_CONNECTION? | is-not-empty) {
+    let hostname = (hostname | str trim)
+    $"(ansi magenta_bold)\(($hostname)\)(ansi reset) "
+  } else {
+    ""
+  }
+  $"($ssh_prefix)(ansi green)($path)(ansi reset)"
+}
+
 def with-clean-term [cmd: string, ...args] {
     kitty @ set-spacing padding=0
     kitty @ set-background-opacity 1
@@ -54,7 +65,7 @@ def with-clean-term [cmd: string, ...args] {
         ^$cmd ...$args
     }
 
-    kitty @ set-spacing padding=default  
+    kitty @ set-spacing padding=default
     kitty @ set-background-opacity 0.5
 }
 
