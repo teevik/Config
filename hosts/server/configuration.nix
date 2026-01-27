@@ -57,6 +57,83 @@
     ];
   };
 
+  security.acme = {
+    acceptTerms = true;
+    defaults.email = "teemuvikoren1@gmail.com";
+
+    certs."lab.teevik.no" = {
+      domain = "*.lab.teevik.no";
+      extraDomainNames = [ "lab.teevik.no" ];
+      dnsProvider = "cloudflare";
+      dnsResolver = "1.1.1.1:53";
+      environmentFile = config.age.secrets.cloudflare.path;
+    };
+  };
+
+  services.nginx = {
+    enable = true;
+    recommendedTlsSettings = true;
+    recommendedProxySettings = true;
+    recommendedGzipSettings = true;
+    recommendedOptimisation = true;
+
+    # Catch-all that returns 404 for undefined subdomains
+    virtualHosts."_" = {
+      default = true;
+      forceSSL = true;
+      useACMEHost = "lab.teevik.no";
+      locations."/".return = "404";
+    };
+
+    # open-webui
+    virtualHosts."chat.lab.teevik.no" = {
+      forceSSL = true;
+      useACMEHost = "lab.teevik.no";
+      locations."/" = {
+        proxyPass = "http://127.0.0.1:8080";
+        proxyWebsockets = true;
+        extraConfig = ''
+          proxy_buffering off;
+          proxy_read_timeout 300s;
+          proxy_connect_timeout 300s;
+          proxy_send_timeout 300s;
+        '';
+      };
+    };
+  };
+
+  # Allow nginx to read ACME certificates
+  users.users.nginx.extraGroups = [ "acme" ];
+
+  # Open firewall for HTTPS (only on Tailscale interface)
+  networking.firewall.interfaces."tailscale0" = {
+    allowedTCPPorts = [
+      80
+      443
+    ];
+  };
+
+  services.dnsmasq = {
+    enable = true;
+    settings = {
+      # Resolve *.lab.teevik.no to this server's Tailscale IP
+      address = "/lab.teevik.no/100.65.233.122";
+
+      # Forward other DNS queries upstream
+      server = [
+        "1.1.1.1"
+        "8.8.8.8"
+      ];
+
+      # Only listen on Tailscale interface
+      interface = "tailscale0";
+      bind-interfaces = true;
+
+      # Don't read /etc/resolv.conf
+      no-resolv = true;
+    };
+  };
+
   # LiteLLM Proxy for OpenCode Zen
   services.litellm = {
     enable = true;
@@ -214,6 +291,7 @@
     environment = {
       OPENAI_API_BASE_URL = "http://127.0.0.1:4000/v1";
       OPENAI_API_KEY = "dummy"; # LiteLLM doesn't require auth by default
+      # TODO: Declarative MCPs
     };
   };
 

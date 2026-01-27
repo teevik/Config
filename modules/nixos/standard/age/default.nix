@@ -24,6 +24,7 @@
         wakatime.owner = "teevik";
         wakatime.path = "/home/teevik/.wakatime.cfg";
         opencode-zen.file = ./opencode-zen.age;
+        cloudflare.file = ./cloudflare.age;
       };
     };
   };

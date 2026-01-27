@@ -12,4 +12,5 @@ in
   "supermemory-api-key.age".publicKeys = publicKeys;
   "wakatime.age".publicKeys = publicKeys;
   "opencode-zen.age".publicKeys = publicKeys;
+  "cloudflare.age".publicKeys = publicKeys;
 }
