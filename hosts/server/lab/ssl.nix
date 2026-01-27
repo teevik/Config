@@ -1,18 +1,14 @@
 # SSL Certificates (Let's Encrypt via Cloudflare DNS challenge)
-# Automatically collects subdomains from lab.services
-{ lib, config, ... }:
+# Wildcard certificate covers all subdomains
+{ config, ... }:
 let
-  inherit (config.lab) domain services;
-
-  # Collect all subdomains from registered services
-  subdomains = lib.filter (s: s != null) (lib.mapAttrsToList (_: svc: svc.subdomain) services);
-
-  # Convert to full domain names
-  extraDomains = map (sub: "${sub}.${domain}") subdomains;
+  inherit (config.lab) domain;
 in
 {
   shb.certs.certs.letsencrypt.${domain} = {
-    inherit domain extraDomains;
+    inherit domain;
+    # Wildcard covers all *.lab.teevik.no subdomains
+    extraDomains = [ "*.${domain}" ];
     dnsProvider = "cloudflare";
     dnsResolver = "1.1.1.1:53";
     credentialsFile = config.sops.secrets."cloudflare/api_token".path;

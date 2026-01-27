@@ -88,6 +88,7 @@ in
   imports = [
     ./ssl.nix
     ./dns.nix
+    ./catch-all.nix
     ../services
   ];
 
