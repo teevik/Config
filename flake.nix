@@ -31,14 +31,15 @@
     agenix.url = "https://flakehub.com/f/ryantm/agenix/0.15.tar.gz";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko.url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
-    # marble.url = "git+ssh://git@github.com/teevik/marble-shell.git";
-    marble.url = "path:./marble-shell";
+    marble.url = "git+ssh://git@github.com/teevik/marble-shell.git";
+    # marble.url = "path:./marble-shell";
     automatic-sunset.url = "github:teevik/automatic-sunset";
     niri.url = "github:sodiboo/niri-flake";
     mango = {
       url = "github:DreamMaoMao/mangowc";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    selfhostblocks.url = "github:ibizaman/selfhostblocks";
 
     # Packages
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
