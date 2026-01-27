@@ -39,8 +39,8 @@
       url = "github:DreamMaoMao/mangowc";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # TODO: Use when it doesnt need patched nixpkgs
-    # selfhostblocks.url = "github:ibizaman/selfhostblocks";
+    # Uses patched nixpkgs via hosts/server/default.nix escape hatch
+    selfhostblocks.url = "github:ibizaman/selfhostblocks";
 
     # Packages
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
