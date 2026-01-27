@@ -7,7 +7,7 @@
 }:
 {
   imports = [
-   ./hardware.nix
+    ./hardware.nix
 
     inputs.disko.nixosModules.disko
     flake.nixosModules.minimal
@@ -24,14 +24,14 @@
   # Disable the lid switch
   services.logind.lidSwitch = "ignore";
 
-  # Docker registry
-  services.dockerRegistry = {
-    enable = true;
+  # # Docker registry
+  # services.dockerRegistry = {
+  #   enable = true;
 
-    enableDelete = true;
-    enableGarbageCollect = true;
-    listenAddress = "0.0.0.0";
-  };
+  #   enableDelete = true;
+  #   enableGarbageCollect = true;
+  #   listenAddress = "0.0.0.0";
+  # };
 
   # Acceleration
   boot.kernelParams = [
@@ -50,5 +50,5 @@
     ];
   };
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.11";
 }
