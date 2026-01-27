@@ -165,7 +165,6 @@ in
     wrk
     # bruno
     gh
-    gitu
     nix-inspect
     xournalpp
     # azure-cli
