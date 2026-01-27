@@ -67,58 +67,59 @@
     settings = {
       model_list = [
         # Claude models via OpenCode Zen (Anthropic Messages API)
+        # LiteLLM auto-appends /v1/messages, so base should be https://opencode.ai/zen
         {
-          model_name = "claude-sonnet-4-5";
+          model_name = "Claude Sonnet 4.5";
           litellm_params = {
             model = "anthropic/claude-sonnet-4-5";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
-            api_base = "https://opencode.ai/zen/v1";
+            api_base = "https://opencode.ai/zen";
           };
         }
         {
-          model_name = "claude-opus-4-5";
+          model_name = "Claude Opus 4.5";
           litellm_params = {
             model = "anthropic/claude-opus-4-5";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
-            api_base = "https://opencode.ai/zen/v1";
+            api_base = "https://opencode.ai/zen";
           };
         }
         {
-          model_name = "claude-opus-4-1";
+          model_name = "Claude Opus 4.1";
           litellm_params = {
             model = "anthropic/claude-opus-4-1";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
-            api_base = "https://opencode.ai/zen/v1";
+            api_base = "https://opencode.ai/zen";
           };
         }
         {
-          model_name = "claude-sonnet-4";
+          model_name = "Claude Sonnet 4";
           litellm_params = {
             model = "anthropic/claude-sonnet-4";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
-            api_base = "https://opencode.ai/zen/v1";
+            api_base = "https://opencode.ai/zen";
           };
         }
         {
-          model_name = "claude-haiku-4-5";
+          model_name = "Claude Haiku 4.5";
           litellm_params = {
             model = "anthropic/claude-haiku-4-5";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
-            api_base = "https://opencode.ai/zen/v1";
+            api_base = "https://opencode.ai/zen";
           };
         }
         {
-          model_name = "claude-haiku-3-5";
+          model_name = "Claude Haiku 3.5";
           litellm_params = {
             model = "anthropic/claude-3-5-haiku";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
-            api_base = "https://opencode.ai/zen/v1";
+            api_base = "https://opencode.ai/zen";
           };
         }
 
         # GPT models via OpenCode Zen (OpenAI Responses API)
         {
-          model_name = "gpt-5.2";
+          model_name = "GPT 5.2";
           litellm_params = {
             model = "openai/gpt-5.2";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -126,7 +127,7 @@
           };
         }
         {
-          model_name = "gpt-5.2-codex";
+          model_name = "GPT 5.2 Codex";
           litellm_params = {
             model = "openai/gpt-5.2-codex";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -134,7 +135,7 @@
           };
         }
         {
-          model_name = "gpt-5.1";
+          model_name = "GPT 5.1";
           litellm_params = {
             model = "openai/gpt-5.1";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -142,7 +143,7 @@
           };
         }
         {
-          model_name = "gpt-5.1-codex";
+          model_name = "GPT 5.1 Codex";
           litellm_params = {
             model = "openai/gpt-5.1-codex";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -150,7 +151,7 @@
           };
         }
         {
-          model_name = "gpt-5-nano";
+          model_name = "GPT 5 Nano (Free)";
           litellm_params = {
             model = "openai/gpt-5-nano";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -160,7 +161,7 @@
 
         # OpenAI-compatible models (chat/completions)
         {
-          model_name = "kimi-k2";
+          model_name = "Kimi K2";
           litellm_params = {
             model = "openai/kimi-k2";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -168,7 +169,7 @@
           };
         }
         {
-          model_name = "qwen3-coder";
+          model_name = "Qwen3 Coder 480B";
           litellm_params = {
             model = "openai/qwen3-coder";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -176,7 +177,7 @@
           };
         }
         {
-          model_name = "big-pickle";
+          model_name = "Big Pickle (Free)";
           litellm_params = {
             model = "openai/big-pickle";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -186,7 +187,7 @@
 
         # Gemini models via OpenCode Zen
         {
-          model_name = "gemini-3-pro";
+          model_name = "Gemini 3 Pro";
           litellm_params = {
             model = "gemini/gemini-3-pro";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
@@ -194,7 +195,7 @@
           };
         }
         {
-          model_name = "gemini-3-flash";
+          model_name = "Gemini 3 Flash";
           litellm_params = {
             model = "gemini/gemini-3-flash";
             api_key = "os.environ/OPENCODE_ZEN_API_KEY";
