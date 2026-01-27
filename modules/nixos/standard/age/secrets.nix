@@ -11,4 +11,5 @@ in
   "eduroam-ca.age".publicKeys = publicKeys;
   "supermemory-api-key.age".publicKeys = publicKeys;
   "wakatime.age".publicKeys = publicKeys;
+  "opencode-zen.age".publicKeys = publicKeys;
 }
