@@ -315,6 +315,7 @@ in
       title = "lab.teevik.no";
       favicon = "https://cdn-icons-png.flaticon.com/512/1946/1946488.png";
       headerStyle = "clean";
+      color = "gray"; # Required for Catppuccin theme
       layout = {
         Services = {
           style = "row";
@@ -327,18 +328,20 @@ in
       };
     };
 
+    # Catppuccin theme from https://github.com/Jas-SinghFSU/homepage-catppuccin
+    customCSS = builtins.readFile (
+      pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/Jas-SinghFSU/homepage-catppuccin/main/custom.css";
+        hash = "sha256-82P0x/QV3WqJssw17b3mP6Brg5dkiKbJWCOs/m8y5B0=";
+      }
+    );
+
     widgets = [
       {
         resources = {
           cpu = true;
           memory = true;
           disk = "/";
-        };
-      }
-      {
-        search = {
-          provider = "duckduckgo";
-          target = "_blank";
         };
       }
     ];
