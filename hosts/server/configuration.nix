@@ -338,6 +338,25 @@ in
 
     widgets = [
       {
+        datetime = {
+          text_size = "xl";
+          format = {
+            dateStyle = "long";
+            timeStyle = "short";
+            hourCycle = "h23";
+          };
+        };
+      }
+      {
+        openmeteo = {
+          label = "Oslo";
+          latitude = 59.91;
+          longitude = 10.75;
+          units = "metric";
+          cache = 5;
+        };
+      }
+      {
         resources = {
           cpu = true;
           memory = true;
@@ -386,6 +405,10 @@ in
               icon = "gatus";
               href = "https://uptime.${domain}";
               description = "Service Status";
+              widget = {
+                type = "gatus";
+                url = "http://127.0.0.1:3010";
+              };
             };
           }
         ];
