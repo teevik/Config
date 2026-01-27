@@ -137,6 +137,16 @@ in
             api_base = "https://opencode.ai/zen";
           };
         }
+        # Claude Haiku 4.5 without thinking (for vision/image requests)
+        {
+          model_name = "Claude Haiku 4.5 Vision";
+          litellm_params = {
+            model = "anthropic/claude-haiku-4-5";
+            api_key = "os.environ/OPENCODE_ZEN_API_KEY";
+            api_base = "https://opencode.ai/zen";
+            max_tokens = 4096;
+          };
+        }
 
         # GPT models via OpenCode Zen
         {

@@ -47,6 +47,7 @@ in
       inputs.selfhostblocks.nixosModules.lldap
       inputs.selfhostblocks.nixosModules.authelia
       inputs.selfhostblocks.nixosModules.open-webui
+      inputs.selfhostblocks.nixosModules.karakeep
       inputs.selfhostblocks.nixosModules.sops
 
       # sops-nix for secret management
