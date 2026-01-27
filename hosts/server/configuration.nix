@@ -316,6 +316,7 @@ in
       favicon = "https://cdn-icons-png.flaticon.com/512/1946/1946488.png";
       headerStyle = "clean";
       color = "gray"; # Required for Catppuccin theme
+      statusStyle = "dot"; # Show status indicator (dot, basic, or full)
       layout = {
         Services = {
           style = "row";
@@ -348,15 +349,6 @@ in
         };
       }
       {
-        openmeteo = {
-          label = "Oslo";
-          latitude = 59.91;
-          longitude = 10.75;
-          units = "metric";
-          cache = 5;
-        };
-      }
-      {
         resources = {
           cpu = true;
           memory = true;
@@ -365,55 +357,54 @@ in
       }
     ];
 
-    services = [
-      {
-        Services = [
-          {
-            "Open WebUI" = {
-              icon = "open-webui";
-              href = "https://chat.${domain}";
-              description = "AI Chat Interface";
-            };
-          }
-          {
-            "LLDAP" = {
-              icon = "lldap";
-              href = "https://ldap.${domain}";
-              description = "User Management";
-            };
-          }
-          {
-            "Authelia" = {
-              icon = "authelia";
-              href = "https://auth.${domain}";
-              description = "Single Sign-On";
-            };
-          }
-        ];
-      }
-      {
-        Monitoring = [
-          {
-            "Grafana" = {
-              icon = "grafana";
-              href = "https://grafana.${domain}";
-              description = "Metrics & Dashboards";
-            };
-          }
-          {
-            "Gatus" = {
-              icon = "gatus";
-              href = "https://uptime.${domain}";
-              description = "Service Status";
-              widget = {
-                type = "gatus";
-                url = "http://127.0.0.1:3010";
+    services =
+      let
+        catppuccinIcon =
+          name:
+          "https://raw.githubusercontent.com/Jas-SinghFSU/homepage-catppuccin/main/catppuccin_icons/${name}";
+      in
+      [
+        {
+          Services = [
+            {
+              "Open WebUI" = {
+                icon = catppuccinIcon "open-webui.png";
+                href = "https://chat.${domain}";
+                description = "AI Chat Interface";
+                siteMonitor = "http://127.0.0.1:12444"; # SHB default port
               };
-            };
-          }
-        ];
-      }
-    ];
+            }
+            {
+              "LLDAP" = {
+                icon = "lldap"; # No Catppuccin icon available
+                href = "https://ldap.${domain}";
+                description = "User Management";
+                siteMonitor = "http://127.0.0.1:17170"; # SHB default port
+              };
+            }
+            {
+              "Authelia" = {
+                icon = catppuccinIcon "authelia.png";
+                href = "https://auth.${domain}";
+                description = "Single Sign-On";
+                siteMonitor = "http://127.0.0.1:9091"; # Authelia default port
+              };
+            }
+          ];
+        }
+        {
+          Monitoring = [
+            {
+              "Grafana" = {
+                icon = catppuccinIcon "grafana.png";
+                href = "https://grafana.${domain}";
+                description = "Metrics & Dashboards";
+                siteMonitor = "http://127.0.0.1:3000"; # Grafana default port
+              };
+            }
+          ];
+        }
+      ];
   };
 
   # Nginx reverse proxy for Homepage Dashboard with SSL
