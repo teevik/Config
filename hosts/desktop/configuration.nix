@@ -2,6 +2,8 @@
   flake,
   inputs,
   lib,
+  pkgs,
+  config,
   ...
 }:
 {
@@ -31,6 +33,23 @@
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
+
+  # GitHub Actions Runner
+  users.users.github-runner = {
+    isSystemUser = true;
+    group = "users";
+  };
+
+  services.github-runners.desktop = {
+    enable = true;
+    user = "github-runner";
+    name = "desktop";
+    extraLabels = [ "nixos" ];
+    url = "https://github.com/teevik/Config";
+    tokenFile = config.sops.secrets.github-runner-token.path;
+  };
+
+  nix.settings.trusted-users = [ "github-runner" ];
 
   programs.noisetorch.enable = true;
   powerManagement.cpuFreqGovernor = "performance";
