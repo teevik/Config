@@ -4,7 +4,8 @@
 }:
 {
   imports = [
-    ./age
+    ./age # Keep for manual secret migration
+    ./sops
     ./apps
     ./hyprland
     ./cachix.nix
@@ -20,7 +21,7 @@
 
   nix = {
     extraOptions = ''
-      !include ${config.age.secrets.nix-access-tokens-github.path}
+      !include ${config.sops.secrets.nix-access-tokens-github.path}
     '';
   };
 

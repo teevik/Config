@@ -1,9 +1,11 @@
-# Create/edit secrets: sops hosts/server/secrets.yaml
+# Create/edit secrets:
+#   sops hosts/server/secrets.yaml
+#   sops modules/nixos/standard/sops/secrets.yaml
 keys:
   - &teevik age1g4k4l7xkepejypfvx9p3xr9sqeu8u2u9a2m9xad25pdzkz8xj5eq6auyry
 
 creation_rules:
-  - path_regex: hosts/server/secrets\.yaml$
+  - path_regex: secrets\.yaml$
     key_groups:
       - age:
           - *teevik

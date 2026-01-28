@@ -14,10 +14,6 @@
         tailscale.file = ./tailscale.age;
         nix-access-tokens-github.file = ./nix-access-tokens-github.age;
         cachix.file = ./cachix.age;
-        eduroam.file = ./eduroam.age;
-        eduroam.path = "/var/lib/iwd/eduroam.8021x";
-        eduroam-ca.file = ./eduroam-ca.age;
-        eduroam-ca.path = "/var/lib/iwd/eduroam-ca.pem";
         wakatime.file = ./wakatime.age;
         wakatime.owner = "teevik";
         wakatime.path = "/home/teevik/.wakatime.cfg";

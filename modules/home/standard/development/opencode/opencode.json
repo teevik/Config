@@ -3,7 +3,7 @@
   "theme": "catppuccin",
   "plugin": [
     // "oh-my-opencode",
-    "opencode-supermemory@latest",
+    // "opencode-supermemory@latest",
     "@nick-vi/opencode-type-inject@latest",
     "@mohak34/opencode-notifier@latest",
     // "@plannotator/opencode@latest",
