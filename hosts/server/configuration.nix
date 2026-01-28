@@ -29,6 +29,9 @@
 
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
 
+  # Server needs Docker running at boot for services
+  virtualisation.docker.enableOnBoot = true;
+
   # Disable the lid switch
   services.logind.settings.Login.HandleLidSwitch = "ignore";
 
