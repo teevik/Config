@@ -16,6 +16,7 @@
     ./polkit.nix
     ./shells.nix
     ./tailscale.nix
+    ../hyprland
   ];
 
   home-manager.backupFileExtension = "backup";
@@ -27,35 +28,10 @@
   };
 
   programs = {
-    hyprland = {
-      enable = true;
-      package = inputs.hyprland.packages.x86_64-linux.hyprland;
-      portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
-    };
+    # hyprland is now configured in ../hyprland
     niri.enable = false;
     mango.enable = false;
   };
-
-  # # # Auto niri
-  # environment.loginShellInit = ''
-  #   if [ "$(tty)" == /dev/tty1 ]; then
-  #     niri-session
-  #   fi
-  # '';
-
-  # Auto hyprland
-  environment.loginShellInit = ''
-    if [ "$(tty)" == /dev/tty1 ]; then
-      start-hyprland
-    fi
-  '';
-
-  # Auto mango
-  # environment.loginShellInit = ''
-  #   if [ "$(tty)" == /dev/tty1 ]; then
-  #     mango
-  #   fi
-  # '';
 
   # Boot
   boot = {

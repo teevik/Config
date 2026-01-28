@@ -6,7 +6,7 @@
 }:
 {
   imports = [
-    ./hyprland
+    # ./hyprland  # Moved to NixOS module with wrapper-manager
     ./mango
     ./zed
     ./firefox.nix

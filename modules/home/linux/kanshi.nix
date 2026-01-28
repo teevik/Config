@@ -16,10 +16,10 @@
       {
         output = {
           alias = "portable";
-          criteria = "PNP(YMK) EM160TP-A 0x00000001";
-          mode = "2560x1600@119.998Hz";
+          criteria = "YMK EM160TP-A 0x00000001";
+          mode = "2880x1800@100.00Hz";
           position = "3440,0";
-          scale = 1.5;
+          scale = 1.6;
         };
       }
       {
