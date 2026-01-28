@@ -1,12 +1,9 @@
 {
-  inputs,
   config,
   ...
 }:
 {
   imports = [
-    inputs.niri.nixosModules.niri
-    inputs.mango.nixosModules.mango
     ./age
     ./apps
     ./cachix.nix
@@ -16,7 +13,7 @@
     ./polkit.nix
     ./shells.nix
     ./tailscale.nix
-    ../hyprland
+    ./hyprland
   ];
 
   home-manager.backupFileExtension = "backup";
@@ -25,12 +22,6 @@
     extraOptions = ''
       !include ${config.age.secrets.nix-access-tokens-github.path}
     '';
-  };
-
-  programs = {
-    # hyprland is now configured in ../hyprland
-    niri.enable = false;
-    mango.enable = false;
   };
 
   # Boot

@@ -7,14 +7,12 @@
 {
   imports = [
     # ./hyprland  # Moved to NixOS module with wrapper-manager
-    ./mango
     ./zed
     ./firefox.nix
     ./gtk.nix
     ./hypridle.nix
     ./kanshi.nix
     ./marble.nix
-    ./niri.nix
     ./qt.nix
     ./swaybg.nix
     ./tofi.nix
