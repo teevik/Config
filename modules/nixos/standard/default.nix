@@ -45,8 +45,6 @@
     ];
 
     loader = {
-      timeout = null;
-
       systemd-boot = {
         enable = true;
         configurationLimit = 50;

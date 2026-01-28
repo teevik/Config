@@ -23,6 +23,9 @@
   # For dualbooting with windows
   time.hardwareClockInLocalTime = true;
 
+  # Infinite timeout for bootloader
+  boot.loader.timeout = null;
+
   # Prevent sleep/suspend - desktop should always be on
   systemd.targets.sleep.enable = false;
   systemd.targets.suspend.enable = false;
