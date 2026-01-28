@@ -57,6 +57,9 @@ in
   shb.sops.secret."karakeep/oidc_secret".request = config.shb.karakeep.sso.sharedSecret.request;
   shb.sops.secret."karakeep/oidc_secret_authelia" = {
     request = config.shb.karakeep.sso.sharedSecretForAuthelia.request;
-    settings.key = "karakeep/oidc_secret";
+    settings = {
+      key = "karakeep/oidc_secret";
+      sopsFile = ../secrets.yaml;
+    };
   };
 }

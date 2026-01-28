@@ -40,6 +40,10 @@
     group = "users";
   };
 
+  sops.secrets.github-runner-token = {
+    owner = "github-runner";
+  };
+
   services.github-runners.desktop = {
     enable = true;
     user = "github-runner";

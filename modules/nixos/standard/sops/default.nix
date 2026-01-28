@@ -20,9 +20,6 @@
           owner = "teevik";
           path = "/home/teevik/.wakatime.cfg";
         };
-        github-runner-token = {
-          owner = "github-runner";
-        };
       };
     };
   };

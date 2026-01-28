@@ -46,7 +46,10 @@ in
   shb.sops.secret."open-webui/oidc_secret".request = config.shb.open-webui.sso.sharedSecret.request;
   shb.sops.secret."open-webui/oidc_secret_authelia" = {
     request = config.shb.open-webui.sso.sharedSecretForAuthelia.request;
-    settings.key = "open-webui/oidc_secret"; # Same secret, different permissions
+    settings = {
+      key = "open-webui/oidc_secret"; # Same secret, different permissions
+      sopsFile = ../secrets.yaml;
+    };
   };
 
   # LiteLLM Proxy for OpenCode Zen (backend for Open-WebUI)

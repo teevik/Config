@@ -47,7 +47,10 @@ in
   shb.sops.secret."monitoring/oidc_secret".request = config.shb.monitoring.sso.sharedSecret.request;
   shb.sops.secret."monitoring/oidc_secret_authelia" = {
     request = config.shb.monitoring.sso.sharedSecretForAuthelia.request;
-    settings.key = "monitoring/oidc_secret"; # Same secret, different permissions
+    settings = {
+      key = "monitoring/oidc_secret"; # Same secret, different permissions
+      sopsFile = ../secrets.yaml;
+    };
   };
 
   # Grafana Home Dashboard (Node Exporter Full)

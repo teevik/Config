@@ -41,7 +41,10 @@ in
   shb.sops.secret."authelia/jwt_secret".request = config.shb.authelia.secrets.jwtSecret.request;
   shb.sops.secret."authelia/ldap_admin_password" = {
     request = config.shb.authelia.secrets.ldapAdminPassword.request;
-    settings.key = "lldap/user_password"; # Reuse LLDAP admin password
+    settings = {
+      key = "lldap/user_password"; # Reuse LLDAP admin password
+      sopsFile = ../secrets.yaml;
+    };
   };
   shb.sops.secret."authelia/session_secret".request =
     config.shb.authelia.secrets.sessionSecret.request;
