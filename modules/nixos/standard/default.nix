@@ -6,6 +6,7 @@
   imports = [
     ./age
     ./apps
+    ./hyprland
     ./cachix.nix
     ./docker.nix
     ./fonts.nix
@@ -13,7 +14,6 @@
     ./polkit.nix
     ./shells.nix
     ./tailscale.nix
-    ./hyprland
   ];
 
   home-manager.backupFileExtension = "backup";
