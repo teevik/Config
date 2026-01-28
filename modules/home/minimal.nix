@@ -20,42 +20,42 @@
     # package = perSystem.self.lix;
 
     settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      auto-optimise-store = true;
+      # experimental-features = [
+      #   "nix-command"
+      #   "flakes"
+      # ];
+      # auto-optimise-store = true;
 
-      trusted-users = [
-        "root"
-        "teevik"
-      ];
+      # trusted-users = [
+      #   "root"
+      #   "teevik"
+      # ];
 
-      substituters = [
-        "https://cache.nixos.org?priority=10"
-        "https://teevik.cachix.org"
-        "https://hyprland.cachix.org"
-        "https://zed.cachix.org"
-        "https://helix.cachix.org"
-        "https://install.determinate.systems"
-      ];
+      # substituters = [
+      #   "https://cache.nixos.org?priority=10"
+      #   "https://teevik.cachix.org"
+      #   "https://hyprland.cachix.org"
+      #   "https://zed.cachix.org"
+      #   "https://helix.cachix.org"
+      #   "https://install.determinate.systems"
+      # ];
 
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ="
-        "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
-        "zed.cachix.org-1:/pHQ6dpMsAZk2DiP4WCL0p9YDNKWj2Q5FL20bNmw1cU="
-        "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
-        "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
-      ];
+      # trusted-public-keys = [
+      #   "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      #   "teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ="
+      #   "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+      #   "zed.cachix.org-1:/pHQ6dpMsAZk2DiP4WCL0p9YDNKWj2Q5FL20bNmw1cU="
+      #   "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
+      #   "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+      # ];
     };
 
-    registry = {
-      default.flake = inputs.nixpkgs;
-      default-flake.flake = inputs.nixpkgs;
-      nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
-      teevik.flake = inputs.self;
-      unstable.flake = inputs.unstable;
-    };
+    # registry = {
+    #   default.flake = inputs.nixpkgs;
+    #   default-flake.flake = inputs.nixpkgs;
+    #   nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
+    #   teevik.flake = inputs.self;
+    #   unstable.flake = inputs.unstable;
+    # };
   };
 }

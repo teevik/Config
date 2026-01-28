@@ -13,6 +13,7 @@
     flake.nixosModules.standard
     flake.nixosModules.gaming
     flake.nixosModules.nvidia
+    flake.nixosModules.binary-cache
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
@@ -21,6 +22,12 @@
 
   # For dualbooting with windows
   time.hardwareClockInLocalTime = true;
+
+  # Prevent sleep/suspend - desktop should always be on
+  systemd.targets.sleep.enable = false;
+  systemd.targets.suspend.enable = false;
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
 
   programs.noisetorch.enable = true;
   powerManagement.cpuFreqGovernor = "performance";
