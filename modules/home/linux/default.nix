@@ -6,7 +6,6 @@
 }:
 {
   imports = [
-    # ./hyprland  # Moved to NixOS module with wrapper-manager
     ./zed
     ./firefox.nix
     ./gtk.nix
