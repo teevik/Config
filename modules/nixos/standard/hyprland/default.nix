@@ -1,6 +1,7 @@
 {
   inputs,
   perSystem,
+  pkgs,
   ...
 }:
 let
@@ -12,6 +13,7 @@ in
 
   programs.hyprland = {
     enable = true;
+    withUWSM = true;
     package = hyprlandPackage;
     portalPackage = portalPackage;
     plugins = [
@@ -24,10 +26,10 @@ in
     perSystem.hyprland-scratchpad.default
   ];
 
-  # Auto hyprland from TTY1
+  # Auto-start Hyprland via UWSM from TTY1
   environment.loginShellInit = ''
-    if [ "$(tty)" == /dev/tty1 ]; then
-      start-hyprland
+    if [ "$(tty)" == /dev/tty1 ] && uwsm check may-start; then
+      uwsm start default
     fi
   '';
 }

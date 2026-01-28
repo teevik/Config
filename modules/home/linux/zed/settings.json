@@ -200,6 +200,7 @@
     "crates-lsp": true,
     "tsgo": true,
     "wakatime": true,
-    "ron": true
+    "ron": true,
+    "hyprlang": true
   }
 }
