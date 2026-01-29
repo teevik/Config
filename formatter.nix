@@ -1,1 +1,1 @@
-{ pkgs }: pkgs.nixfmt
+{ pkgs }: pkgs.nixfmt-tree

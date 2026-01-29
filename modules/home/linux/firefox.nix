@@ -1,11 +1,14 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }:
 let
+  cfg = config.teevik.firefox;
   palette = config.teevik.theme.colors.withoutHashtag;
+
   # https://github.com/catppuccin/userstyles/tree/main/styles
   userStyles = [
     "advent-of-code"
@@ -145,9 +148,15 @@ in
 {
   imports = [ inputs.betterfox.homeModules.betterfox ];
 
-  programs.firefox.nativeMessagingHosts = [ pkgs.vdhcoapp ];
+  options.teevik.firefox = {
+    enableUserStyles = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Enable catppuccin userstyles for Firefox. Disable to avoid IFD during cross-architecture evaluation.";
+    };
+  };
 
-  programs.firefox = {
+  config.programs.firefox = {
     enable = true;
     betterfox = {
       enable = true;
@@ -176,11 +185,10 @@ in
 
       search.force = true;
 
-      userContent = ''
-        ${builtins.readFile "${inputs.nix-userstyles.packages.${pkgs.system}.mkUserStyles palette
-          userStyles
-        }"}
-      '';
+      # Userstyles trigger IFD which fails during cross-architecture evaluation
+      userContent = lib.mkIf cfg.enableUserStyles (
+        builtins.readFile (inputs.nix-userstyles.packages.${pkgs.system}.mkUserStyles palette userStyles)
+      );
 
       search.engines =
         let

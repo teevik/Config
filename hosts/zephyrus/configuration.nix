@@ -26,7 +26,7 @@
   networking.hostName = "zephyrus";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
 
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_cachyos;
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
   services.scx.enable = true;
 
   # Enable bluetooth

@@ -73,7 +73,7 @@
   hardware.asahi = {
     enable = true;
     peripheralFirmwareDirectory = ./firmware;
-    useExperimentalGPUDriver = true;
+    # useExperimentalGPUDriver is no longer needed - GPU support is in mainline mesa
     # setupAsahiSound = true;
   };
 

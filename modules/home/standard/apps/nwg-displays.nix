@@ -1,11 +1,13 @@
 {
   inputs,
   perSystem,
+  pkgs,
+  lib,
   ...
 }:
 {
   home.packages = [
-    perSystem.nwg-display.default
+    pkgs.nwg-displays
   ];
 
   home.activation.myNwgDisplay = inputs.home-manager.lib.hm.dag.entryAfter [ "writeBoundary" ] ''

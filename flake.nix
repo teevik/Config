@@ -57,7 +57,6 @@
     zed.url = "github:zed-industries/zed/nightly";
     titdb.url = "github:GarrettGR/titdb-nix";
     nix-userstyles.url = "github:knoopx/nix-userstyles";
-    nwg-display.url = "github:nwg-piotr/nwg-displays";
     antigravity.url = "github:jacopone/antigravity-nix";
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     opencode.url = "github:sst/opencode";

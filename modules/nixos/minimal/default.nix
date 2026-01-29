@@ -105,7 +105,7 @@ in
     };
 
     # Auto-login
-    services.getty.autologinUser = "teevik";
+    services.getty.autologinUser = lib.mkForce "teevik";
 
     # Boot
     #    boot = {
@@ -135,7 +135,9 @@ in
         inherit initialHashedPassword;
       };
 
-      root = { inherit initialHashedPassword; };
+      root = {
+        initialHashedPassword = lib.mkDefault initialHashedPassword;
+      };
     };
 
     # Packages

@@ -2,17 +2,21 @@
   flake,
   pkgs,
   lib,
+  modulesPath,
   ...
 }:
 {
   imports = [
     flake.nixosModules.minimal
+    (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix")
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "minimal";
 
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_testing;
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
+
+  boot.supportedFilesystems.zfs = lib.mkForce false;
 
   system.nixos.variant_id = "installer";
 

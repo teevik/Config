@@ -61,6 +61,6 @@
     vesktop
     wavemon
     perSystem.antigravity.default
-    kiro-fhs
+    # kiro-fhs
   ];
 }
