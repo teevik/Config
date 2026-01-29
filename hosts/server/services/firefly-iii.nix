@@ -1,9 +1,40 @@
 # Firefly III (Personal Finance Manager)
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   inherit (config.lab) domain;
 in
 {
+  # Override data importer to use main branch for Enable Banking support
+  services.firefly-iii-data-importer.package =
+    let
+      newSrc = pkgs.fetchFromGitHub {
+        owner = "firefly-iii";
+        repo = "data-importer";
+        rev = "aa30ddf424de89474fe759530e7b993241fc2232"; # Enable Banking support
+        hash = "sha256-1gWw3FTwUU8udgSK6f0TahSsx6y+MKJs6UyvEoEKpyw=";
+      };
+      newVersion = "2.1.0-dev";
+    in
+    (pkgs.firefly-iii-data-importer.override { }).overrideAttrs (old: {
+      version = newVersion;
+      src = newSrc;
+      vendorHash = "sha256-F48TjbSXNeq339xFrc/Yp/p/3pPr9MkNtwfNH7KA0sM=";
+      npmDeps = pkgs.fetchNpmDeps {
+        src = newSrc;
+        name = "firefly-iii-data-importer-npm-deps";
+        hash = "sha256-VMLnOWR+UvhkCYNxUSZDi7Q98+kgPdJ6n9mej3Xm5O0=";
+      };
+      composerRepository = pkgs.php84.mkComposerRepository {
+        pname = "firefly-iii-data-importer";
+        version = newVersion;
+        src = newSrc;
+        vendorHash = "sha256-F48TjbSXNeq339xFrc/Yp/p/3pPr9MkNtwfNH7KA0sM=";
+        composerNoDev = true;
+        composerNoPlugins = true;
+        composerNoScripts = true;
+        composerStrictValidation = false;
+      };
+    });
   # Register Firefly III in service registry
   lab.services.firefly-iii = {
     name = "Firefly III";
