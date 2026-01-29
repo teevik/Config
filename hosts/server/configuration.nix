@@ -87,6 +87,12 @@
     "karakeep/nextauth_secret".sopsFile = ./secrets.yaml;
     "karakeep/meilisearch_key".sopsFile = ./secrets.yaml;
     "karakeep/oidc_secret".sopsFile = ./secrets.yaml;
+
+    # Firefly III secrets
+    "firefly-iii/appKey".sopsFile = ./secrets.yaml;
+    "firefly-iii/dbPassword".sopsFile = ./secrets.yaml;
+    "firefly-iii/oidc_secret".sopsFile = ./secrets.yaml;
+    "firefly-iii/importerAccessToken".sopsFile = ./secrets.yaml;
   };
 
   system.stateVersion = "25.11";

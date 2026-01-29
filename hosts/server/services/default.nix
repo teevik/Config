@@ -6,5 +6,6 @@
     ./monitoring.nix
     ./karakeep.nix
     ./homepage.nix
+    ./firefly-iii.nix
   ];
 }

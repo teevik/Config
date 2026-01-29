@@ -35,7 +35,6 @@
     # marble.url = "path:./marble-shell";
     automatic-sunset.url = "github:teevik/automatic-sunset";
     selfhostblocks = {
-      # Uses patched nixpkgs via hosts/server/default.nix escape hatch
       url = "github:ibizaman/selfhostblocks";
       inputs.nixpkgs.follows = "nixpkgs";
     };
