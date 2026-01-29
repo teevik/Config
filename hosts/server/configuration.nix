@@ -17,6 +17,9 @@
     flake.nixosModules.laptop
   ];
 
+  # Don't delay Tailscale autoconnect on server - other services (dnsmasq) depend on it
+  services.tailscale.delayAutoconnect = false;
+
   system.autoUpgrade = {
     enable = true;
     flake = "github:teevik/Config";
