@@ -19,8 +19,8 @@ in
         "8.8.8.8"
       ];
 
-      # Only listen on Tailscale interface
-      interface = "tailscale0";
+      # Listen on the Tailscale IP address
+      listen-address = tailscaleIP;
       bind-interfaces = true;
 
       # Don't read /etc/resolv.conf
