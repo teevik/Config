@@ -82,7 +82,6 @@ let
     "mastodon"
     "mdbook"
     "mdn"
-    "microsoft-word"
     "migadu-webmail"
     "minesweeper"
     "modrinth"
