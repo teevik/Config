@@ -41,8 +41,8 @@
   };
 
   home.packages = with pkgs; [
-    inputs.openconnect-sso.packages.${pkgs.system}.openconnect-sso
-    inputs.hyprland-contrib.packages.${pkgs.system}.grimblast
+    inputs.openconnect-sso.packages.${pkgs.stdenv.hostPlatform.system}.openconnect-sso
+    inputs.hyprland-contrib.packages.${pkgs.stdenv.hostPlatform.system}.grimblast
 
     libnotify
     caligula

@@ -184,7 +184,7 @@ in
         sha256 = "09qy7zv80bkd9ighsw0bdxjq70dw3qjnyvg7il1fycrsgs5x1gan";
       })
       {
-        system = pkgs.system;
+        system = pkgs.stdenv.hostPlatform.system;
       }
     ).stremio
   ];

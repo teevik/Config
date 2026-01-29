@@ -187,7 +187,9 @@ in
 
       # Userstyles trigger IFD which fails during cross-architecture evaluation
       userContent = lib.mkIf cfg.enableUserStyles (
-        builtins.readFile (inputs.nix-userstyles.packages.${pkgs.system}.mkUserStyles palette userStyles)
+        builtins.readFile (
+          inputs.nix-userstyles.packages.${pkgs.stdenv.hostPlatform.system}.mkUserStyles palette userStyles
+        )
       );
 
       search.engines =

@@ -5,7 +5,7 @@
   ...
 }:
 let
-  rocPkgs = inputs.roc.packages.${pkgs.system};
+  rocPkgs = inputs.roc.packages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   imports = [
