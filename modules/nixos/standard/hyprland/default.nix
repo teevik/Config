@@ -23,8 +23,17 @@ in
   };
 
   environment.systemPackages = [
+    pkgs.nwg-displays
     perSystem.hyprland-scratchpad.default
   ];
+
+  # Ensure the config files exist for nwg-displays
+  system.activationScripts.nwgDisplaysConfig.text = ''
+    mkdir -p /home/teevik/.config/hypr
+    [ -f /home/teevik/.config/hypr/monitors.conf ] || touch /home/teevik/.config/hypr/monitors.conf
+    [ -f /home/teevik/.config/hypr/workspaces.conf ] || touch /home/teevik/.config/hypr/workspaces.conf
+    chown -R teevik:users /home/teevik/.config/hypr
+  '';
 
   # Auto-start Hyprland via UWSM from TTY1
   environment.loginShellInit = ''

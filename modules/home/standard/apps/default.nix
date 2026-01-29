@@ -19,7 +19,6 @@ in
     ./helix
     ./rio
     ./spotify
-    ./nwg-displays.nix
   ];
 
   programs = {
