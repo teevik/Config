@@ -1,7 +1,7 @@
 {
   flake,
   config,
-  perSystem,
+  pkgs,
   ...
 }:
 let
@@ -9,9 +9,14 @@ let
 in
 {
   home.packages = [
-    # pkgs.zed-editor
-    perSystem.zed.default
+    pkgs.zed-editor
+    # perSystem.zed.default
   ];
+
+  home.file.".zed_server" = {
+    source = "${pkgs.zed-editor}/bin";
+    recursive = true;
+  };
 
   xdg.configFile = {
     "zed/settings.json".source = flake.lib.symlinkToConfig config (pathFor "settings.json");
