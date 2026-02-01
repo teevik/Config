@@ -1,4 +1,11 @@
 {
+  "ssh_connections": [
+    {
+      "host": "server",
+      "args": [],
+      "projects": []
+    }
+  ],
   "session": {
     "trust_all_worktrees": true
   },
