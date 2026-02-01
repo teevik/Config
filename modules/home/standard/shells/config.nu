@@ -71,3 +71,8 @@ def with-clean-term [cmd: string, ...args] {
 
 def --wrapped opencode [...args] { with-clean-term "opencode" ...$args }
 def --wrapped nvim [...args] { with-clean-term "nvim" ...$args }
+
+def --wrapped sudo [...args] {
+    notify-send "Sudo" "Password may be required"
+    ^sudo ...$args
+}
