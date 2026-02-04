@@ -1908,11 +1908,11 @@
         "nixpkgs": "nixpkgs_20"
       },
       "locked": {
-        "lastModified": 1770027589,
-        "narHash": "sha256-BDj9YninKe9kUYvuzro2EM8aCIMuJXwee0RflNWAVK4=",
+        "lastModified": 1770221428,
+        "narHash": "sha256-jzdvyxu7/83eR+bRmFza4J6jc9QnzGDJKzXiaXAWwKQ=",
         "owner": "sst",
         "repo": "opencode",
-        "rev": "1832eeffc97430edea9ab62818153bfedc6aea17",
+        "rev": "93592702c33c5105b25f177c4db967a8db53cb69",
         "type": "github"
       },
       "original": {
