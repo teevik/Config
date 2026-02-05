@@ -11,13 +11,13 @@ in
     settings = {
       listener = [
         {
-          timeout = 2 * 60;
+          timeout = 5 * 60;
           on-timeout = "${light} -U 50";
           on-resume = "${light} -A 50";
         }
 
         {
-          timeout = 3 * 60;
+          timeout = 10 * 60;
           on-timeout = "${hyprctl} dispatch dpms off";
           on-resume = "${hyprctl} dispatch dpms on";
         }
