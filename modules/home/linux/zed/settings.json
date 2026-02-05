@@ -1,7 +1,7 @@
 {
   "ssh_connections": [
     {
-      "host": "server",
+      "host": "desktop",
       "args": [],
       "projects": []
     }
