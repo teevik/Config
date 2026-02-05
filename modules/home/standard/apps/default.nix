@@ -150,6 +150,7 @@ in
   home.packages = with pkgs; [
     rounded
     bat
+    ticktick
     erdtree
     gcc
     just
