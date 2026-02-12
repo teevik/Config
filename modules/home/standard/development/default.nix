@@ -108,6 +108,7 @@ in
 
     # Zig
     zig
+    zls
 
     # Lua
     lua-language-server

@@ -339,7 +339,7 @@
     "discord-userstyle": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-eYBPCle4NaZiDbrF/phe5WULSEIqWPyDfQ+UASqeM8M=",
+        "narHash": "sha256-kQK+xOaUBqWXtGhyS2GuSMztQAMy7/jIz85mhjgBiDw=",
         "type": "file",
         "url": "https://catppuccin.github.io/discord/dist/catppuccin-mocha.theme.css"
       },
@@ -1704,11 +1704,11 @@
     },
     "nixpkgs_20": {
       "locked": {
-        "lastModified": 1768393167,
-        "narHash": "sha256-n2063BRjHde6DqAz2zavhOOiLUwA3qXt7jQYHyETjX8=",
+        "lastModified": 1770073757,
+        "narHash": "sha256-Vy+G+F+3E/Tl+GMNgiHl9Pah2DgShmIUBJXmbiQPHbI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "2f594d5af95d4fdac67fba60376ec11e482041cb",
+        "rev": "47472570b1e607482890801aeaf29bfb749884f6",
         "type": "github"
       },
       "original": {
@@ -1908,11 +1908,11 @@
         "nixpkgs": "nixpkgs_20"
       },
       "locked": {
-        "lastModified": 1770221428,
-        "narHash": "sha256-jzdvyxu7/83eR+bRmFza4J6jc9QnzGDJKzXiaXAWwKQ=",
+        "lastModified": 1770640553,
+        "narHash": "sha256-d95/kemjGsyzfo9MLT27qHvpS4Cm51R6scHt0QcmqnY=",
         "owner": "sst",
         "repo": "opencode",
-        "rev": "93592702c33c5105b25f177c4db967a8db53cb69",
+        "rev": "dd2d232a9d09c68fe42fcc2420a4ec067a629a5f",
         "type": "github"
       },
       "original": {
