@@ -430,4 +430,4 @@
 # $env.TRANSIENT_PROMPT_COMMAND_RIGHT = {|| "" }
 
 # Add cargo bin to PATH
-$env.PATH = ($env.PATH | split row (char esep) | prepend $"($nu.home-path)/.cargo/bin")
+$env.PATH = ($env.PATH | split row (char esep) | prepend $"($nu.home-dir)/.cargo/bin")

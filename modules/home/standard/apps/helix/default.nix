@@ -42,7 +42,7 @@ in
       in
       pkgs.runCommand "${helix.name}-kitty-integration" { } ''
         mkdir -p $out/{share,bin}
-        ${pkgs.xorg.lndir}/bin/lndir -silent ${helix}/share $out/share
+        ${pkgs.lndir}/bin/lndir -silent ${helix}/share $out/share
         cp ${helix-kitty-integration}/bin/hx $out/bin
       '';
 

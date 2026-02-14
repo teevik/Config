@@ -18,7 +18,7 @@ let
     libxkbcommon
     libGL
     libdrm
-    xorg
+    libx11
     libsoup_3
     webkitgtk_6_0
     fetchurl
@@ -81,7 +81,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # libcef
     libGL
     libdrm
-    xorg.libX11
+    libx11
     libsoup_3
     webkitgtk_6_0
     libadwaita
@@ -117,7 +117,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     wrapProgram $out/bin/stremio \
        --set LC_NUMERIC C \
-       --set-default XCOMPOSEFILE ${xorg.libX11}/share/X11/locale/en_US.UTF-8/Compose \
+       --set-default XCOMPOSEFILE ${libx11}/share/X11/locale/en_US.UTF-8/Compose \
        --prefix LD_LIBRARY_PATH : ${
          lib.makeLibraryPath [
            libappindicator
@@ -128,7 +128,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
            # libcef
            libGL
            libdrm
-           xorg.libX11
+           libx11
            libsoup_3
            webkitgtk_6_0
            libadwaita

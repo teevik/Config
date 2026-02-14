@@ -131,14 +131,14 @@
                 glib # libglib-2.0.so.0
                 libGL # libGL.so.1
                 libxkbcommon # libxkbcommon.so.0
-                xorg.libX11 # libX11.so.6
+                libx11 # libX11.so.6
                 wayland
 
                 pkgs.glib
                 pkgs.zlib
                 pkgs.libGL
                 pkgs.fontconfig
-                pkgs.xorg.libX11
+                pkgs.libx11
                 pkgs.libxkbcommon
                 pkgs.freetype
                 pkgs.dbus
@@ -155,7 +155,7 @@
                 # run.sh wants ldconfig
                 glibc_multi.bin
                 # Games' dependencies
-                xorg.xrandr
+                xrandr
                 which
                 # Needed by gdialog, including in the steam-runtime
                 perl

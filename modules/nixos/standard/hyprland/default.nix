@@ -41,7 +41,7 @@ in
   # Launch Hyprland directly via UWSM with -F to bypass broken desktop file lookup
   environment.loginShellInit = ''
     if [ "$(tty)" == /dev/tty1 ] && uwsm check may-start; then
-      uwsm start -F -D Hyprland -- /run/current-system/sw/bin/hyprland
+      uwsm start hyprland.desktop
     fi
   '';
 }
