@@ -80,8 +80,8 @@ in
     # nixpkgs-fmt
 
     # Odin
-    odin
-    ols
+    # odin
+    # ols
 
     # Python
     python3
