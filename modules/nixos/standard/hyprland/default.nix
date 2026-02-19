@@ -2,6 +2,7 @@
   inputs,
   perSystem,
   pkgs,
+  lib,
   ...
 }:
 let
@@ -44,4 +45,28 @@ in
       uwsm start hyprland.desktop
     fi
   '';
+
+  # Hypridle - screen dimming and DPMS
+  systemd.user.services.hypridle = {
+    description = "Hyprland idle daemon";
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.hypridle}/bin/hypridle -c ${./hypridle.conf}";
+      Restart = "on-failure";
+    };
+  };
+
+  # Swaybg - wallpaper daemon
+  systemd.user.services.swaybg = {
+    description = "Wayland wallpaper daemon";
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${lib.getExe pkgs.swaybg} -i ${./background.png} -m fill";
+    };
+  };
 }

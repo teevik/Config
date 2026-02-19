@@ -142,11 +142,11 @@ in
 
     # Packages
     environment.systemPackages = with pkgs; [
-      inputs.home-manager.packages.${pkgs.stdenv.hostPlatform.system}.home-manager
       fh
       magic-wormhole
       git
       helix
+      stow
     ];
 
     environment.variables.EDITOR = "hx";

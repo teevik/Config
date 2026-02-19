@@ -16,11 +16,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     blueprint = {
       url = "github:numtide/blueprint";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -45,17 +40,14 @@
 
     # Packages
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
-    betterfox.url = "github:HeitorAugustoLN/betterfox-nix";
     iwmenu.url = "github:e-tho/iwmenu";
     helix.url = "github:helix-editor/helix";
     hyprland-contrib.url = "github:hyprwm/contrib";
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     roc.url = "github:roc-lang/roc";
-    nix-index-database.url = "github:Mic92/nix-index-database";
     nix-dram.url = "github:dramforever/nix-dram";
     zed.url = "github:zed-industries/zed/nightly";
     titdb.url = "github:GarrettGR/titdb-nix";
-    nix-userstyles.url = "github:knoopx/nix-userstyles";
     antigravity.url = "github:jacopone/antigravity-nix";
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     opencode.url = "github:sst/opencode";

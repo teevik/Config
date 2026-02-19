@@ -12,7 +12,10 @@
     ./firefox.nix
   ];
 
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    QT_STYLE_OVERRIDE = "adwaita-dark";
+  };
 
   programs = {
     _1password.enable = true;

@@ -21,8 +21,33 @@ install TARGET-IP HOST:
   ssh teevik@{{TARGET-IP}} "git clone https://github.com/teevik/Config.git /mnt/home/teevik/Documents/Config"
   ssh teevik@{{TARGET-IP}} "cd /mnt/home/teevik/Documents/Config && git remote set-url origin git@github.com:teevik/Config.git"
 
+  # Stow dotfiles
+  ssh teevik@{{TARGET-IP}} "cd /mnt/home/teevik/Documents/Config && stow -t /mnt/home/teevik home"
+
   # Reboot
   # ssh root@{{TARGET-IP}} "reboot"
+
+# Stow dotfiles into home directory
+stow:
+  stow -v -t ~ home
+
+# Remove stowed dotfiles
+unstow:
+  stow -v -t ~ -D home
+
+# Re-stow dotfiles (useful after adding new files)
+restow:
+  stow -v -t ~ -R home
+
+# First-time stow: adopt existing files, then check diff
+stow-adopt:
+  stow -v -t ~ --adopt home
+  @echo "Files adopted. Run 'git diff home/' to review changes."
+
+# Create required directories
+setup:
+  mkdir -p ~/.npm-packages/lib
+  mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
 build-iso:
   nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"

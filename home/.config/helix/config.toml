@@ -1,0 +1,49 @@
+theme = "catppuccin_mocha"
+
+[editor]
+line-number = "relative"
+bufferline = "always"
+color-modes = true
+cursorline = true
+scrolloff = 10
+completion-trigger-len = 1
+idle-timeout = 100
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = false
+
+[editor.inline-diagnostics]
+cursor-line = "hint"
+other-lines = "disable"
+
+[editor.cursor-shape]
+insert = "bar"
+
+[editor.indent-guides]
+render = true
+
+[keys.normal]
+"W" = "move_prev_word_start"
+"esc" = ["collapse_selection", "keep_primary_selection"]
+"C-/" = "toggle_comments"
+"C-d" = ["keep_primary_selection", "move_prev_word_start", "move_next_word_end", "search_selection", "select_mode"]
+
+[keys.normal.space]
+"i" = ":toggle lsp.display-inlay-hints"
+"e" = ":toggle inline-diagnostics.other-lines error disable"
+
+[keys.select]
+"W" = "move_prev_word_start"
+"C-d" = ["search_selection", "extend_search_next"]
+
+[keys.insert]
+"S-tab" = "unindent"
+"C-s" = ":w"
+
+[[language]]
+name = "nix"
+auto-format = true
+
+[language.formatter]
+command = "nixfmt"

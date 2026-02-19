@@ -54,17 +54,6 @@ in
       # sops-nix for secret management
       inputs.sops-nix.nixosModules.sops
 
-      # Home Manager integration
-      inputs.home-manager.nixosModules.default
-      {
-        home-manager = {
-          useGlobalPkgs = true;
-          useUserPackages = true;
-          extraSpecialArgs = specialArgs;
-          users.teevik = import ./users/teevik.nix;
-        };
-      }
-
       # Main configuration
       ./configuration.nix
     ];

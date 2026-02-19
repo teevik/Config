@@ -10,15 +10,16 @@
     ./apps
     ./hyprland
     ./cachix.nix
+    ./ctf.nix
+    ./marble.nix
     ./docker.nix
     ./fonts.nix
+    ./packages.nix
     ./pipewire.nix
     ./polkit.nix
     ./shells.nix
     ./tailscale.nix
   ];
-
-  home-manager.backupFileExtension = "backup";
 
   nix = {
     extraOptions = ''
@@ -85,6 +86,14 @@
       # };
     };
   };
+
+  # GTK/dconf dark mode - run once or use dconf to set:
+  # gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+  # gsettings set org.gnome.desktop.interface cursor-theme catppuccin-mocha-dark-cursors
+  programs.dconf.enable = true;
+
+  # Clipboard history
+  # NOTE: cliphist must be started by the user or via a systemd user service
 
   # users.users.teevik.extraGroups = [ "geoclue" ];
 }
