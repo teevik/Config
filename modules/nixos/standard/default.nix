@@ -5,12 +5,10 @@
 }:
 {
   imports = [
-    ./age # Keep for manual secret migration
     ./sops
     ./apps
     ./hyprland
     ./cachix.nix
-    ./ctf.nix
     ./marble.nix
     ./docker.nix
     ./fonts.nix

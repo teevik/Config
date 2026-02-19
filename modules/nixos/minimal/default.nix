@@ -19,7 +19,11 @@ in
   ];
 
   config = {
-    documentation.man.generateCaches = false;
+    documentation = {
+      man.generateCaches = false;
+      doc.enable = false;
+      nixos.enable = false;
+    };
 
     # nixpkgs.overlays = [
     #   (final: prev: {
