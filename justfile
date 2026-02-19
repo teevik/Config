@@ -22,27 +22,27 @@ install TARGET-IP HOST:
   ssh teevik@{{TARGET-IP}} "cd /mnt/home/teevik/Documents/Config && git remote set-url origin git@github.com:teevik/Config.git"
 
   # Stow dotfiles
-  ssh teevik@{{TARGET-IP}} "cd /mnt/home/teevik/Documents/Config && stow -t /mnt/home/teevik home"
+  ssh teevik@{{TARGET-IP}} "cd /mnt/home/teevik/Documents/Config && stow -t /mnt/home/teevik dotfiles"
 
   # Reboot
   # ssh root@{{TARGET-IP}} "reboot"
 
 # Stow dotfiles into home directory
 stow:
-  stow -v -t ~ home
+  stow -v -t ~ dotfiles
 
 # Remove stowed dotfiles
 unstow:
-  stow -v -t ~ -D home
+  stow -v -t ~ -D dotfiles
 
 # Re-stow dotfiles (useful after adding new files)
 restow:
-  stow -v -t ~ -R home
+  stow -v -t ~ -R dotfiles
 
 # First-time stow: adopt existing files, then check diff
 stow-adopt:
-  stow -v -t ~ --adopt home
-  @echo "Files adopted. Run 'git diff home/' to review changes."
+  stow -v -t ~ --adopt dotfiles
+  @echo "Files adopted. Run 'git diff dotfiles/' to review changes."
 
 # Create required directories
 setup:
