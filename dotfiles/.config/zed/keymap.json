@@ -63,7 +63,11 @@
 
       // Rename file (from nvim <leader>cR)
       "space c shift-r": "project_panel::Rename",
-
+    },
+  },
+  {
+    "context": "vim_mode == normal",
+    "bindings": {
       // Clear search highlight (from nvim <Esc> in normal mode)
       "escape": "editor::Cancel",
     },
@@ -73,6 +77,10 @@
     "bindings": {
       // Surround with S (vim-surround style)
       "shift-s": "vim::PushAddSurrounds",
+
+      // Insert/append directly from visual mode (useful for multi-cursor)
+      "i": "vim::InsertBefore",
+      "a": "vim::InsertAfter",
     },
   },
   {
