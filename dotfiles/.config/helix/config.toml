@@ -41,9 +41,3 @@ render = true
 "S-tab" = "unindent"
 "C-s" = ":w"
 
-[[language]]
-name = "nix"
-auto-format = true
-
-[language.formatter]
-command = "nixfmt"
