@@ -33,6 +33,7 @@ in
 {
   environment.systemPackages = with pkgs; [
     # --- CLI Utilities ---
+    tmux
     bat
     erdtree
     ripgrep
@@ -47,6 +48,7 @@ in
     nurl
     xdg-utils
     xdg-terminal-exec
+    gtk3
     tealdeer
     neofetch
     sysz

@@ -49,6 +49,16 @@ in
         "gfx.webrender.all" = lock-true;
         "browser.urlbar.suggest.openpage" = lock-false;
         "browser.tabs.firefox-view" = lock-false;
+
+        # Disable HTTP warnings for local/Tailscale services
+        "dom.security.https_only_mode" = lock-false;
+        "security.insecure_connection_text.enabled" = lock-false;
+
+        # Homepage
+        "browser.startup.homepage" = {
+          Value = "http://glance";
+          Status = "locked";
+        };
       };
 
       # Search engines via policies
