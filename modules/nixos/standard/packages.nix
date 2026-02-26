@@ -19,18 +19,18 @@ let
     patches = [ ./patches/tofi.patch ];
   });
 
-  # OpenCode v1.2.10 override
+  # OpenCode v1.2.15 override
   opencode-latest = pkgs.opencode.overrideAttrs (old: rec {
-    version = "1.2.10";
+    version = "1.2.15";
     src = pkgs.fetchFromGitHub {
       owner = "anomalyco";
       repo = "opencode";
       tag = "v${version}";
-      hash = "sha256-VlDkoVdqE3k3UlE5ez4qQiChSWCLajsyz/fvmWCqvtk=";
+      hash = "sha256-26MV9TbyAF0KFqZtIHPYu6wqJwf0pNPdW/D3gDQEUlQ=";
     };
     node_modules = old.node_modules.overrideAttrs {
       inherit src;
-      outputHash = "sha256-jxCPz0vSIuF/E6idil2eEH92sWuo+7bGEAhr4JrNWj0=";
+      outputHash = "sha256-Diu/C8b5eKUn7MRTFBcN5qgJZTp0szg0ECkgEaQZ87Y=";
     };
   });
 
@@ -42,7 +42,7 @@ let
         cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
           inherit (opencode-latest) src;
           sourceRoot = "${opencode-latest.src.name}/packages/desktop/src-tauri";
-          hash = "sha256-6YOygSNNhAAD49ZkhWS03qGwVP2mvwItzJeyg0/ARLg=";
+          hash = "sha256-WI48iYdxmizF1YgOQtk05dvrBEMqFjHP9s3+zBFAat0=";
         };
       });
 

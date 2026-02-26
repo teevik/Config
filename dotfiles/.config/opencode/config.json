@@ -1,16 +1,21 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "theme": "catppuccin",
+
+  "compaction": {
+    "auto": false,
+    "prune": true
+  },
+
   "plugin": [
     // "oh-my-opencode",
     // "opencode-supermemory@latest",
     "@nick-vi/opencode-type-inject@latest",
     "@mohak34/opencode-notifier@latest",
     // "@plannotator/opencode@latest",
-    "opencode-wakatime@latest"
+    "opencode-wakatime@latest",
+    "@mailshieldai/opencode-canvas@latest"
   ],
-
-  "experimental": {},
 
   "mcp": {
     "context7": {
@@ -38,6 +43,20 @@
     "bash": {
       "git commit": "ask",
       "git push": "ask"
+    },
+    "canvas_*": "allow",
+
+    "external_directory": {
+      // Safe to read
+      "/tmp/*": "allow",
+      "/usr/share/*": "allow",
+      "/usr/local/share/*": "allow",
+      "/var/log/*": "allow",
+
+      // Read-only nix store
+      "/nix/store/*": "allow",
+
+      "*": "ask"
     }
   }
 }
