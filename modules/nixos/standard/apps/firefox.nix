@@ -53,12 +53,6 @@ in
         # Disable HTTP warnings for local/Tailscale services
         "dom.security.https_only_mode" = lock-false;
         "security.insecure_connection_text.enabled" = lock-false;
-
-        # Homepage
-        "browser.startup.homepage" = {
-          Value = "http://glance";
-          Status = "locked";
-        };
       };
 
       # Search engines via policies
@@ -159,6 +153,12 @@ in
         # DarkReader
         "addon@darkreader.org" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi";
+          installation_mode = "force_installed";
+        };
+
+        # Zotero Connector
+        "zotero@chnm.gmu.edu" = {
+          install_url = "https://download.zotero.org/connector/firefox/release/Zotero_Connector-5.0.195.xpi";
           installation_mode = "force_installed";
         };
 

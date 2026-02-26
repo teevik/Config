@@ -19,6 +19,33 @@ let
     patches = [ ./patches/tofi.patch ];
   });
 
+  # OpenCode v1.2.10 override
+  opencode-latest = pkgs.opencode.overrideAttrs (old: rec {
+    version = "1.2.10";
+    src = pkgs.fetchFromGitHub {
+      owner = "anomalyco";
+      repo = "opencode";
+      tag = "v${version}";
+      hash = "sha256-VlDkoVdqE3k3UlE5ez4qQiChSWCLajsyz/fvmWCqvtk=";
+    };
+    node_modules = old.node_modules.overrideAttrs {
+      inherit src;
+      outputHash = "sha256-jxCPz0vSIuF/E6idil2eEH92sWuo+7bGEAhr4JrNWj0=";
+    };
+  });
+
+  opencode-desktop-latest =
+    (pkgs.opencode-desktop.override {
+      opencode = opencode-latest;
+    }).overrideAttrs
+      (old: {
+        cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
+          inherit (opencode-latest) src;
+          sourceRoot = "${opencode-latest.src.name}/packages/desktop/src-tauri";
+          hash = "sha256-6YOygSNNhAAD49ZkhWS03qGwVP2mvwItzJeyg0/ARLg=";
+        };
+      });
+
   # Stremio from pinned nixpkgs
   pinnedNixpkgs =
     import
@@ -174,6 +201,8 @@ in
     btop
     spotify
     libnotify
+    zotero
+    zoom-us
 
     # --- Hyprland Tools ---
     inputs.hyprland-contrib.packages.${pkgs.stdenv.hostPlatform.system}.grimblast
@@ -185,7 +214,8 @@ in
     fuzzel
 
     # --- OpenCode ---
-    perSystem.opencode.default
+    opencode-latest
+    opencode-desktop-latest
 
     # --- Theming ---
     catppuccin-cursors.mochaDark
