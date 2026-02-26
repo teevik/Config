@@ -1,6 +1,7 @@
 [user]
 	email = teemu.vikoren@gmail.com
 	name = teevik
+	signingKey = ~/.ssh/id_rsa.pub
 
 [init]
 	defaultBranch = main
@@ -26,3 +27,12 @@
 
 [diff]
 	colorMoved = default
+
+[gpg]
+	format = ssh
+
+[commit]
+	gpgSign = true
+
+[tag]
+	gpgSign = true

@@ -21,6 +21,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    flake-input-patcher.url = "github:jfly/flake-input-patcher";
+
     # Modules
     # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
@@ -79,10 +81,10 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    opencode = {
-      url = "github:sst/opencode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # opencode = {
+    #   url = "github:sst/opencode";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     hyprland-scratchpad = {
       url = "github:teevik/hyprland-scratchpad";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -96,7 +98,19 @@
   };
 
   outputs =
-    inputs:
+    unpatchedInputs:
+    let
+      patcher = unpatchedInputs.flake-input-patcher.lib.x86_64-linux;
+      inputs = patcher.patch unpatchedInputs {
+        nixpkgs.patches = [
+          (patcher.fetchpatch {
+            name = "python3Packages.picosvg: fix test failures";
+            url = "https://github.com/nixos/nixpkgs/pull/493376.diff";
+            hash = "sha256-Yn5CGPnk+oW1F19qlp/Y6sn7bM6Mf+2UYPOEIjPtYtg=";
+          })
+        ];
+      };
+    in
     inputs.blueprint {
       inherit inputs;
       nixpkgs.config.allowUnfree = true;
