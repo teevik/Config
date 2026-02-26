@@ -108,6 +108,11 @@
             url = "https://github.com/nixos/nixpkgs/pull/493376.diff";
             hash = "sha256-Yn5CGPnk+oW1F19qlp/Y6sn7bM6Mf+2UYPOEIjPtYtg=";
           })
+          (patcher.fetchpatch {
+            name = "python3Packages.jupytext: fix test failures";
+            url = "https://github.com/nixos/nixpkgs/pull/493542.diff";
+            hash = "sha256-TcMPseIYN5v/ZyO/38YhGIkz25wwSjLSvR1BSdCMyoI=";
+          })
         ];
       };
     in
