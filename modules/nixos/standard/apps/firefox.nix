@@ -162,6 +162,12 @@ in
           installation_mode = "force_installed";
         };
 
+        # Obsidian Web Clipper
+        "clipper@obsidian.md" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/web-clipper-obsidian/latest.xpi";
+          installation_mode = "force_installed";
+        };
+
         # TODO: Catppuccin userstyles (~130 sites) were previously managed via nix-userstyles
         # and injected as userContent CSS through home-manager. To restore:
         # 1. Install the Stylus extension
