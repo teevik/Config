@@ -78,6 +78,9 @@
       // Surround with S (vim-surround style)
       "shift-s": "vim::PushAddSurrounds",
 
+      // Open command palette without auto-inserting '<,'>
+      ":": "vim::Command",
+
       // Insert/append directly from visual mode (useful for multi-cursor)
       "i": "vim::InsertBefore",
       "a": "vim::InsertAfter",
