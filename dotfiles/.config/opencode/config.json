@@ -13,8 +13,8 @@
     "@nick-vi/opencode-type-inject@latest",
     "@mohak34/opencode-notifier@latest",
     // "@plannotator/opencode@latest",
-    "opencode-wakatime@latest",
-    "@mailshieldai/opencode-canvas@latest"
+    "opencode-wakatime@latest"
+    // "@mailshieldai/opencode-canvas@latest"
   ],
 
   "mcp": {
