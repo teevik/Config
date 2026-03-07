@@ -1,0 +1,6 @@
+modelRoles: 
+  slow: opencode/claude-opus-4-6
+  default: opencode/claude-sonnet-4-6
+  smol: opencode/claude-haiku-4-5
+  plan: opencode/gemini-3.1-pro
+  commit: opencode/claude-3-5-haiku

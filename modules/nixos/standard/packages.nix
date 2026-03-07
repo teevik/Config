@@ -19,33 +19,6 @@ let
     patches = [ ./patches/tofi.patch ];
   });
 
-  # OpenCode v1.2.20 override
-  opencode-latest = pkgs.opencode.overrideAttrs (old: rec {
-    version = "1.2.20";
-    src = pkgs.fetchFromGitHub {
-      owner = "anomalyco";
-      repo = "opencode";
-      tag = "v${version}";
-      hash = "sha256-FBmF7/uwZYY/qY1252Hz+XhXdE+Qp5axySAy5Jw7XUQ=";
-    };
-    node_modules = old.node_modules.overrideAttrs {
-      inherit src;
-      outputHash = "sha256-OwlJRAeKnX5YMwQgaV4op40rjt5kxsP4WrOzpp9t90w=";
-    };
-  });
-
-  opencode-desktop-latest =
-    (pkgs.opencode-desktop.override {
-      opencode = opencode-latest;
-    }).overrideAttrs
-      (old: {
-        cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
-          inherit (opencode-latest) src;
-          sourceRoot = "${opencode-latest.src.name}/packages/desktop/src-tauri";
-          hash = "sha256-WI48iYdxmizF1YgOQtk05dvrBEMqFjHP9s3+zBFAat0=";
-        };
-      });
-
   # Stremio from pinned nixpkgs
   pinnedNixpkgs =
     import
@@ -216,8 +189,8 @@ in
     fuzzel
 
     # --- OpenCode ---
-    opencode-latest
-    opencode-desktop-latest
+    perSystem.self.opencode
+    perSystem.self.opencode-desktop
 
     # --- Theming ---
     catppuccin-cursors.mochaDark
