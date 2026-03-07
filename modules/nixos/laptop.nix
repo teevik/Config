@@ -74,9 +74,6 @@
   # ];
 
   # Backlight control
-  programs.light.enable = true;
-  users.users.teevik.extraGroups = [ "video" ];
-
   environment.systemPackages = with pkgs; [
     brightnessctl
   ];

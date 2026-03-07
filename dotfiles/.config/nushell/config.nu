@@ -62,6 +62,7 @@ $env.config.hooks.env_change = {
 }
 
 alias zed = zeditor
+alias neofetch = fastfetch
 
 $env.PROMPT_COMMAND = {||
   let path = ($env.PWD | str replace $env.HOME '~')

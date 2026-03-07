@@ -65,10 +65,6 @@
     openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
     roc.url = "github:roc-lang/roc";
     nix-dram.url = "github:dramforever/nix-dram";
-    zed = {
-      url = "github:zed-industries/zed/nightly";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     titdb = {
       url = "github:GarrettGR/titdb-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,16 +99,16 @@
       patcher = unpatchedInputs.flake-input-patcher.lib.x86_64-linux;
       inputs = patcher.patch unpatchedInputs {
         nixpkgs.patches = [
-          (patcher.fetchpatch {
-            name = "python3Packages.picosvg: fix test failures";
-            url = "https://github.com/nixos/nixpkgs/pull/493376.diff";
-            hash = "sha256-Yn5CGPnk+oW1F19qlp/Y6sn7bM6Mf+2UYPOEIjPtYtg=";
-          })
-          (patcher.fetchpatch {
-            name = "python3Packages.jupytext: fix test failures";
-            url = "https://github.com/nixos/nixpkgs/pull/493542.diff";
-            hash = "sha256-TcMPseIYN5v/ZyO/38YhGIkz25wwSjLSvR1BSdCMyoI=";
-          })
+          # (patcher.fetchpatch {
+          #   name = "python3Packages.picosvg: fix test failures";
+          #   url = "https://github.com/nixos/nixpkgs/pull/493376.diff";
+          #   hash = "sha256-Yn5CGPnk+oW1F19qlp/Y6sn7bM6Mf+2UYPOEIjPtYtg=";
+          # })
+          # (patcher.fetchpatch {
+          #   name = "python3Packages.jupytext: fix test failures";
+          #   url = "https://github.com/nixos/nixpkgs/pull/493542.diff";
+          #   hash = "sha256-TcMPseIYN5v/ZyO/38YhGIkz25wwSjLSvR1BSdCMyoI=";
+          # })
         ];
       };
     in

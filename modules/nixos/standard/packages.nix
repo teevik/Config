@@ -19,18 +19,18 @@ let
     patches = [ ./patches/tofi.patch ];
   });
 
-  # OpenCode v1.2.15 override
+  # OpenCode v1.2.20 override
   opencode-latest = pkgs.opencode.overrideAttrs (old: rec {
-    version = "1.2.15";
+    version = "1.2.20";
     src = pkgs.fetchFromGitHub {
       owner = "anomalyco";
       repo = "opencode";
       tag = "v${version}";
-      hash = "sha256-26MV9TbyAF0KFqZtIHPYu6wqJwf0pNPdW/D3gDQEUlQ=";
+      hash = "sha256-FBmF7/uwZYY/qY1252Hz+XhXdE+Qp5axySAy5Jw7XUQ=";
     };
     node_modules = old.node_modules.overrideAttrs {
       inherit src;
-      outputHash = "sha256-Diu/C8b5eKUn7MRTFBcN5qgJZTp0szg0ECkgEaQZ87Y=";
+      outputHash = "sha256-OwlJRAeKnX5YMwQgaV4op40rjt5kxsP4WrOzpp9t90w=";
     };
   });
 
@@ -77,7 +77,7 @@ in
     xdg-terminal-exec
     gtk3
     tealdeer
-    neofetch
+    fastfetch
     sysz
     hyperfine
     trashy
@@ -209,7 +209,6 @@ in
     wl-clipboard
     watchman
     swaybg
-    light
     tofi-patched
     fuzzel
 

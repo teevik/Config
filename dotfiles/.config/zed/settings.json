@@ -12,14 +12,12 @@
   "session": {
     "trust_all_worktrees": true
   },
-  "features": {
-    "edit_prediction_provider": "zed"
-  },
   "agent_servers": {
     "claude": {
       "default_mode": "bypassPermissions"
     },
     "OpenCode": {
+      "type": "custom",
       "command": "opencode",
       "args": ["acp"],
       "default_model": "anthropic/claude-opus-4-5"
@@ -27,6 +25,7 @@
   },
   "load_direnv": "direct",
   "edit_predictions": {
+    "provider": "zed",
     "mode": "subtle"
   },
   "agent": {
@@ -57,7 +56,8 @@
   "languages": {
     "Typst": {
       "soft_wrap": "bounded",
-      "show_wrap_guides": false
+      "show_wrap_guides": false,
+      "formatter": "language_server"
     },
     "Lua": {
       "tab_size": 2,
@@ -189,7 +189,18 @@
       }
     },
     "tinymist": {
+      "initialization_options": {
+        "preview": {
+          "background": {
+            "enabled": true
+          }
+        }
+      },
       "settings": {
+        "formatterMode": "typstyle",
+        "lint": {
+          "enabled": true
+        },
         "exportPdf": "onSave",
         "outputPath": "$root/$name"
       }

@@ -24,8 +24,8 @@
       "space g b": "git::Branch",
 
       // Diagnostics (from nvim <leader>sd)
-      "space s d": "diagnostics::Deploy",
-    },
+      "space s d": "diagnostics::Deploy"
+    }
   },
   {
     "context": "Editor",
@@ -34,14 +34,17 @@
       "ctrl-shift-l": "editor::SelectAllMatches",
 
       // Toggle comment (from nvim <C-/>)
-      "ctrl-/": "editor::ToggleComments",
-    },
+      "ctrl-/": "editor::ToggleComments"
+    }
   },
   {
     "context": "vim_mode == normal || vim_mode == visual",
     "bindings": {
       // Yank to system clipboard (from nvim <leader>y)
       "space y": ["workspace::SendKeystrokes", "\" + y"],
+
+      // Paste from system clipboard (from nvim <leader>p)
+      "space p": ["workspace::SendKeystrokes", "\" + p"],
 
       // LSP navigation (from nvim gd, gr, gI, gy)
       "g d": "editor::GoToDefinition",
@@ -62,15 +65,15 @@
       "g p": "pane::ActivatePreviousItem",
 
       // Rename file (from nvim <leader>cR)
-      "space c shift-r": "project_panel::Rename",
-    },
+      "space c shift-r": "project_panel::Rename"
+    }
   },
   {
     "context": "vim_mode == normal",
     "bindings": {
       // Clear search highlight (from nvim <Esc> in normal mode)
-      "escape": "editor::Cancel",
-    },
+      "escape": "editor::Cancel"
+    }
   },
   {
     "context": "vim_mode == visual",
@@ -78,13 +81,13 @@
       // Surround with S (vim-surround style)
       "shift-s": "vim::PushAddSurrounds",
 
-      // Open command palette without auto-inserting '<,'>
-      ":": "vim::Command",
+      // Open command palette from visual mode
+      ":": "command_palette::Toggle",
 
       // Insert/append directly from visual mode (useful for multi-cursor)
       "i": "vim::InsertBefore",
-      "a": "vim::InsertAfter",
-    },
+      "a": "vim::InsertAfter"
+    }
   },
   {
     "bindings": {
@@ -93,22 +96,50 @@
         {
           "agent": {
             "custom": {
-              "name": "OpenCode",
-            },
-          },
-        },
-      ],
-    },
+              "name": "OpenCode"
+            }
+          }
+        }
+      ]
+    }
   },
   {
     "context": "Terminal",
     "bindings": {
-      "alt-f": null,
-    },
+      "alt-f": null
+    }
   },
   {
     "bindings": {
-      "alt-f": "workspace::ToggleZoom",
-    },
+      "alt-f": "workspace::ToggleZoom"
+    }
   },
+  // Typst formatting keybindings (.typ files)
+  {
+    "context": "Editor && extension == typ && vim_mode == visual",
+    "bindings": {
+      "ctrl-b": ["workspace::SendKeystrokes", "shift-s *"],
+      "ctrl-i": ["workspace::SendKeystrokes", "shift-s _"],
+      "ctrl-e": ["workspace::SendKeystrokes", "shift-s `"],
+      "ctrl-m": ["workspace::SendKeystrokes", "shift-s $"]
+    }
+  },
+  {
+    "context": "Editor && extension == typ && vim_mode == normal",
+    "bindings": {
+      "ctrl-b": ["workspace::SendKeystrokes", "y s i w *"],
+      "ctrl-i": ["workspace::SendKeystrokes", "y s i w _"],
+      "ctrl-e": ["workspace::SendKeystrokes", "y s i w `"],
+      "ctrl-m": ["workspace::SendKeystrokes", "y s i w $"]
+    }
+  },
+  {
+    "context": "Editor && extension == typ && vim_mode == insert",
+    "bindings": {
+      "ctrl-b": ["workspace::SendKeystrokes", "* * left"],
+      "ctrl-i": ["workspace::SendKeystrokes", "_ _ left"],
+      "ctrl-e": ["workspace::SendKeystrokes", "` ` left"],
+      "ctrl-m": ["workspace::SendKeystrokes", "$ $ left"]
+    }
+  }
 ]

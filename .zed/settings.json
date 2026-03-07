@@ -11,9 +11,12 @@
   "lsp": {
     "nixd": {
       "settings": {
+        "nixpkgs": {
+          "expr": "import (builtins.getFlake (builtins.toString ./.)).inputs.nixpkgs { }"
+        },
         "options": {
-          "home-manager": {
-            "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.zephyrus.options.home-manager.users.type.getSubOptions []"
+          "nixos": {
+            "expr": "(let hostname = builtins.replaceStrings [\"\\n\"] [\"\"] (builtins.readFile /etc/hostname); in (builtins.getFlake (builtins.toString ./.)).nixosConfigurations.${hostname}.options)"
           }
         }
       }

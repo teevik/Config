@@ -71,4 +71,5 @@
   ];
 
   services.fwupd.enable = true;
+  services.envfs.enable = true;
 }
