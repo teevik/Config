@@ -58,6 +58,8 @@ in
     hyperfine
     trashy
     caligula
+    lynx
+    chromium
 
     # --- Shells ---
     nushell
