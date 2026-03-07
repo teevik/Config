@@ -32,6 +32,12 @@
     }
   },
 
+  "agent": {
+    "explore": {
+      "model": "opencode/claude-haiku-4-5"
+    }
+  },
+
   "lsp": {
     "tailwind": {
       "command": ["bun", "x", "tailwindcss-language-server", "--stdio"],

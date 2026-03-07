@@ -59,6 +59,9 @@ let
 in
 {
   environment.systemPackages = with pkgs; [
+    # --- AI Tools ---
+    perSystem.self.oh-my-pi
+
     # --- CLI Utilities ---
     tmux
     bat
