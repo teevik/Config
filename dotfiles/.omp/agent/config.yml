@@ -4,3 +4,5 @@ modelRoles:
   smol: opencode/claude-haiku-4-5:low
   plan: opencode/gemini-3.1-pro:high
   commit: opencode/claude-haiku-4-5:low
+browser: 
+  headless: false
