@@ -29,7 +29,18 @@
     "mode": "subtle"
   },
   "agent": {
-    "default_profile": "ask",
+    "default_model": {
+      "provider": "zed.dev",
+      "model": "claude-sonnet-4-6",
+      "enable_thinking": true,
+      "effort": "high"
+    },
+    "inline_assistant_model": {
+      "provider": "zed.dev",
+      "model": "claude-sonnet-4-6",
+      "enable_thinking": false
+    },
+    "default_profile": "write",
     "model_parameters": []
   },
   "ui_font_size": 16,

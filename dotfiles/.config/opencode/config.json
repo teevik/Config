@@ -54,7 +54,7 @@
 
     "external_directory": {
       // Safe to read
-      "/tmp/*": "allow",
+      "/tmp/**": "allow",
       "/usr/share/*": "allow",
       "/usr/local/share/*": "allow",
       "/var/log/*": "allow",
