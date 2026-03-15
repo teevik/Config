@@ -167,6 +167,14 @@ vim.keymap.set("n", "<leader>bc", "<cmd>bdelete<CR>", { desc = "[C]lose buffer" 
 -- Toggle comment
 vim.keymap.set("n", "<C-/>", "gcc", { remap = true, desc = "Toggle comment" })
 vim.keymap.set("v", "<C-/>", "gc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set("n", "<C-_>", "gcc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set("v", "<C-_>", "gc", { remap = true, desc = "Toggle comment" })
+
+-- Shift+Up/Down to select lines
+vim.keymap.set("n", "<S-Up>", "Vk", { desc = "Start selecting lines up" })
+vim.keymap.set("n", "<S-Down>", "Vj", { desc = "Start selecting lines down" })
+vim.keymap.set("v", "<S-Up>", "k", { desc = "Extend selection up" })
+vim.keymap.set("v", "<S-Down>", "j", { desc = "Extend selection down" })
 
 -- copilot-language-server
 -- vim.lsp.config("copilot", {

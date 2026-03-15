@@ -15,6 +15,7 @@ require("lazy-lsp").setup({
 
 			-- keybinds
 			vim.keymap.set("n", "<leader>a", vim.lsp.buf.code_action, { buffer = bufnr, desc = "Code action" })
+			vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, { buffer = bufnr, desc = "[R]ename symbol" })
 		end,
 	},
 
