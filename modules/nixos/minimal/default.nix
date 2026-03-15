@@ -153,6 +153,6 @@ in
       stow
     ];
 
-    environment.variables.EDITOR = "hx";
+    environment.variables.EDITOR = "nvim";
   };
 }

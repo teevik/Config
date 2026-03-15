@@ -1,5 +1,5 @@
 # Environment variables
-$env.EDITOR = "hx"
+$env.EDITOR = "nvim"
 $env.PKG_CONFIG_PATH = "/run/current-system/sw/lib/pkgconfig"
 
 # Add cargo bin and npm-packages to PATH
@@ -9,6 +9,7 @@ $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.carg
 mkdir ~/.cache/carapace
 carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
 zoxide init nushell | save --force ~/.cache/zoxide.nu
+wt config shell init nu | save --force ~/.cache/worktrunk-init.nu
 
 # nix-index command-not-found
 $env.config.hooks.command_not_found = { |cmd_name|

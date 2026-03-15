@@ -6,7 +6,7 @@ bind \b backward-kill-word
 bind \e\[3\;5~ kill-word
 
 # Environment variables
-set -gx EDITOR hx
+set -gx EDITOR nvim
 
 # Tool integrations
 zoxide init fish | source

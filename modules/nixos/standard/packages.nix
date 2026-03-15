@@ -38,6 +38,7 @@ in
     # --- CLI Utilities ---
     bat
     erdtree
+    moreutils
     ripgrep
     sd
     fd
@@ -84,6 +85,7 @@ in
     # --- Git ---
     git
     delta
+    perSystem.self.worktrunk
 
     # --- Dev Tools - General ---
     gcc

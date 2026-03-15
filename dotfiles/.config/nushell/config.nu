@@ -1,6 +1,7 @@
 # Source tool integrations
 source ~/.cache/carapace/init.nu
 source ~/.cache/zoxide.nu
+source ~/.cache/worktrunk-init.nu
 
 let menus = []
 
