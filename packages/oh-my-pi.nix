@@ -15,13 +15,13 @@ let
     ;
 
   pname = "oh-my-pi";
-  version = "13.9.2";
+  version = "13.12.0";
 
   src = fetchFromGitHub {
     owner = "can1357";
     repo = "oh-my-pi";
     tag = "v${version}";
-    hash = "sha256-Xghs0BYtRAMfvvdRMzU/dHwsBsujViQmUo5ki/S/A+g=";
+    hash = "sha256-InhEsoHt7ml4w/KScwxrKkkdqImSi5wTWiaehpRvU/o=";
     fetchSubmodules = true;
   };
 
@@ -74,13 +74,13 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-eYn8ttOWKZhPg46IWHeL9zZ2aF99EpVivc8WXvEQHA8=";
+    outputHash = "sha256-eVBafwMCJoPlVQyshP8EFQMaHIN0mccsNe3fV2ZSAqs=";
   };
 
   # Pre-fetch Cargo dependencies
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-JVi0rUw27t+sZ+ozIRItCDvNv2/FeYdYOY8S9ifKEDc=";
+    hash = "sha256-1KOERNembZa65R02wpzMGccyZodPEGZPTHQK34HbMHM=";
   };
 in
 stdenv.mkDerivation {

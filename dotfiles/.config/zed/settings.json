@@ -25,6 +25,9 @@
   },
   "load_direnv": "direct",
   "edit_predictions": {
+    "sweep": {
+      "privacy_mode": false
+    },
     "provider": "zed",
     "mode": "subtle"
   },

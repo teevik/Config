@@ -36,7 +36,6 @@ in
     perSystem.self.oh-my-pi
 
     # --- CLI Utilities ---
-    tmux
     bat
     erdtree
     ripgrep

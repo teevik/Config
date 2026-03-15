@@ -1,0 +1,40 @@
+--- a/packages/opencode/src/cli/cmd/tui/app.tsx	2026-03-15 16:57:26.565094626 +0100
++++ b/packages/opencode/src/cli/cmd/tui/app.tsx	2026-03-15 16:57:26.565916683 +0100
+@@ -264,22 +264,24 @@
+   createEffect(() => {
+     if (!terminalTitleEnabled() || Flag.OPENCODE_DISABLE_TERMINAL_TITLE) return
+ 
+-    if (route.data.type === "home") {
+-      renderer.setTerminalTitle("OpenCode")
+-      return
+-    }
++    const directory = sync.data.path.directory || process.cwd()
++    const projectName = directory.split("/").pop() || "OpenCode"
+ 
+     if (route.data.type === "session") {
+-      const session = sync.session.get(route.data.sessionID)
+-      if (!session || SessionApi.isDefaultTitle(session.title)) {
+-        renderer.setTerminalTitle("OpenCode")
+-        return
+-      }
+-
+-      // Truncate title to 40 chars max
+-      const title = session.title.length > 40 ? session.title.slice(0, 37) + "..." : session.title
+-      renderer.setTerminalTitle(`OC | ${title}`)
++      const sessionID = route.data.sessionID
++      const status = sync.data.session_status[sessionID]
++      const session = sync.session.get(sessionID)
++      const statusStr = (() => {
++        if (session?.time.compacting) return " [compacting]"
++        if (status?.type === "busy") return " [busy]"
++        if (status?.type === "retry") return " [retry]"
++        return ""
++      })()
++      renderer.setTerminalTitle(`OC: ${projectName}${statusStr}`)
++      return
+     }
++
++    renderer.setTerminalTitle(`OC: ${projectName}`)
+   })
+ 
+   const args = useArgs()

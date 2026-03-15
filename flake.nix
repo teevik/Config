@@ -1,9 +1,9 @@
 {
   inputs = {
+
     self.submodules = true;
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
     nixpkgs-unfree = {
       url = "github:numtide/nixpkgs-unfree";
       inputs.nixpkgs.follows = "nixpkgs";
