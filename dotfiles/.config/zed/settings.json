@@ -68,6 +68,10 @@
   },
 
   "languages": {
+    "Odin": {
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
     "Typst": {
       "soft_wrap": "bounded",
       "show_wrap_guides": false,
@@ -194,6 +198,19 @@
     }
   },
   "lsp": {
+    "ols": {
+      "initialization_options": {
+        "enable_fake_methods": true,
+        "enable_overload_resolution": true,
+        "enable_inlay_hints_params": true,
+        "enable_inlay_hints_default_params": true,
+        "enable_inlay_hints_implicit_return": true,
+        // "enable_checker_workspace_diagnostics": true
+        "enable_auto_import": true,
+        "enable_comp_lit_signature_help": true,
+        "enable_comp_lit_signature_help_use_docs": true
+      }
+    },
     "nil": {
       // or "nixd":
       "initialization_options": {

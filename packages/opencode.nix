@@ -1,11 +1,11 @@
 { pkgs, ... }:
 pkgs.opencode.overrideAttrs (old: rec {
-  version = "1.2.26";
+  version = "1.2.27";
   src = pkgs.fetchFromGitHub {
     owner = "anomalyco";
     repo = "opencode";
     tag = "v${version}";
-    hash = "sha256-+bQEfrqv9tAmXUMcvyUM0hJGpXgt09IWoKYt8I/jBlU=";
+    hash = "sha256-JUlFfILzcUCME3mOxdxDbcCXphNVEfVGIKhwAwtJPl8=";
   };
   patches = (old.patches or [ ]) ++ [ ./opencode-terminal-title.patch ];
   node_modules = old.node_modules.overrideAttrs {

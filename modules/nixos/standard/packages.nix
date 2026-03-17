@@ -127,6 +127,10 @@ in
     # --- Dev Tools - JSON ---
     vscode-langservers-extracted
 
+    # --- Dev Tools - Odin ---
+    odin
+    ols
+
     # --- Dev Tools - Nix ---
     nil
     nixd

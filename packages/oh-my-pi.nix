@@ -15,13 +15,13 @@ let
     ;
 
   pname = "oh-my-pi";
-  version = "13.12.0";
+  version = "13.12.9";
 
   src = fetchFromGitHub {
     owner = "can1357";
     repo = "oh-my-pi";
     tag = "v${version}";
-    hash = "sha256-InhEsoHt7ml4w/KScwxrKkkdqImSi5wTWiaehpRvU/o=";
+    hash = "sha256-8iB19AHGBH8k63lNlUAYSqmXw+Tp+w68XKroPG+ysOk=";
     fetchSubmodules = true;
   };
 
@@ -74,7 +74,7 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-eVBafwMCJoPlVQyshP8EFQMaHIN0mccsNe3fV2ZSAqs=";
+    outputHash = "sha256-m45lwbJj0R6GsV+wWNgtl1Qq+q78Vzsnw+o4h5J1dWw=";
   };
 
   # Pre-fetch Cargo dependencies

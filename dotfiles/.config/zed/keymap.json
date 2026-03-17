@@ -111,7 +111,8 @@
   },
   {
     "bindings": {
-      "alt-f": "workspace::ToggleZoom"
+      "alt-f": "workspace::ToggleZoom",
+      "ctrl-p": "file_finder::Toggle"
     }
   },
   // Typst formatting keybindings (.typ files)
