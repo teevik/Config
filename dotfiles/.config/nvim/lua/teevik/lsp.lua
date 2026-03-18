@@ -48,6 +48,18 @@ require("lazy-lsp").setup({
 	},
 })
 
+-- Odin Language Server (not managed by lazy-lsp, requires ols binary on PATH)
+vim.lsp.config("ols", {
+	cmd = { "ols" },
+	filetypes = { "odin" },
+	root_markers = { "ols.json", ".git" },
+	on_attach = function(client, bufnr)
+		vim.keymap.set("n", "<leader>a", vim.lsp.buf.code_action, { buffer = bufnr, desc = "Code action" })
+		vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, { buffer = bufnr, desc = "[R]ename symbol" })
+	end,
+})
+vim.lsp.enable("ols")
+
 vim.lsp.on_type_formatting.enable()
 
 vim.pack.add({ "https://github.com/folke/lazydev.nvim" }, { confirm = false })

@@ -76,6 +76,9 @@ vim.diagnostic.config({
 	virtual_text = true, -- show inline diagnostics
 })
 
+-- common typo: :W -> :w
+vim.api.nvim_create_user_command("W", "w", {})
+
 -- clear search highlights with <Esc>
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
