@@ -55,6 +55,13 @@
 
   nix.settings.trusted-users = [ "github-runner" ];
 
+  # RustDesk Server (signal + relay)
+  services.rustdesk-server = {
+    enable = true;
+    openFirewall = true;
+    signal.relayHosts = [ "desktop" ];
+  };
+
   programs.noisetorch.enable = true;
   powerManagement.cpuFreqGovernor = "performance";
   # Enable bluetooth

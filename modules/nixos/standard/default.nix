@@ -17,6 +17,7 @@
     ./polkit.nix
     ./shells.nix
     ./tailscale.nix
+    ./rustdesk.nix
   ];
 
   nix = {

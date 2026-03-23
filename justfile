@@ -51,7 +51,7 @@ setup:
 
 update:
     , nix-update --flake opencode --build
-    , nix-update --flake oh-my-pi --build
+    # , nix-update --flake oh-my-pi --build
 
 build-iso:
     nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"

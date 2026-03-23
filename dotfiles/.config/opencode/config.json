@@ -29,6 +29,16 @@
     "websearch_exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?tools=web_search_exa"
+    },
+    "zotero": {
+      "type": "local",
+      "command": ["uvx", "--from", "zotero-mcp-server", "zotero-mcp"],
+      "environment": {
+        "ZOTERO_LOCAL": "true",
+        "ZOTERO_LIBRARY_TYPE": "group",
+        "ZOTERO_LIBRARY_ID": "6445354",
+        "LD_LIBRARY_PATH": "{env:NIX_LD_LIBRARY_PATH}"
+      }
     }
   },
 

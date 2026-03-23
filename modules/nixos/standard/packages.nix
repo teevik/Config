@@ -19,6 +19,57 @@ let
     patches = [ ./patches/tofi.patch ];
   });
 
+  # Patched zed-editor with OpenCode Zen provider
+  zed-editor-patched = pkgs.zed-editor.overrideAttrs (oldAttrs: {
+    patches = (oldAttrs.patches or [ ]) ++ [
+      (pkgs.fetchpatch {
+        url = "https://github.com/zed-industries/zed/pull/49589.diff";
+        hash = "sha256-J9/ObAeXchKXVkRuUl23WN951HoZ0bHK2PiQwjTxzR4=";
+        excludes = [ "crates/language_models/src/settings.rs" ];
+      })
+      ./patches/zed-opencode-settings-import.patch
+    ];
+    cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
+      inherit (oldAttrs) src;
+      patches = (oldAttrs.patches or [ ]) ++ [
+        (pkgs.fetchpatch {
+          url = "https://github.com/zed-industries/zed/pull/49589.diff";
+          hash = "sha256-J9/ObAeXchKXVkRuUl23WN951HoZ0bHK2PiQwjTxzR4=";
+          excludes = [ "crates/language_models/src/settings.rs" ];
+        })
+        ./patches/zed-opencode-settings-import.patch
+      ];
+      # Remove broken candle-book package (same as upstream nixpkgs)
+      postBuild = ''
+        rm -r $out/git/*/candle-book/
+      '';
+      hash = "sha256-cKe3MzlrMfL0D4/nA3zbp2UtDCVWYGsI4JZQhqBFrCA=";
+    };
+  });
+
+  # playwright-cli with browser revision symlinks
+  # playwright-cli bundles playwright-core 1.59 (expects revision 1212/2259)
+  # but nixpkgs playwright-browsers are built for 1.58 (revision 1208/2248)
+  playwright-browsers-compat = pkgs.runCommand "playwright-browsers-compat" { } ''
+    mkdir -p $out
+    ln -s ${pkgs.playwright-driver.browsers}/chromium-* $out/chromium-1212
+    ln -s ${pkgs.playwright-driver.browsers}/chromium_headless_shell-* $out/chromium_headless_shell-1212
+    ln -s ${pkgs.playwright-driver.browsers}/firefox-* $out/firefox-1509
+    ln -s ${pkgs.playwright-driver.browsers}/webkit-* $out/webkit-2259
+    ln -s ${pkgs.playwright-driver.browsers}/ffmpeg-* $out/ffmpeg-1011
+  '';
+
+  playwright-cli-wrapped = pkgs.symlinkJoin {
+    name = "playwright-cli-wrapped";
+    paths = [ pkgs.playwright-cli ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/playwright-cli \
+        --set PLAYWRIGHT_BROWSERS_PATH "${playwright-browsers-compat}" \
+        --set PLAYWRIGHT_MCP_BROWSER "chromium"
+    '';
+  };
+
   # Stremio from pinned nixpkgs
   pinnedNixpkgs =
     import
@@ -33,7 +84,7 @@ in
 {
   environment.systemPackages = with pkgs; [
     # --- AI Tools ---
-    perSystem.self.oh-my-pi
+    # perSystem.self.oh-my-pi
 
     # --- CLI Utilities ---
     bat
@@ -71,7 +122,7 @@ in
     perSystem.neovim.default
     unzip # needed by neovim
     vscode
-    zed-editor
+    zed-editor-patched
 
     # --- Terminal Emulators ---
     kitty
@@ -96,6 +147,7 @@ in
     devenv
     claude-code
     dioxus-cli
+    playwright-cli-wrapped
 
     # --- Dev Tools - C++ ---
     clang-tools
@@ -189,6 +241,7 @@ in
 
     # --- Hyprland Tools ---
     inputs.hyprland-contrib.packages.${pkgs.stdenv.hostPlatform.system}.grimblast
+    perSystem.self.peck
     wl-clipboard
     watchman
     swaybg
