@@ -33,13 +33,12 @@
   },
   "agent": {
     "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-sonnet-4-6",
-      "enable_thinking": true,
-      "effort": "high"
+      "provider": "opencode",
+      "model": "claude-opus-4-6",
+      "enable_thinking": false
     },
     "inline_assistant_model": {
-      "provider": "zed.dev",
+      "provider": "opencode",
       "model": "claude-sonnet-4-6",
       "enable_thinking": false
     },
