@@ -26,12 +26,9 @@
       "type": "remote",
       "url": "https://mcp.grep.app"
     },
-    "websearch_exa": {
-      "type": "remote",
-      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa"
-    },
     "zotero": {
       "type": "local",
+      "enabled": false,
       "command": ["uvx", "--from", "zotero-mcp-server", "zotero-mcp"],
       "environment": {
         "ZOTERO_LOCAL": "true",
