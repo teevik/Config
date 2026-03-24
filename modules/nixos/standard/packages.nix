@@ -136,7 +136,7 @@ in
     # --- Git ---
     git
     delta
-    perSystem.self.worktrunk
+    worktrunk
 
     # --- Dev Tools - General ---
     gcc
