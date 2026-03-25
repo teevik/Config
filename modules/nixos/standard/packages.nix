@@ -19,34 +19,6 @@ let
     patches = [ ./patches/tofi.patch ];
   });
 
-  # Patched zed-editor with OpenCode Zen provider
-  zed-editor-patched = pkgs.zed-editor.overrideAttrs (oldAttrs: {
-    patches = (oldAttrs.patches or [ ]) ++ [
-      (pkgs.fetchpatch {
-        url = "https://github.com/zed-industries/zed/pull/49589.diff";
-        hash = "sha256-J9/ObAeXchKXVkRuUl23WN951HoZ0bHK2PiQwjTxzR4=";
-        excludes = [ "crates/language_models/src/settings.rs" ];
-      })
-      ./patches/zed-opencode-settings-import.patch
-    ];
-    cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
-      inherit (oldAttrs) src;
-      patches = (oldAttrs.patches or [ ]) ++ [
-        (pkgs.fetchpatch {
-          url = "https://github.com/zed-industries/zed/pull/49589.diff";
-          hash = "sha256-J9/ObAeXchKXVkRuUl23WN951HoZ0bHK2PiQwjTxzR4=";
-          excludes = [ "crates/language_models/src/settings.rs" ];
-        })
-        ./patches/zed-opencode-settings-import.patch
-      ];
-      # Remove broken candle-book package (same as upstream nixpkgs)
-      postBuild = ''
-        rm -r $out/git/*/candle-book/
-      '';
-      hash = "sha256-cKe3MzlrMfL0D4/nA3zbp2UtDCVWYGsI4JZQhqBFrCA=";
-    };
-  });
-
   # playwright-cli with browser revision symlinks
   # playwright-cli bundles playwright-core 1.59 (expects revision 1212/2259)
   # but nixpkgs playwright-browsers are built for 1.58 (revision 1208/2248)
@@ -122,7 +94,7 @@ in
     perSystem.neovim.default
     unzip # needed by neovim
     vscode
-    zed-editor-patched
+    zed-editor
 
     # --- Terminal Emulators ---
     kitty
