@@ -43,4 +43,7 @@ in
 
   services.udev.packages = [ dualsense-udev ];
   hardware.uinput.enable = true;
+
+  # ntsync for wine
+  boot.kernelModules = [ "ntsync" ];
 }
