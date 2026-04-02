@@ -138,9 +138,15 @@ in
           installation_mode = "force_installed";
         };
 
-        # 7tv
-        "moz-addon-prod@7tv.app" = {
-          install_url = "https://extension.7tv.gg/v3.0.9/ext.xpi";
+        # # 7tv
+        # "moz-addon-prod@7tv.app" = {
+        #   install_url = "https://extension.7tv.gg/v3.0.9/ext.xpi";
+        #   installation_mode = "force_installed";
+        # };
+
+        # NipahTV
+        "@NipahTV.com" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/nipahtv/latest.xpi";
           installation_mode = "force_installed";
         };
 

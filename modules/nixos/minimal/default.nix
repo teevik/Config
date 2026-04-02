@@ -78,6 +78,7 @@ in
 
         # Timeout quickly if a substituter is unavailable (default is 300s)
         connect-timeout = 5;
+        fallback = true;
 
         substituters = [
           "https://cache.nixos.org"

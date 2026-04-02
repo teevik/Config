@@ -49,7 +49,7 @@
     };
 
     # Packages
-    determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
+    determinate-nix.url = "github:DeterminateSystems/nix-src";
     iwmenu = {
       url = "github:e-tho/iwmenu";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,16 +103,6 @@
             name = "playwright-cli: init at 0.1.0";
             url = "https://github.com/NixOS/nixpkgs/pull/490230.diff";
             hash = "sha256-j8MYJHXA/FMZPO2peh5MYl6AvCp3aGO3GNCQx1SfKzM=";
-          })
-          (patcher.fetchpatch {
-            name = "zed-editor: 0.226.5 -> 0.228.0 + livekit-libwebrtc update";
-            url = "https://github.com/NixOS/nixpkgs/pull/478907.diff";
-            hash = "sha256-/wwLq8DuzcRL0nXgBifi9IJ4yR3wRleEj1Zgqa/MG8I=";
-          })
-          (patcher.fetchpatch {
-            name = "zed-editor: 0.228.0 -> 0.229.0";
-            url = "https://github.com/NixOS/nixpkgs/pull/503431.diff";
-            hash = "sha256-HrSiI7an1bZpyE/8rQUxWuXvNewDbR8bdogz4WnJI1c=";
           })
         ];
       };

@@ -1,26 +1,15 @@
---- a/packages/opencode/src/cli/cmd/tui/app.tsx	2026-03-15 16:57:26.565094626 +0100
-+++ b/packages/opencode/src/cli/cmd/tui/app.tsx	2026-03-15 16:57:26.565916683 +0100
-@@ -264,22 +264,24 @@
+--- a/packages/opencode/src/cli/cmd/tui/app.tsx
++++ b/packages/opencode/src/cli/cmd/tui/app.tsx
+@@ -4,26 +4,24 @@
    createEffect(() => {
      if (!terminalTitleEnabled() || Flag.OPENCODE_DISABLE_TERMINAL_TITLE) return
  
 -    if (route.data.type === "home") {
 -      renderer.setTerminalTitle("OpenCode")
--      return
--    }
 +    const directory = sync.data.path.directory || process.cwd()
 +    const projectName = directory.split("/").pop() || "OpenCode"
- 
-     if (route.data.type === "session") {
--      const session = sync.session.get(route.data.sessionID)
--      if (!session || SessionApi.isDefaultTitle(session.title)) {
--        renderer.setTerminalTitle("OpenCode")
--        return
--      }
--
--      // Truncate title to 40 chars max
--      const title = session.title.length > 40 ? session.title.slice(0, 37) + "..." : session.title
--      renderer.setTerminalTitle(`OC | ${title}`)
++
++    if (route.data.type === "session") {
 +      const sessionID = route.data.sessionID
 +      const status = sync.data.session_status[sessionID]
 +      const session = sync.session.get(sessionID)
@@ -31,10 +20,35 @@
 +        return ""
 +      })()
 +      renderer.setTerminalTitle(`OC: ${projectName}${statusStr}`)
-+      return
+       return
      }
-+
+ 
+-    if (route.data.type === "session") {
+-      const session = sync.session.get(route.data.sessionID)
+-      if (!session || SessionApi.isDefaultTitle(session.title)) {
+-        renderer.setTerminalTitle("OpenCode")
+-        return
+-      }
+-
+-      const title = session.title.length > 40 ? session.title.slice(0, 37) + "..." : session.title
+-      renderer.setTerminalTitle(`OC | ${title}`)
+-      return
+-    }
+-
+-    if (route.data.type === "plugin") {
+-      renderer.setTerminalTitle(`OC | ${route.data.id}`)
+-    }
 +    renderer.setTerminalTitle(`OC: ${projectName}`)
    })
  
    const args = useArgs()
+
+--- a/packages/opencode/script/build.ts
++++ b/packages/opencode/script/build.ts
+@@ -2,5 +2,5 @@
+   console.log(`Building Web UI to embed in the binary`)
+   const appDir = path.join(import.meta.dirname, "../../app")
+   const dist = path.join(appDir, "dist")
+-  await $`bun run --cwd ${appDir} build`
++  await $`bun ${path.join(appDir, "node_modules/vite/bin/vite.js")} build`.cwd(appDir)
+   const files = (await Array.fromAsync(new Bun.Glob("**/*").scan({ cwd: dist })))

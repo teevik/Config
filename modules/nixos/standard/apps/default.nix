@@ -48,6 +48,7 @@
 
   environment.systemPackages = with pkgs; [
     git
+    rtk
 
     morewaita-icon-theme
     adwaita-icon-theme

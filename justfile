@@ -50,7 +50,7 @@ setup:
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
 update:
-    , nix-update --flake opencode --build
+    nix run nixpkgs#nix-update -- --flake opencode --build
     # , nix-update --flake oh-my-pi --build
 
 build-iso:
