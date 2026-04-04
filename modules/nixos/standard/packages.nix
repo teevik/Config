@@ -45,7 +45,7 @@ let
   # Stremio from pinned nixpkgs
   pinnedNixpkgs =
     import
-      (builtins.fetchTarball {
+      (fetchTarball {
         url = "https://github.com/NixOS/nixpkgs/archive/5135c59491985879812717f4c9fea69604e7f26f.tar.gz";
         sha256 = "09qy7zv80bkd9ighsw0bdxjq70dw3qjnyvg7il1fycrsgs5x1gan";
       })
@@ -55,10 +55,7 @@ let
 in
 {
   environment.systemPackages = with pkgs; [
-    # --- AI Tools ---
-    # perSystem.self.oh-my-pi
-
-    # --- CLI Utilities ---
+    # CLI Utilities
     bat
     erdtree
     moreutils
@@ -84,33 +81,33 @@ in
     lynx
     chromium
 
-    # --- Shells ---
+    # Shells
     nushell
     fish
     carapace
 
-    # --- Editors ---
+    # Editors
     perSystem.helix.default
     perSystem.neovim.default
     unzip # needed by neovim
     vscode
     zed-editor
 
-    # --- Terminal Emulators ---
+    # Terminal Emulators
     kitty
     rio
 
-    # --- File Management ---
+    # File Management
     yazi
     feh
     dragon-drop
 
-    # --- Git ---
+    # Git
     git
     delta
     worktrunk
 
-    # --- Dev Tools - General ---
+    # Dev Tools - General
     gcc
     direnv
     nix-direnv
@@ -121,23 +118,23 @@ in
     dioxus-cli
     playwright-cli-wrapped
 
-    # --- Dev Tools - C++ ---
+    # Dev Tools - C++
     clang-tools
 
-    # --- Dev Tools - Gleam ---
+    # Dev Tools - Gleam
     gleam
     erlang
     rebar3
 
-    # --- Dev Tools - GLSL ---
+    # Dev Tools - GLSL
     glsl_analyzer
 
-    # --- Dev Tools - Go ---
+    # Dev Tools - Go
     go
     gopls
     delve
 
-    # --- Dev Tools - JavaScript ---
+    # Dev Tools - JavaScript
     pnpm
     nodejs
     bun
@@ -148,19 +145,19 @@ in
     oxlint
     oxfmt
 
-    # --- Dev Tools - JSON ---
+    # Dev Tools - JSON
     vscode-langservers-extracted
 
-    # --- Dev Tools - Odin ---
+    # Dev Tools - Odin
     odin
     ols
 
-    # --- Dev Tools - Nix ---
+    # Dev Tools - Nix
     nil
     nixd
     nixfmt
 
-    # --- Dev Tools - Python ---
+    # Dev Tools - Python
     python3
     pyright
     basedpyright
@@ -170,7 +167,7 @@ in
     isort
     black
 
-    # --- Dev Tools - Rust ---
+    # Dev Tools - Rust
     rustup
     pkg-config
     openssl.dev
@@ -179,15 +176,15 @@ in
     mold
     cargo-wizard
 
-    # --- Dev Tools - Zig ---
+    # Dev Tools - Zig
     zig
     zls
 
-    # --- Dev Tools - Lua ---
+    # Dev Tools - Lua
     lua-language-server
     stylua
 
-    # --- Desktop Apps ---
+    # Desktop Apps
     obsidian
     ticktick
     xournalpp
@@ -211,7 +208,7 @@ in
     zotero
     zoom-us
 
-    # --- Hyprland Tools ---
+    # Hyprland Tools
     inputs.hyprland-contrib.packages.${pkgs.stdenv.hostPlatform.system}.grimblast
     perSystem.self.peck
     wl-clipboard
@@ -220,11 +217,11 @@ in
     tofi-patched
     fuzzel
 
-    # --- OpenCode ---
+    # OpenCode
     perSystem.self.opencode
     perSystem.self.opencode-desktop
 
-    # --- Theming ---
+    # Theming
     catppuccin-cursors.mochaDark
     (catppuccin-gtk.override {
       accents = [ "pink" ];
@@ -234,18 +231,12 @@ in
     })
     adwaita-qt
 
-    # --- Stremio (pinned) ---
     pinnedNixpkgs.stremio
-
-    # --- Marble Shell ---
     perSystem.marble.default
-
-    # --- VPN ---
     inputs.openconnect-sso.packages.${pkgs.stdenv.hostPlatform.system}.openconnect-sso
-
-    # --- nix-index + comma ---
     nix-index
     comma
+    perSystem.self.duat
   ];
 
   # Nix-index database for command-not-found
