@@ -17,6 +17,9 @@ incremental = true
 lto = "off"
 
 [dependencies.duat]
-version = "0.9.1"
+git = "https://github.com/AhoyISki/duat"
 default-features = false
 features = ["term-ui", "treesitter"]
+
+[dependencies.duat-lsp]
+git = "https://github.com/AhoyISki/duat"
