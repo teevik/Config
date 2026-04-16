@@ -31,15 +31,6 @@ in
     #   })
     # ];
 
-    # TODO shared with home
-    nixpkgs.config = {
-      allowUnfree = true;
-
-      permittedInsecurePackages = [
-        "qtwebengine-5.15.19"
-      ];
-    };
-
     # nixpkgs.flake = {
     #   setFlakeRegistry = false;
     #   setNixPath = false;

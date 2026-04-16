@@ -109,7 +109,12 @@
     in
     inputs.blueprint {
       inherit inputs;
-      nixpkgs.config.allowUnfree = true;
+      nixpkgs.config = {
+        allowUnfree = true;
+        permittedInsecurePackages = [
+          "qtwebengine-5.15.19"
+        ];
+      };
       systems = [
         "x86_64-linux"
         "aarch64-linux"
