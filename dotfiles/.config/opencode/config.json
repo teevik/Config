@@ -25,17 +25,6 @@
     "grep_app": {
       "type": "remote",
       "url": "https://mcp.grep.app"
-    },
-    "zotero": {
-      "type": "local",
-      "enabled": false,
-      "command": ["uvx", "--from", "zotero-mcp-server", "zotero-mcp"],
-      "environment": {
-        "ZOTERO_LOCAL": "true",
-        "ZOTERO_LIBRARY_TYPE": "group",
-        "ZOTERO_LIBRARY_ID": "6445354",
-        "LD_LIBRARY_PATH": "{env:NIX_LD_LIBRARY_PATH}"
-      }
     }
   },
 

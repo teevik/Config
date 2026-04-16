@@ -13,7 +13,8 @@
     "trust_all_worktrees": true
   },
   "agent_servers": {
-    "claude": {
+    "claude-acp": {
+      "type": "registry",
       "default_mode": "bypassPermissions"
     },
     "OpenCode": {

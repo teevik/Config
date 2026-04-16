@@ -52,6 +52,17 @@ let
       {
         system = pkgs.stdenv.hostPlatform.system;
       };
+
+  # ols-dev-2026-02 is incompatible with odin-dev-2026-04 (core:os/os2 was renamed)
+  ols-patched = pkgs.ols.overrideAttrs (_: {
+    version = "dev-2026-03";
+    src = pkgs.fetchFromGitHub {
+      owner = "DanielGavin";
+      repo = "ols";
+      tag = "dev-2026-03";
+      hash = "sha256-QjkzR9Wnc+Poq7dxDlik9k1maEs8xiFuNbwRdv8nqyo=";
+    };
+  });
 in
 {
   environment.systemPackages = with pkgs; [
@@ -150,7 +161,7 @@ in
 
     # Dev Tools - Odin
     odin
-    ols
+    ols-patched
 
     # Dev Tools - Nix
     nil
@@ -233,7 +244,7 @@ in
 
     pinnedNixpkgs.stremio
     perSystem.marble.default
-    inputs.openconnect-sso.packages.${pkgs.stdenv.hostPlatform.system}.openconnect-sso
+    perSystem.openconnect-sso.default
     nix-index
     comma
     perSystem.self.duat

@@ -62,7 +62,7 @@
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    openconnect-sso.url = "github:ThinkChaos/openconnect-sso/fix/nix-flake";
+    openconnect-sso.url = "github:active-group/openconnect-sso";
     roc.url = "github:roc-lang/roc";
     nix-dram.url = "github:dramforever/nix-dram";
     titdb = {

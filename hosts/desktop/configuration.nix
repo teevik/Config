@@ -14,6 +14,7 @@
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.gaming
+    flake.nixosModules.ctf
     flake.nixosModules.nvidia
     flake.nixosModules.binary-cache
   ];

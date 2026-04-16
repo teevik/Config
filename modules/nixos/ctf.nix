@@ -92,6 +92,12 @@ in
         sigdb
       ]
     ))
+
+    (rizin.withPlugins (
+      plugins: with plugins; [
+        rz-ghidra
+      ]
+    ))
   ];
 
   environment.variables.SECLISTS = "${pkgs.seclists}";
