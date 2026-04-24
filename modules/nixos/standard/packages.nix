@@ -183,6 +183,8 @@ in
     pkg-config
     openssl.dev
     cargo-watch
+    cargo-pgo
+    llvmPackages.bolt
     lld
     mold
     cargo-wizard

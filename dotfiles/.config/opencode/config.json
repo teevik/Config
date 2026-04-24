@@ -58,6 +58,9 @@
       // Read-only nix store
       "/nix/store/*": "allow",
 
+      // Rust source code from cargo registry
+      "~/.cargo/registry/**": "allow",
+
       "*": "ask"
     }
   }
