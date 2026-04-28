@@ -1,44 +1,14 @@
 {
-  "diff_view_style": "unified",
-  "git_panel": {
-    "tree_view": true
-  },
-  "ssh_connections": [
-    {
-      "host": "desktop",
-      "args": [],
-      "projects": []
-    }
-  ],
-  "session": {
-    "trust_all_worktrees": true
-  },
-  "agent_servers": {
-    "claude-acp": {
-      "type": "registry",
-      "default_mode": "bypassPermissions"
-    },
-    "OpenCode": {
-      "type": "custom",
-      "command": "opencode",
-      "args": ["acp"],
-      "default_model": "anthropic/claude-opus-4-5"
-    }
-  },
-  "load_direnv": "direct",
   "edit_predictions": {
     "mode": "subtle"
   },
-  "agent": {
-    "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-sonnet-4-6",
-      "enable_thinking": true,
-      "effort": "high"
-    },
-    "favorite_models": [],
-    "model_parameters": []
+  "git_panel": {
+    "tree_view": true
   },
+  "session": {
+    "trust_all_worktrees": true
+  },
+  "load_direnv": "direct",
   "ui_font_size": 16,
   "buffer_font_size": 16,
   "theme": "Catppuccin Mocha - No Italics",

@@ -54,6 +54,7 @@ vim.opt.hlsearch = true
 
 -- enable line wrapping
 vim.opt.wrap = true
+vim.opt.linebreak = true
 
 -- formatting
 vim.opt.tabstop = 2
@@ -65,15 +66,30 @@ vim.opt.textwidth = 80
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 vim.diagnostic.config({
-	signs = {
-		text = {
-			[vim.diagnostic.severity.ERROR] = " ",
-			[vim.diagnostic.severity.WARN] = " ",
-			[vim.diagnostic.severity.INFO] = " ",
-			[vim.diagnostic.severity.HINT] = " ",
-		},
-	},
-	virtual_text = true, -- show inline diagnostics
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = " ",
+      [vim.diagnostic.severity.WARN] = " ",
+      [vim.diagnostic.severity.INFO] = " ",
+      [vim.diagnostic.severity.HINT] = " ",
+    },
+  },
+  virtual_text = true, -- show inline diagnostics
+})
+
+-- Re-apply ftplugin settings after session restore (auto-session restores
+-- localoptions which can overwrite settings from after/ftplugin/)
+vim.api.nvim_create_autocmd("SessionLoadPost", {
+  group = vim.api.nvim_create_augroup("session-ftplugin-fix", { clear = true }),
+  callback = function()
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.bo[buf].filetype ~= "" then
+        vim.api.nvim_buf_call(buf, function()
+          vim.api.nvim_exec_autocmds("FileType", { pattern = vim.bo.filetype })
+        end)
+      end
+    end
+  end,
 })
 
 -- common typo: :W -> :w
@@ -103,52 +119,52 @@ require("teevik.snacks")
 vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" }, { confirm = false })
 
 require("lualine").setup({
-	options = {
-		section_separators = { left = "", right = "" },
-		component_separators = { left = "", right = "" },
-	},
+  options = {
+    section_separators = { left = "", right = "" },
+    component_separators = { left = "", right = "" },
+  },
 })
 
 -- WhichKey
 vim.pack.add({ "https://github.com/folke/which-key.nvim" }, { confirm = false })
 
 require("which-key").setup({
-	spec = {
-		{ "<leader>b", group = "[B]uffer" },
-		{ "<leader>c", group = "[C]ode" },
-		{ "<leader>f", group = "[F]ind" },
-		{ "<leader>g", group = "[G]oto" },
-		{ "<leader>s", group = "[S]earch", icon = { icon = "", color = "green" } },
-		{ "<leader>u", group = "[U]I" },
-		{ "<leader>w", group = "[W]orkspace" },
-	},
+  spec = {
+    { "<leader>b", group = "[B]uffer" },
+    { "<leader>c", group = "[C]ode" },
+    { "<leader>f", group = "[F]ind" },
+    { "<leader>g", group = "[G]oto" },
+    { "<leader>s", group = "[S]earch",   icon = { icon = "", color = "green" } },
+    { "<leader>u", group = "[U]I" },
+    { "<leader>w", group = "[W]orkspace" },
+  },
 })
 
 -- Utility plugins
 vim.pack.add({
-	"https://github.com/windwp/nvim-autopairs", -- auto pairs
-	"https://github.com/folke/todo-comments.nvim", -- highlight TODO/INFO/WARN comments
-	"https://github.com/rmagatti/auto-session", -- automatic sessions
-	"https://github.com/nvim-lua/plenary.nvim",
-	"https://github.com/noamsto/resolved.nvim",
-	"https://github.com/nvim-tree/nvim-web-devicons",
-	"https://github.com/akinsho/bufferline.nvim",
+  "https://github.com/windwp/nvim-autopairs",   -- auto pairs
+  "https://github.com/folke/todo-comments.nvim", -- highlight TODO/INFO/WARN comments
+  "https://github.com/rmagatti/auto-session",   -- automatic sessions
+  "https://github.com/nvim-lua/plenary.nvim",
+  "https://github.com/noamsto/resolved.nvim",
+  "https://github.com/nvim-tree/nvim-web-devicons",
+  "https://github.com/akinsho/bufferline.nvim",
 }, { confirm = false })
 
 require("nvim-autopairs").setup()
 require("todo-comments").setup()
 require("auto-session").setup({
-	autoload = true,
-	suppressed_dirs = { "~/", "~/Documents/Projects", "~/Downloads", "/" },
-	pre_restore_cmds = {
-		function()
-			local pickers = Snacks.picker.get({ source = "explorer" })
+  autoload = true,
+  suppressed_dirs = { "~/", "~/Documents/Projects", "~/Downloads", "/" },
+  pre_restore_cmds = {
+    function()
+      local pickers = Snacks.picker.get({ source = "explorer" })
 
-			if pickers and pickers[1] then
-				pickers[1]:close()
-			end
-		end,
-	},
+      if pickers and pickers[1] then
+        pickers[1]:close()
+      end
+    end,
+  },
 })
 vim.keymap.set("n", "<leader>wr", "<cmd>AutoSession search<CR>", { desc = "Session search" })
 vim.keymap.set("n", "<leader>ws", "<cmd>AutoSession save<CR>", { desc = "Save session" })
@@ -156,10 +172,10 @@ vim.keymap.set("n", "<leader>wa", "<cmd>AutoSession toggle<CR>", { desc = "Toggl
 require("resolved").setup({})
 
 require("bufferline").setup({
-	options = {
-		diagnostics = "nvim_lsp",
-		middle_mouse_command = "bdelete %d",
-	},
+  options = {
+    diagnostics = "nvim_lsp",
+    middle_mouse_command = "bdelete %d",
+  },
 })
 
 -- Buffer navigation
@@ -179,88 +195,55 @@ vim.keymap.set("n", "<S-Down>", "Vj", { desc = "Start selecting lines down" })
 vim.keymap.set("v", "<S-Up>", "k", { desc = "Extend selection up" })
 vim.keymap.set("v", "<S-Down>", "j", { desc = "Extend selection down" })
 
--- copilot-language-server
--- vim.lsp.config("copilot", {
--- 	cmd = { "copilot-language-server", "--stdio" },
--- 	handlers = {
--- 		didChangeStatus = function(err, res, _)
--- 			if err then
--- 				return
--- 			end
--- 			if res.status == "Error" then
--- 				vim.notify("Please use `:LspCopilotSignIn` to sign into Copilot", vim.log.levels.ERROR)
--- 			end
--- 		end,
--- 	},
--- })
+-- Cursortab (LLM autocomplete)
+vim.pack.add({ "https://github.com/cursortab/cursortab.nvim" }, { confirm = false })
 
--- vim.lsp.config("copilot", {})
--- vim.lsp.enable("copilot")
---
--- vim.pack.add({ "https://github.com/folke/sidekick.nvim" }, { confirm = false })
--- require("sidekick").setup({})
---
--- -- if there is a next edit, jump to it, otherwise apply it if any
--- vim.keymap.set({ "n", "i" }, "<C-l>", function()
--- 	require("sidekick").nes_jump_or_apply()
--- end, { desc = "Goto/Apply Next Edit Suggestion" })
+do -- Build the server binary if it doesn't exist yet
+	local runtime = vim.api.nvim_get_runtime_file("lua/cursortab/init.lua", false)
+	if runtime[1] then
+		local server_dir = vim.fn.fnamemodify(runtime[1], ":h:h:h") .. "/server"
+		if vim.fn.isdirectory(server_dir) == 1 and vim.fn.executable(server_dir .. "/server") ~= 1 then
+			vim.notify("cursortab: building server…", vim.log.levels.INFO)
+			local result = vim.fn.system({ "go", "build", "-C", server_dir })
+			if vim.v.shell_error ~= 0 then
+				vim.notify("cursortab: server build failed:\n" .. result, vim.log.levels.ERROR)
+			end
+		end
+	end
+end
 
-vim.pack.add({ "https://github.com/supermaven-inc/supermaven-nvim" }, { confirm = false })
-require("supermaven-nvim").setup({
-	-- condition = function()
-	-- 	return false
-	-- end,
+require("cursortab").setup({
+	provider = {
+		type = "mercuryapi",
+		api_key_env = "MERCURY_AI_TOKEN",
+	},
 })
-
--- vim.pack.add(
--- 	{ "https://github.com/copilotlsp-nvim/copilot-lsp", "https://github.com/zbirenbaum/copilot.lua" },
--- 	{ confirm = false }
--- )
---
--- require("copilot-lsp").setup({})
---
--- vim.g.copilot_nes_debounce = 500
--- vim.lsp.enable("copilot_ls")
--- vim.keymap.set({ "n", "i" }, "<tab>", function()
--- 	local bufnr = vim.api.nvim_get_current_buf()
--- 	local state = vim.b[bufnr].nes_state
--- 	if state then
--- 		-- Try to jump to the start of the suggestion edit.
--- 		-- If already at the start, then apply the pending suggestion and jump to the end of the edit.
--- 		local _ = require("copilot-lsp.nes").walk_cursor_start_edit()
--- 			or (require("copilot-lsp.nes").apply_pending_nes() and require("copilot-lsp.nes").walk_cursor_end_edit())
--- 		return nil
--- 	else
--- 		-- Resolving the terminal's inability to distinguish between `TAB` and `<C-i>` in normal mode
--- 		return "<C-i>"
--- 	end
--- end, { desc = "Accept Copilot NES suggestion", expr = true })
 
 vim.pack.add({ "https://github.com/alexpasmantier/krust.nvim" }, { confirm = false })
 
 require("krust").setup({
-	keymap = "<leader>k",
+  keymap = "<leader>k",
 })
 
 vim.pack.add({ "https://github.com/NickvanDyke/opencode.nvim" }, { confirm = false })
 
 vim.keymap.set({ "n", "x" }, "<C-a>", function()
-	require("opencode").ask("@this: ", { submit = true })
+  require("opencode").ask("@this: ", { submit = true })
 end, { desc = "Ask opencode" })
 vim.keymap.set({ "n", "x" }, "<C-x>", function()
-	require("opencode").select()
+  require("opencode").select()
 end, { desc = "Execute opencode action…" })
 vim.keymap.set({ "n", "x" }, "ga", function()
-	require("opencode").prompt("@this")
+  require("opencode").prompt("@this")
 end, { desc = "Add to opencode" })
 vim.keymap.set({ "n", "t" }, "<C-.>", function()
-	require("opencode").toggle()
+  require("opencode").toggle()
 end, { desc = "Toggle opencode" })
 vim.keymap.set("n", "<S-C-u>", function()
-	require("opencode").command("session.half.page.up")
+  require("opencode").command("session.half.page.up")
 end, { desc = "opencode half page up" })
 vim.keymap.set("n", "<S-C-d>", function()
-	require("opencode").command("session.half.page.down")
+  require("opencode").command("session.half.page.down")
 end, { desc = "opencode half page down" })
 -- You may want these if you stick with the opinionated "<C-a>" and "<C-x>" above — otherwise consider "<leader>o".
 vim.keymap.set("n", "+", "<C-a>", { desc = "Increment", noremap = true })

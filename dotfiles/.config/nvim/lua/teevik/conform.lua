@@ -1,5 +1,10 @@
 vim.pack.add({ "https://github.com/stevearc/conform.nvim" }, { confirm = false })
 require("conform").setup({
+	formatters = {
+		typstyle = {
+			prepend_args = { "--wrap-text" },
+		},
+	},
 	formatters_by_ft = {
 		lua = { "stylua" },
 		python = { "isort", "black" },
@@ -23,6 +28,8 @@ require("conform").setup({
 		-- Docs (oxfmt)
 		markdown = { "oxfmt" },
 		graphql = { "oxfmt" },
+		-- Typst
+		typst = { "typstyle" },
 		-- Nushell
 		nu = { "nufmt" },
 	},

@@ -13,6 +13,7 @@ require("nvim-treesitter.configs").setup({
 		"c",
 		"rust",
 		"go",
+		"typst",
 	},
 
 	auto_install = true, -- autoinstall languages that are not installed yet

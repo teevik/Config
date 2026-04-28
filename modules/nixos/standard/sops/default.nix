@@ -20,6 +20,9 @@
           owner = "teevik";
           path = "/home/teevik/.wakatime.cfg";
         };
+        mercury-ai-token = {
+          owner = "teevik";
+        };
       };
     };
   };

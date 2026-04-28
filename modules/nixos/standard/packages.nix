@@ -197,6 +197,9 @@ in
     lua-language-server
     stylua
 
+    # Dev Tools - Typst
+    typstyle
+
     # Desktop Apps
     obsidian
     ticktick

@@ -48,6 +48,17 @@ require("lazy-lsp").setup({
 	},
 })
 
+-- Tinymist (Typst LSP) - enable background preview server on :23635
+vim.lsp.config("tinymist", {
+	init_options = {
+		preview = {
+			background = {
+				enabled = true,
+			},
+		},
+	},
+})
+
 -- Odin Language Server (not managed by lazy-lsp, requires ols binary on PATH)
 vim.lsp.config("ols", {
 	cmd = { "ols" },

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   # Nushell
   environment = {
@@ -26,6 +26,10 @@
     interactiveShellInit = ''
       if [ -f ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then
         source  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+      fi
+
+      if [ -r ${config.sops.secrets.mercury-ai-token.path} ]; then
+        export MERCURY_AI_TOKEN=$(cat ${config.sops.secrets.mercury-ai-token.path})
       fi
 
       if [[ $(${pkgs.procps}/bin/ps --no-header --pid=$PPID --format=comm) != "nu" && -z ''${BASH_EXECUTION_STRING} ]]
