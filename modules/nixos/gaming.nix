@@ -21,7 +21,7 @@ in
   };
 
   environment.systemPackages = with pkgs; [
-    lutris
+    # lutris
     dualsensectl
     (prismlauncher.override {
       jdks = with pkgs; [

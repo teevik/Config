@@ -85,13 +85,15 @@ in
     seclists
     fhs
 
-    (cutter.withPlugins (
-      plugins: with plugins; [
-        rz-ghidra
-        jsdec
-        sigdb
-      ]
-    ))
+    # TODO: Re-enable when upstream fixes Qt 6.11 / shiboken compatibility
+    # https://github.com/rizinorg/cutter/issues/XXX
+    # (cutter.withPlugins (
+    #   plugins: with plugins; [
+    #     rz-ghidra
+    #     jsdec
+    #     sigdb
+    #   ]
+    # ))
 
     (rizin.withPlugins (
       plugins: with plugins; [
