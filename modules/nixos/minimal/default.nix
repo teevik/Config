@@ -78,8 +78,8 @@ in
           # "https://zed.cachix.org"
           # "https://helix.cachix.org"
           # "https://install.determinate.systems"
-        ];
-        # ++ lib.optional (config.networking.hostName != "desktop") "http://desktop:5000";
+        ]
+        ++ lib.optional (config.networking.hostName != "desktop") "http://desktop:5000";
 
         trusted-public-keys = [
           "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
