@@ -8,7 +8,19 @@
   //   }
   // }
   //
+  "languages": {
+    "Typst": {
+      "format_on_save": "on",
+      "formatter": "language_server"
+    }
+  },
   "lsp": {
+    "tinymist": {
+      "settings": {
+        "formatterMode": "typstyle",
+        "formatterProseWrap": true
+      }
+    },
     "nixd": {
       "settings": {
         "nixpkgs": {
