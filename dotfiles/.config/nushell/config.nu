@@ -3,6 +3,12 @@ source ~/.cache/carapace/init.nu
 source ~/.cache/zoxide.nu
 source ~/.cache/worktrunk-init.nu
 
+# Plugins
+plugin use skim
+
+# Scripts from nu_scripts
+use /etc/nushell/scripts/ultimate_extractor.nu *
+
 let menus = []
 
 let keybindings = [

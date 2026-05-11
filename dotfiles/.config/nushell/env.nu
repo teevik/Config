@@ -11,6 +11,8 @@ carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
 zoxide init nushell | save --force ~/.cache/zoxide.nu
 wt config shell init nu | save --force ~/.cache/worktrunk-init.nu
 
+plugin add /etc/nushell/plugins/skim
+
 # nix-index command-not-found
 $env.config.hooks.command_not_found = { |cmd_name|
     try {

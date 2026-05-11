@@ -13,7 +13,8 @@
     "@nick-vi/opencode-type-inject@latest",
     "@mohak34/opencode-notifier@latest",
     // "@plannotator/opencode@latest",
-    "opencode-wakatime@latest"
+    "opencode-wakatime@latest",
+    "@0xsero/open-queue"
     // "@mailshieldai/opencode-canvas@latest"
   ],
 

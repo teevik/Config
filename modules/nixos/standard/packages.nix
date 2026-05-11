@@ -91,9 +91,12 @@ in
     caligula
     lynx
     chromium
+    typos
 
     # Shells
     nushell
+    nushellPlugins.skim
+    nu_scripts
     fish
     carapace
 
@@ -198,6 +201,7 @@ in
     stylua
 
     # Dev Tools - Typst
+    typst
     typstyle
 
     # Desktop Apps
@@ -235,7 +239,7 @@ in
 
     # OpenCode
     perSystem.self.opencode
-    perSystem.self.opencode-desktop
+    pkgs.opencode-desktop
 
     # Theming
     catppuccin-cursors.mochaDark

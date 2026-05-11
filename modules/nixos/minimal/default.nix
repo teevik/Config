@@ -74,10 +74,10 @@ in
         substituters = [
           "https://cache.nixos.org"
           # "https://teevik.cachix.org"
-          # "https://hyprland.cachix.org"
+          "https://hyprland.cachix.org"
           # "https://zed.cachix.org"
           # "https://helix.cachix.org"
-          # "https://install.determinate.systems"
+          "https://install.determinate.systems"
         ]
         ++ lib.optional (config.networking.hostName != "desktop") "http://desktop:5000";
 
@@ -85,10 +85,10 @@ in
           "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
           "desktop-1:VvIgYHAClUfjQjKWeNaCiQTRm9Q3fO0Q3v08KLTp0yo="
           # "teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ="
-          # "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+          "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
           # "zed.cachix.org-1:/pHQ6dpMsAZk2DiP4WCL0p9YDNKWj2Q5FL20bNmw1cU="
           # "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
-          # "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+          "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
         ];
       };
 

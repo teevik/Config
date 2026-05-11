@@ -9,18 +9,16 @@ pkgs.opencode.overrideAttrs (
   in
   oldAttrs
   // rec {
-    version = "1.14.33";
+    version = "1.14.48";
     src = pkgs.fetchFromGitHub {
       owner = "anomalyco";
       repo = "opencode";
       tag = "v${version}";
-      hash = "sha256-bnAV1ApOYZngG59fxFKrGN0jmBKWKnjktsbKJiEOaSo=";
+      hash = "sha256-gyybqabTco+5ZeWv4lCX8t/R9Jm3tYsA8wVvkrxkEYQ=";
     };
     node_modules = old.node_modules.overrideAttrs (prev: {
       inherit src;
-      # TODO: Remove when https://github.com/anomalyco/opencode/issues/23256 is fixed
-      buildPhase = lib.replaceStrings [ "--frozen-lockfile \\\n  " ] [ "" ] prev.buildPhase;
-      outputHash = "sha256-dbpqhVcjWr+puZhV0x7pR38iMjjZdbrJydKJ/qJfDeY=";
+      outputHash = "sha256-94uXrhyGqW016U6LPE/xIfZGoDOzyUto5DyQrYYePds=";
     });
   }
 )

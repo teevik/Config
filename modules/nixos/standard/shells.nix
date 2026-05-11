@@ -10,6 +10,10 @@
 
     # variables.SHELL = "${pkgs.nushell}/bin/nu";
     variables.SHELL = "${pkgs.bash}/bin/bash";
+
+    etc."nushell/plugins/skim".source = "${pkgs.nushellPlugins.skim}/bin/nu_plugin_skim";
+    etc."nushell/scripts/ultimate_extractor.nu".source =
+      "${pkgs.nu_scripts}/share/nu_scripts/modules/data_extraction/ultimate_extractor.nu";
   };
 
   # Fish
