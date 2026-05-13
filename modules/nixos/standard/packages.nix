@@ -53,14 +53,14 @@ let
         system = pkgs.stdenv.hostPlatform.system;
       };
 
-  # ols-dev-2026-02 is incompatible with odin-dev-2026-04 (core:os/os2 was renamed)
+  # ols-dev-2026-04 is incompatible with odin-dev-2026-04 (filepath API changes)
   ols-patched = pkgs.ols.overrideAttrs (_: {
-    version = "dev-2026-03";
+    version = "dev-2026-05";
     src = pkgs.fetchFromGitHub {
       owner = "DanielGavin";
       repo = "ols";
-      tag = "dev-2026-03";
-      hash = "sha256-QjkzR9Wnc+Poq7dxDlik9k1maEs8xiFuNbwRdv8nqyo=";
+      tag = "dev-2026-05";
+      hash = "sha256-9tQVyauvXGTkKnQUSYKAhjL5ZZbhglqdcxdcs27P2k4=";
     };
   });
 in
