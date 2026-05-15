@@ -65,7 +65,16 @@
       "g p": "pane::ActivatePreviousItem",
 
       // Rename file (from nvim <leader>cR)
-      "space c shift-r": "project_panel::Rename"
+      "space c shift-r": "project_panel::Rename",
+
+      // W as reverse of w (go back one word)
+      "shift-w": "vim::PreviousWordStart"
+    }
+  },
+  {
+    "context": "vim_operator != none",
+    "bindings": {
+      "shift-w": "vim::PreviousWordStart"
     }
   },
   {

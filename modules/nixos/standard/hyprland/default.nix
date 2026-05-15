@@ -8,6 +8,42 @@
 let
   hyprlandPackage = inputs.hyprland.packages.x86_64-linux.hyprland;
   portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
+
+  # Lid handler: disable internal display when lid closes and an external
+  # monitor is connected. Re-enable on lid open.
+  lidHandler = pkgs.writeShellApplication {
+    name = "hyprland-lid-handler";
+    runtimeInputs = with pkgs; [
+      hyprland
+      jq
+    ];
+    text = ''
+      INTERNAL="eDP-1"
+      state="''${1:-}"
+
+      # Auto-detect from /proc if no arg given (used on startup)
+      if [ -z "$state" ]; then
+        if grep -qs closed /proc/acpi/button/lid/*/state; then
+          state="close"
+        else
+          state="open"
+        fi
+      fi
+
+      case "$state" in
+        close)
+          external_count=$(hyprctl -j monitors | jq "[.[] | select(.name != \"$INTERNAL\")] | length")
+          if [ "$external_count" -gt 0 ]; then
+            hyprctl keyword monitor "$INTERNAL,disable"
+          fi
+          ;;
+        open)
+          # Re-source monitor config managed by nwg-displays to restore exact settings
+          hyprctl reload
+          ;;
+      esac
+    '';
+  };
 in
 {
   imports = [ inputs.hyprland.nixosModules.default ];
@@ -28,6 +64,7 @@ in
   environment.systemPackages = [
     pkgs.nwg-displays
     perSystem.hyprland-scratchpad.default
+    lidHandler
   ];
 
   # Ensure the config files exist for nwg-displays

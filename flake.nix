@@ -97,14 +97,19 @@
     unpatchedInputs:
     let
       patcher = unpatchedInputs.flake-input-patcher.lib.x86_64-linux;
-      inputs = patcher.patch unpatchedInputs {
-        nixpkgs.patches = [
-          (patcher.fetchpatch {
-            name = "playwright-cli: init at 0.1.0";
-            url = "https://github.com/NixOS/nixpkgs/pull/490230.diff";
-            hash = "sha256-j8MYJHXA/FMZPO2peh5MYl6AvCp3aGO3GNCQx1SfKzM=";
-          })
-        ];
+      inputs = patcher.patch {
+        inherit unpatchedInputs;
+        flakePath = ./.;
+
+        patchSpec = {
+          nixpkgs.patches = [
+            (patcher.fetchpatch {
+              name = "playwright-cli: init at 0.1.0";
+              url = "https://github.com/NixOS/nixpkgs/pull/490230.diff";
+              hash = "sha256-j8MYJHXA/FMZPO2peh5MYl6AvCp3aGO3GNCQx1SfKzM=";
+            })
+          ];
+        };
       };
     in
     inputs.blueprint {
