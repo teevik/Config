@@ -23,6 +23,9 @@
       "space g s": "git_panel::ToggleFocus",
       "space g b": "git::Branch",
 
+      // Redo (from nvim <C-r>)
+      "shift-u": "editor::Redo",
+
       // Diagnostics (from nvim <leader>sd)
       "space s d": "diagnostics::Deploy"
     }

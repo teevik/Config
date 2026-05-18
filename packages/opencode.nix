@@ -9,12 +9,12 @@ pkgs.opencode.overrideAttrs (
   in
   oldAttrs
   // rec {
-    version = "1.15.3";
+    version = "1.15.4";
     src = pkgs.fetchFromGitHub {
       owner = "anomalyco";
       repo = "opencode";
       tag = "v${version}";
-      hash = "sha256-OKQR76q7trKQTvlMxH8tG2jNnRtBe3YeFfvNw8c3+8I=";
+      hash = "sha256-aCoajfdfNsEq5YGFwX+YKkC6Bo19f34BbKt3wJ1FNmA=";
     };
     node_modules = old.node_modules.overrideAttrs (prev: {
       inherit src;
