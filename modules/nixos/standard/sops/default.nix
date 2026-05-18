@@ -23,6 +23,9 @@
         mercury-ai-token = {
           owner = "teevik";
         };
+        excalidraw-token = {
+          owner = "teevik";
+        };
       };
     };
   };

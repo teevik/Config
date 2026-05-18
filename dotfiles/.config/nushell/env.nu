@@ -2,6 +2,15 @@
 $env.EDITOR = "nvim"
 $env.PKG_CONFIG_PATH = "/run/current-system/sw/lib/pkgconfig"
 
+# Secrets from sops-nix
+if ("/run/secrets/mercury-ai-token" | path exists) {
+    $env.MERCURY_AI_TOKEN = (open --raw /run/secrets/mercury-ai-token | str trim)
+}
+
+if ("/run/secrets/excalidraw-token" | path exists) {
+    $env.EXCALIDRAW_TOKEN = (open --raw /run/secrets/excalidraw-token | str trim)
+}
+
 # Add cargo bin and npm-packages to PATH
 $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.cargo/bin" $"($nu.home-dir)/.npm-packages/bin"])
 

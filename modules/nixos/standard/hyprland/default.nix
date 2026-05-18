@@ -44,6 +44,28 @@ let
       esac
     '';
   };
+
+  enableDisplays = pkgs.writeShellApplication {
+    name = "hyprland-enable-displays";
+    runtimeInputs = [
+      hyprlandPackage
+      pkgs.jq
+    ];
+    text = ''
+      hyprctl dispatch dpms on || true
+
+      monitors="$(hyprctl -j monitors all | jq -r '.[]?.name // empty' || true)"
+
+      if [ -z "$monitors" ]; then
+        hyprctl keyword monitor ",preferred,auto,auto"
+        exit 0
+      fi
+
+      printf '%s\n' "$monitors" | while IFS= read -r monitor; do
+        hyprctl keyword monitor "$monitor,preferred,auto,auto"
+      done
+    '';
+  };
 in
 {
   imports = [ inputs.hyprland.nixosModules.default ];
@@ -65,6 +87,7 @@ in
     pkgs.nwg-displays
     perSystem.hyprland-scratchpad.default
     lidHandler
+    enableDisplays
   ];
 
   # Ensure the config files exist for nwg-displays

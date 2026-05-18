@@ -26,6 +26,14 @@
     "grep_app": {
       "type": "remote",
       "url": "https://mcp.grep.app"
+    },
+    "excalidraw": {
+      "type": "remote",
+      "url": "https://api.excalidraw.com/api/v1/mcp",
+      "enabled": false,
+      "headers": {
+        "Authorization": "Bearer {env:EXCALIDRAW_TOKEN}"
+      }
     }
   },
 
