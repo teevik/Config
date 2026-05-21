@@ -20,7 +20,7 @@ in
 
   config = {
     documentation = {
-      man.generateCaches = false;
+      man.cache.enable = false;
       doc.enable = false;
       nixos.enable = false;
     };

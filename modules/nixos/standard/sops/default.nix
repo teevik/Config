@@ -14,7 +14,10 @@
 
       secrets = {
         tailscale = { };
-        nix-access-tokens-github = { };
+        nix-access-tokens-github = {
+          owner = "teevik";
+          mode = "0400";
+        };
         cachix = { };
         wakatime = {
           owner = "teevik";

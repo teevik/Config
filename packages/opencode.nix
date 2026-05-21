@@ -9,16 +9,16 @@ pkgs.opencode.overrideAttrs (
   in
   oldAttrs
   // rec {
-    version = "1.15.4";
+    version = "1.15.6";
     src = pkgs.fetchFromGitHub {
       owner = "anomalyco";
       repo = "opencode";
       tag = "v${version}";
-      hash = "sha256-aCoajfdfNsEq5YGFwX+YKkC6Bo19f34BbKt3wJ1FNmA=";
+      hash = "sha256-neISh7Gs1y8+2M0/5erhhNip5ZBYlUFqbgOsVljZ2Gc=";
     };
     node_modules = old.node_modules.overrideAttrs (prev: {
       inherit src;
-      outputHash = "sha256-O6czNd9n6b0TTIsPseZn9qOlxsPzRTrePu3L6gM13oM=";
+      outputHash = "sha256-IPht2Pf4q6qIDz8zMC27d9m3cdi0qzD1a4tLTISnE6E=";
     });
   }
 )

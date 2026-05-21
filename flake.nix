@@ -77,6 +77,12 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    zed = {
+      url = "github:zed-industries/zed";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # opencode = {
     #   url = "github:sst/opencode";
     #   inputs.nixpkgs.follows = "nixpkgs";

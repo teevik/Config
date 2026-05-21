@@ -3,7 +3,7 @@
   ...
 }:
 {
-  services.harmonia = {
+  services.harmonia.cache = {
     enable = true;
     signKeyPaths = [ config.sops.secrets.harmonia-signing-key.path ];
     settings.bind = "[::]:5000";
