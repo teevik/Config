@@ -83,6 +83,23 @@ $env.PROMPT_COMMAND = {||
 }
 
 def with-clean-term [cmd: string, ...args] {
+    let kitty_socket = $env.KITTY_LISTEN_ON?
+    let kitty_available = if ($kitty_socket | is-empty) {
+        false
+    } else {
+        try {
+            kitty @ ls o+e> /dev/null
+            true
+        } catch {
+            false
+        }
+    }
+
+    if not $kitty_available {
+        ^$cmd ...$args
+        return
+    }
+
     kitty @ set-spacing padding=0
     kitty @ set-background-opacity 1
 

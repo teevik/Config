@@ -1,4 +1,7 @@
 {
+  "focus_follows_mouse": {
+    "enabled": true
+  },
   "agent_servers": {
     "opencode": {
       "type": "registry"
