@@ -105,17 +105,7 @@ in
     perSystem.neovim.default
     unzip # needed by neovim
     vscode
-    # zed-editor
-    (perSystem.zed.default.overrideAttrs (oldAttrs: {
-      env = (oldAttrs.env or { }) // {
-        LK_CUSTOM_WEBRTC = livekit-libwebrtc;
-      };
-      cargoArtifacts = oldAttrs.cargoArtifacts.overrideAttrs (oldAttrs': {
-        env = (oldAttrs'.env or { }) // {
-          LK_CUSTOM_WEBRTC = livekit-libwebrtc;
-        };
-      });
-    }))
+    perSystem.zed.default
 
     # Terminal Emulators
     kitty

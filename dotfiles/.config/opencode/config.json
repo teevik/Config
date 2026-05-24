@@ -58,19 +58,30 @@
     "canvas_*": "allow",
 
     "external_directory": {
-      // Safe to read
+      "*": "ask",
+
+      // Full access to temp files/directories
+      "/tmp": "allow",
       "/tmp/**": "allow",
-      "/usr/share/*": "allow",
-      "/usr/local/share/*": "allow",
-      "/var/log/*": "allow",
+      "/var/tmp": "allow",
+      "/var/tmp/**": "allow",
+
+      // Skill bundles used by opencode
+      "~/.agents/skills": "allow",
+      "~/.agents/skills/**": "allow",
+      "~/.claude/skills": "allow",
+      "~/.claude/skills/**": "allow",
+
+      // Safe to read
+      "/usr/share/**": "allow",
+      "/usr/local/share/**": "allow",
+      "/var/log/**": "allow",
 
       // Read-only nix store
-      "/nix/store/*": "allow",
+      "/nix/store/**": "allow",
 
       // Rust source code from cargo registry
-      "~/.cargo/registry/**": "allow",
-
-      "*": "ask"
+      "~/.cargo/registry/**": "allow"
     }
   }
 }

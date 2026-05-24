@@ -78,10 +78,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zed = {
-      url = "github:zed-industries/zed";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    zed.url = "github:teevik/zed-cached/stable";
 
     # opencode = {
     #   url = "github:sst/opencode";
