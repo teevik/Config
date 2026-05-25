@@ -74,12 +74,12 @@
       "shift-w": "vim::PreviousWordStart"
     }
   },
-  {
-    "context": "vim_operator != none",
-    "bindings": {
-      "shift-w": "vim::PreviousWordStart"
-    }
-  },
+  // {
+  //   "context": "vim_operator != none",
+  //   "bindings": {
+  //     "shift-w": "vim::PreviousWordStart"
+  //   }
+  // },
   {
     "context": "vim_mode == normal",
     "bindings": {
@@ -119,6 +119,14 @@
     "context": "Terminal",
     "bindings": {
       "alt-f": null
+    }
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      // Navigation history (VS Code-style)
+      "alt-left": "pane::GoBack",
+      "alt-right": "pane::GoForward"
     }
   },
   {

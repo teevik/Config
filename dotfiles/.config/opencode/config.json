@@ -39,7 +39,10 @@
 
   "agent": {
     "explore": {
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/claude-sonnet-4-6"
+    },
+    "scout": {
+      "model": "opencode/claude-sonnet-4-6"
     }
   },
 
