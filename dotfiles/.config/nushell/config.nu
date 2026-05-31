@@ -68,6 +68,12 @@ $env.config.hooks.env_change = {
     }]
 }
 
+# Devenv auto-activation
+# Enable this after updating to a devenv release that includes the Nushell hook fixes.
+# mkdir ~/.cache/devenv
+# devenv hook nu | save --force ~/.cache/devenv/hook.nu
+# source ~/.cache/devenv/hook.nu
+
 alias zed = zeditor
 alias neofetch = fastfetch
 

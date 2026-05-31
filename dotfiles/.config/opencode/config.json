@@ -47,6 +47,13 @@
   },
 
   "lsp": {
+    "pyright": {
+      "disabled": true
+    },
+    "ty": {
+      "command": ["ty", "server"],
+      "extensions": [".py", ".pyi"]
+    },
     "tailwind": {
       "command": ["bun", "x", "tailwindcss-language-server", "--stdio"],
       "extensions": [".tsx"]

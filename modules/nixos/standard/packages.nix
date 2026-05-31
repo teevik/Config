@@ -186,12 +186,13 @@ in
     nixfmt
 
     # Dev Tools - Python
-    python3
-    pyright
-    basedpyright
+    # python3
+    # pyright
+    # basedpyright
     uv
-    python313Packages.ipykernel
-    python313Packages.jupytext
+    ty
+    # python313Packages.ipykernel
+    # python313Packages.jupytext
     isort
     black
 

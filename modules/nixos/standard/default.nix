@@ -95,4 +95,5 @@
   # NOTE: cliphist must be started by the user or via a systemd user service
 
   # users.users.teevik.extraGroups = [ "geoclue" ];
+  environment.localBinInPath = true;
 }

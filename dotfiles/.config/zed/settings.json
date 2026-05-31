@@ -77,7 +77,12 @@
     },
     "Python": {
       "tab_size": 4,
-      "formatter": "language_server"
+      "formatter": "language_server",
+      "language_servers": [
+        "ty",
+        "!basedpyright"
+        // "..."
+      ]
     },
     "Rust": {
       "tab_size": 4,
