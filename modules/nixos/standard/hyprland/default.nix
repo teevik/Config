@@ -6,15 +6,29 @@
   ...
 }:
 let
-  hyprlandPackage = inputs.hyprland.packages.x86_64-linux.hyprland;
-  portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
+  hyprlandPackage = perSystem.hyprland.hyprland;
+  portalPackage = perSystem.hyprland.xdg-desktop-portal-hyprland;
+  # TODO: use upstream
+  nwgDisplays = pkgs.nwg-displays.overrideAttrs (_: {
+    version = "0.4.3";
+    src = pkgs.fetchFromGitHub {
+      owner = "nwg-piotr";
+      repo = "nwg-displays";
+      tag = "v0.4.3";
+      hash = "sha256-f7x6PTsND0eprhqvIdkZdHujcCbkJnqoXIKeE0O/YPE=";
+    };
+  });
+  splitMonitorWorkspacesLua = pkgs.runCommand "split-monitor-workspaces-lua" { } ''
+    mkdir -p $out/share/hyprland/split-monitor-workspaces
+    cp ${inputs.split-monitor-workspaces}/lua/*.lua $out/share/hyprland/split-monitor-workspaces/
+  '';
 
   # Lid handler: disable internal display when lid closes and an external
   # monitor is connected. Re-enable on lid open.
   lidHandler = pkgs.writeShellApplication {
     name = "hyprland-lid-handler";
     runtimeInputs = with pkgs; [
-      hyprland
+      hyprlandPackage
       jq
     ];
     text = ''
@@ -75,26 +89,27 @@ in
     withUWSM = true;
     package = hyprlandPackage;
     portalPackage = portalPackage;
-    plugins = [
-      perSystem.split-monitor-workspaces.split-monitor-workspaces
-    ];
-    extraConfig = builtins.readFile ./hyprland.conf;
   };
 
   programs.uwsm.enable = true;
 
   environment.systemPackages = [
-    pkgs.nwg-displays
+    nwgDisplays
     perSystem.hyprland-scratchpad.default
+    splitMonitorWorkspacesLua
     lidHandler
     enableDisplays
   ];
 
-  # Ensure the config files exist for nwg-displays
+  # buildEnv only links share/ subdirs listed in pathsToLink. The upstream
+  # hyprland module adds /share/hypr (singular). split-monitor-workspaces
+  # ships its lua under /share/hyprland (plural), so we must opt-in.
+  environment.pathsToLink = [ "/share/hyprland" ];
+
   system.activationScripts.nwgDisplaysConfig.text = ''
     mkdir -p /home/teevik/.config/hypr
-    [ -f /home/teevik/.config/hypr/monitors.conf ] || touch /home/teevik/.config/hypr/monitors.conf
-    [ -f /home/teevik/.config/hypr/workspaces.conf ] || touch /home/teevik/.config/hypr/workspaces.conf
+    [ -f /home/teevik/.config/hypr/monitors.lua ] || printf '%s\n' 'hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })' > /home/teevik/.config/hypr/monitors.lua
+    [ -f /home/teevik/.config/hypr/workspaces.lua ] || touch /home/teevik/.config/hypr/workspaces.lua
     chown -R teevik:users /home/teevik/.config/hypr
   '';
 

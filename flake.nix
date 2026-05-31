@@ -73,6 +73,10 @@
       url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    codex-desktop-linux = {
+      url = "github:ilysenko/codex-desktop-linux";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     neovim = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -89,9 +93,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland.url = "github:hyprwm/Hyprland/v0.54.2";
+    hyprland.url = "github:hyprwm/Hyprland";
     split-monitor-workspaces = {
-      url = "github:Duckonaut/split-monitor-workspaces/v0.54.2";
+      url = "github:zjeffer/split-monitor-workspaces";
       inputs.hyprland.follows = "hyprland";
     };
   };

@@ -65,6 +65,20 @@ let
   });
 in
 {
+  imports = [ inputs.codex-desktop-linux.nixosModules.default ];
+
+  programs.codexDesktopLinux = {
+    enable = true;
+    computerUseUi.enable = true;
+  };
+
+  programs.ydotool = {
+    enable = true;
+    group = "input";
+  };
+
+  users.users.teevik.extraGroups = [ "input" ];
+
   environment.systemPackages = with pkgs; [
     # CLI Utilities
     bat
@@ -240,6 +254,7 @@ in
     # OpenCode
     perSystem.self.opencode
     pkgs.opencode-desktop
+    codex
 
     # Theming
     catppuccin-cursors.mochaDark

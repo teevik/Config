@@ -1,7 +1,6 @@
 ---
 description: Update NixOS config
 agent: build
-model: opencode/kimi-k2.6
 ---
 
 Update and fix errors, run these in order

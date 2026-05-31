@@ -39,10 +39,10 @@
 
   "agent": {
     "explore": {
-      "model": "opencode/claude-sonnet-4-6"
+      "model": "openai/gpt-5.5-fast"
     },
     "scout": {
-      "model": "opencode/claude-sonnet-4-6"
+      "model": "openai/gpt-5.5-fast"
     }
   },
 
