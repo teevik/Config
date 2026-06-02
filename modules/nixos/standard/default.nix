@@ -96,4 +96,10 @@
 
   # users.users.teevik.extraGroups = [ "geoclue" ];
   environment.localBinInPath = true;
+
+  services.usbmuxd.enable = true;
+  environment.systemPackages = with pkgs; [
+    libimobiledevice
+    ifuse
+  ];
 }
