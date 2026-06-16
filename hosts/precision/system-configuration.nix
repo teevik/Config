@@ -9,6 +9,8 @@
 let
   hyprlandPackage = perSystem.hyprland.hyprland;
   hyprlandModuleDir = ../../modules/nixos/standard/hyprland;
+  glycinGtk4LibraryPath = "${pkgs.libglycin-gtk4}/lib";
+  glycinGtk4TypelibPath = "${pkgs.libglycin-gtk4}/lib/girepository-1.0";
 
   nwgDisplays = pkgs.nwg-displays.overrideAttrs (_: {
     version = "0.4.3";
@@ -106,6 +108,15 @@ let
     }) uwsmUserUnits
   );
 
+  marbleWithGlycinGtk4 = pkgs.writeShellApplication {
+    name = "marble-with-glycin-gtk4";
+    text = ''
+      export GI_TYPELIB_PATH="${glycinGtk4TypelibPath}''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
+      export LD_LIBRARY_PATH="${glycinGtk4LibraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      exec ${perSystem.marble.default}/bin/marble "$@"
+    '';
+  };
+
   marbleService = pkgs.writeText "marble.service" ''
     [Unit]
     Description=Marble Shell
@@ -113,7 +124,7 @@ let
     After=graphical-session.target
 
     [Service]
-    ExecStart=${perSystem.marble.default}/bin/marble
+    ExecStart=${marbleWithGlycinGtk4}/bin/marble-with-glycin-gtk4
     ExecReload=${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID
     Restart=on-failure
     KillMode=mixed
@@ -227,6 +238,8 @@ in
 
     extraInit = ''
       export XDG_DATA_DIRS="/run/system-manager/sw/share:''${XDG_DATA_DIRS:-/usr/local/share:/usr/share:/var/lib/snapd/desktop}"
+      export GI_TYPELIB_PATH="${glycinGtk4TypelibPath}''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
+      export LD_LIBRARY_PATH="${glycinGtk4LibraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     '';
 
     pathsToLink = [
@@ -252,6 +265,8 @@ in
       uwsm
       brightnessctl
       hypridle
+      libglycin-gtk4
+      marbleWithGlycinGtk4
       nwgDisplays
       perSystem.hyprland-scratchpad.default
       splitMonitorWorkspacesLua
