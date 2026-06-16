@@ -65,13 +65,6 @@ let
   });
 in
 {
-  imports = [ inputs.codex-desktop-linux.nixosModules.default ];
-
-  programs.codexDesktopLinux = {
-    enable = true;
-    computerUseUi.enable = true;
-  };
-
   programs.ydotool = {
     enable = true;
     group = "input";
@@ -238,10 +231,12 @@ in
     wavemon
     perSystem.antigravity.default
     btop
-    spotify
     libnotify
     zotero
     zoom-us
+  ] ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
+    spotify
+  ] ++ [
 
     # Hyprland Tools
     inputs.hyprland-contrib.packages.${pkgs.stdenv.hostPlatform.system}.grimblast
@@ -255,7 +250,6 @@ in
     # OpenCode
     perSystem.self.opencode
     pkgs.opencode-desktop
-    codex
 
     # Theming
     catppuccin-cursors.mochaDark

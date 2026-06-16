@@ -63,7 +63,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     openconnect-sso.url = "github:active-group/openconnect-sso";
-    roc.url = "github:roc-lang/roc";
     nix-dram.url = "github:dramforever/nix-dram";
     titdb = {
       url = "github:GarrettGR/titdb-nix";
@@ -116,6 +115,7 @@
               hash = "sha256-j8MYJHXA/FMZPO2peh5MYl6AvCp3aGO3GNCQx1SfKzM=";
             })
           ];
+
         };
       };
     in
