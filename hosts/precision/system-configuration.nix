@@ -5,6 +5,81 @@
   pkgs,
   ...
 }:
+let
+  hyprlandPackage = perSystem.hyprland.hyprland;
+
+  nwgDisplays = pkgs.nwg-displays.overrideAttrs (_: {
+    version = "0.4.3";
+    src = pkgs.fetchFromGitHub {
+      owner = "nwg-piotr";
+      repo = "nwg-displays";
+      tag = "v0.4.3";
+      hash = "sha256-f7x6PTsND0eprhqvIdkZdHujcCbkJnqoXIKeE0O/YPE=";
+    };
+  });
+
+  splitMonitorWorkspacesLua = pkgs.runCommand "split-monitor-workspaces-lua" { } ''
+    mkdir -p $out/share/hyprland/split-monitor-workspaces
+    cp ${inputs.split-monitor-workspaces}/lua/*.lua $out/share/hyprland/split-monitor-workspaces/
+  '';
+
+  lidHandler = pkgs.writeShellApplication {
+    name = "hyprland-lid-handler";
+    runtimeInputs = [
+      hyprlandPackage
+      pkgs.gnugrep
+      pkgs.jq
+    ];
+    text = ''
+      INTERNAL="eDP-1"
+      state="''${1:-}"
+
+      # Auto-detect from /proc if no arg given (used on startup)
+      if [ -z "$state" ]; then
+        if grep -qs closed /proc/acpi/button/lid/*/state; then
+          state="close"
+        else
+          state="open"
+        fi
+      fi
+
+      case "$state" in
+        close)
+          external_count=$(hyprctl -j monitors | jq "[.[] | select(.name != \"$INTERNAL\")] | length")
+          if [ "$external_count" -gt 0 ]; then
+            hyprctl keyword monitor "$INTERNAL,disable"
+          fi
+          ;;
+        open)
+          # Re-source monitor config managed by nwg-displays to restore exact settings
+          hyprctl reload
+          ;;
+      esac
+    '';
+  };
+
+  enableDisplays = pkgs.writeShellApplication {
+    name = "hyprland-enable-displays";
+    runtimeInputs = [
+      hyprlandPackage
+      pkgs.jq
+    ];
+    text = ''
+      hyprctl dispatch dpms on || true
+
+      monitors="$(hyprctl -j monitors all | jq -r '.[]?.name // empty' || true)"
+
+      if [ -z "$monitors" ]; then
+        hyprctl keyword monitor ",preferred,auto,auto"
+        exit 0
+      fi
+
+      printf '%s\n' "$monitors" | while IFS= read -r monitor; do
+        hyprctl keyword monitor "$monitor,preferred,auto,auto"
+      done
+    '';
+  };
+in
 {
   imports = [
     inputs.nix-system-graphics.systemModules.default
@@ -48,16 +123,26 @@
       "/share/applications"
       "/share/fonts"
       "/share/glib-2.0/schemas"
+      "/share/hypr"
       "/share/hyprland"
       "/share/icons"
       "/share/mime"
       "/share/nautilus-python/extensions"
       "/share/pixmaps"
       "/share/thumbnailers"
+      "/share/wayland-sessions"
     ];
 
     systemPackages = with pkgs; [
       perSystem.system-manager.default
+
+      hyprlandPackage
+      uwsm
+      nwgDisplays
+      perSystem.hyprland-scratchpad.default
+      splitMonitorWorkspacesLua
+      lidHandler
+      enableDisplays
 
       iosevka
       noto-fonts
