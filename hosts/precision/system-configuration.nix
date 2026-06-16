@@ -1,6 +1,7 @@
 {
   inputs,
   flake,
+  perSystem,
   pkgs,
   ...
 }:
@@ -56,6 +57,8 @@
     ];
 
     systemPackages = with pkgs; [
+      perSystem.system-manager.default
+
       iosevka
       noto-fonts
       noto-fonts-cjk-sans
