@@ -2,7 +2,7 @@
 {
   imports = [
     inputs.nix-system-graphics.systemModules.default
-    flake.modules.shared.packages
+    # flake.modules.shared.packages
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
