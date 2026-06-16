@@ -1,8 +1,6 @@
 {
-  perSystem,
   config,
   pkgs,
-  inputs,
   ...
 }:
 {
@@ -45,31 +43,6 @@
       flake = "${config.users.users.teevik.home}/Documents/Config";
     };
   };
-
-  environment.systemPackages = with pkgs; [
-    git
-    rtk
-
-    morewaita-icon-theme
-    adwaita-icon-theme
-    papirus-icon-theme
-    gnome-control-center
-    gnome-text-editor
-    # gnome-calendar
-    gnome-boxes
-    gnome-system-monitor
-    gnome-control-center
-    gnome-weather
-    gnome-calculator
-    gnome-clocks
-    evince
-    baobab
-    xwayland-satellite
-    wakatime-cli
-
-    # config.boot.kernelPackages.perf
-    # perSystem.self.vk_hdr_layer
-  ];
 
   services.fwupd.enable = true;
   services.envfs.enable = true;
