@@ -21,6 +21,11 @@ in
 {
   environment.systemPackages =
     (with pkgs; [
+      ## MOVE START
+
+ 
+      ## MOVE END
+
       # CLI utilities
       btop
       fd
@@ -71,7 +76,6 @@ in
       gcc
       nix-direnv
       pkg-config
-      samply
 
       # Dev tools - C++
       clang-tools
@@ -105,7 +109,6 @@ in
 
       # Dev tools - Odin
       odin
-      ols-patched
 
       # Dev tools - Nix
       nil
@@ -207,7 +210,6 @@ in
       papirus-icon-theme
       rtk
       wakatime-cli
-      xwayland-satellite
     ])
     ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
       pkgs.spotify

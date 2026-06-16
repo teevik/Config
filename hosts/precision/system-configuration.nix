@@ -1,6 +1,7 @@
-{ flake, ... }:
+{ inputs, flake, ... }:
 {
   imports = [
+    inputs.nix-system-graphics.systemModules.default
     flake.modules.shared.packages
   ];
 
@@ -8,4 +9,7 @@
   nixpkgs.config = {
     allowUnfree = true;
   };
+
+  system-manager.allowAnyDistro = true;
+  system-graphics.enable = true;
 }
