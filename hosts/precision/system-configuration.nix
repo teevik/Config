@@ -1,6 +1,7 @@
 {
   inputs,
   flake,
+  lib,
   perSystem,
   pkgs,
   ...
@@ -79,6 +80,30 @@ let
       done
     '';
   };
+
+  uwsmUserUnits = [
+    "app-graphical.slice"
+    "background-graphical.slice"
+    "session-graphical.slice"
+    "wayland-session-envelope@.target"
+    "wayland-session-pre@.target"
+    "wayland-session-shutdown.target"
+    "wayland-session@.target"
+    "wayland-session-xdg-autostart@.target"
+    "wayland-session-bindpid@.service"
+    "wayland-session-waitenv.service"
+    "wayland-wm-app-daemon.service"
+    "wayland-wm-env@.service"
+    "wayland-wm@.service"
+    "fumon.service"
+  ];
+
+  uwsmUserUnitEtc = lib.listToAttrs (
+    map (name: {
+      name = "systemd/user/${name}";
+      value.source = "${pkgs.uwsm}/lib/systemd/user/${name}";
+    }) uwsmUserUnits
+  );
 in
 {
   imports = [
@@ -97,21 +122,24 @@ in
   fonts.fontconfig.enable = true;
 
   environment = {
-    etc."nix/nix.custom.conf".text = ''
-      experimental-features = nix-command flakes ca-derivations dynamic-derivations parallel-eval
-      auto-optimise-store = true
-      trusted-users = root teemu.vikoeren
-      max-substitution-jobs = 128
-      http-connections = 128
-      eval-cores = 0
-      lazy-trees = true
-      keep-derivations = true
-      keep-outputs = true
-      connect-timeout = 5
-      fallback = true
-      substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems
-      trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= desktop-1:VvIgYHAClUfjQjKWeNaCiQTRm9Q3fO0Q3v08KLTp0yo= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM=
-    '';
+    etc = {
+      "nix/nix.custom.conf".text = ''
+        experimental-features = nix-command flakes ca-derivations dynamic-derivations parallel-eval
+        auto-optimise-store = true
+        trusted-users = root teemu.vikoeren
+        max-substitution-jobs = 128
+        http-connections = 128
+        eval-cores = 0
+        lazy-trees = true
+        keep-derivations = true
+        keep-outputs = true
+        connect-timeout = 5
+        fallback = true
+        substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems
+        trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= desktop-1:VvIgYHAClUfjQjKWeNaCiQTRm9Q3fO0Q3v08KLTp0yo= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM=
+      '';
+    }
+    // uwsmUserUnitEtc;
 
     sessionVariables = {
       NIXOS_OZONE_WL = "1";
