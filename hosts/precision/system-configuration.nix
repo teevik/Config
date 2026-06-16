@@ -118,6 +118,10 @@ in
       QT_STYLE_OVERRIDE = "adwaita-dark";
     };
 
+    extraInit = ''
+      export XDG_DATA_DIRS="/run/system-manager/sw/share:''${XDG_DATA_DIRS:-/usr/local/share:/usr/share:/var/lib/snapd/desktop}"
+    '';
+
     pathsToLink = [
       "/bin"
       "/share/applications"
