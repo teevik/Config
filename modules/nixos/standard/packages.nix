@@ -27,13 +27,63 @@ in
 
   users.users.teevik.extraGroups = [ "input" ];
 
-  environment.systemPackages = [
-    perSystem.openconnect-sso.default
-    pkgs.zoom-us
-  ]
-  ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
-    pinnedNixpkgs.stremio
-  ];
+  environment.systemPackages =
+    (with pkgs; [
+      # Dev tools - C++
+      clang-tools
+
+      # Dev tools - Gleam
+      erlang
+      gleam
+      rebar3
+
+      # Dev tools - GLSL
+      glsl_analyzer
+
+      # Dev tools - Go
+      delve
+      go
+      gopls
+
+      # Dev tools - JavaScript
+      bun
+      emmet-ls
+      nodejs
+      oxfmt
+      oxlint
+      pnpm
+      typescript-go
+      vtsls
+      yarn
+
+      # Dev tools - JSON
+      vscode-langservers-extracted
+
+      # Dev tools - Odin
+      odin
+
+      # Dev tools - Zig
+      zig
+      zls
+
+      # Dev tools - Lua
+      lua-language-server
+      stylua
+
+      # Dev tools - Typst
+      typst
+      typstyle
+
+      solidtime-desktop
+      ticktick
+    ])
+    ++ [
+      perSystem.openconnect-sso.default
+      pkgs.zoom-us
+    ]
+    ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
+      pinnedNixpkgs.stremio
+    ];
 
   # Nix-index database for command-not-found
   programs.nix-index.enable = true;

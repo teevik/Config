@@ -21,11 +21,6 @@ in
 {
   environment.systemPackages =
     (with pkgs; [
-      ## MOVE START
-
- 
-      ## MOVE END
-
       # CLI utilities
       btop
       fd
@@ -77,39 +72,6 @@ in
       nix-direnv
       pkg-config
 
-      # Dev tools - C++
-      clang-tools
-
-      # Dev tools - Gleam
-      erlang
-      gleam
-      rebar3
-
-      # Dev tools - GLSL
-      glsl_analyzer
-
-      # Dev tools - Go
-      delve
-      go
-      gopls
-
-      # Dev tools - JavaScript
-      bun
-      emmet-ls
-      nodejs
-      oxfmt
-      oxlint
-      pnpm
-      typescript-go
-      vtsls
-      yarn
-
-      # Dev tools - JSON
-      vscode-langservers-extracted
-
-      # Dev tools - Odin
-      odin
-
       # Dev tools - Nix
       nil
       nixd
@@ -131,24 +93,10 @@ in
       openssl.dev
       rustup
 
-      # Dev tools - Zig
-      zig
-      zls
-
-      # Dev tools - Lua
-      lua-language-server
-      stylua
-
-      # Dev tools - Typst
-      typst
-      typstyle
-
       # Nix and repo tools
       comma
-      git-agecrypt
       nix-index
       nix-inspect
-      perSystem.self.duat
 
       # Work tools
       perSystem.self.opencode
@@ -163,18 +111,15 @@ in
       ngrok
       obs-studio
       obsidian
-      perSystem.antigravity.default
       perSystem.marble.default
       pkgs.opencode-desktop
       rounded
-      solidtime-desktop
-      ticktick
       vesktop
       xournalpp
       zotero
 
       # Wayland tools
-      inputs.hyprland-contrib.packages.${pkgs.stdenv.hostPlatform.system}.grimblast
+      perSystem.hyprland-contrib.grimblast
       fuzzel
       perSystem.self.peck
       swaybg
