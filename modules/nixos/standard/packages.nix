@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  perSystem,
+  pkgs,
+  ...
+}:
 let
   pinnedNixpkgs =
     import
@@ -23,6 +28,7 @@ in
   users.users.teevik.extraGroups = [ "input" ];
 
   environment.systemPackages = [
+    perSystem.openconnect-sso.default
     pkgs.zoom-us
   ]
   ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [

@@ -195,7 +195,6 @@ in
       perSystem.self.duat
 
       # Work tools
-      perSystem.openconnect-sso.default
       perSystem.self.opencode
 
       # Desktop apps
