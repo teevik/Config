@@ -39,6 +39,7 @@ in
       trashy
       watchexec
       xdg-utils
+      stow
 
       # Shells
       carapace
