@@ -11,7 +11,6 @@ let
   hyprlandModuleDir = ../../modules/nixos/standard/hyprland;
   glycinGtk4LibraryPath = "${pkgs.libglycin-gtk4}/lib";
   glycinGtk4TypelibPath = "${pkgs.libglycin-gtk4}/lib/girepository-1.0";
-  gtkTheme = "catppuccin-mocha-pink-standard+rimless";
 
   nwgDisplays = pkgs.nwg-displays.overrideAttrs (_: {
     version = "0.4.3";
@@ -112,7 +111,6 @@ let
   marbleWithGlycinGtk4 = pkgs.writeShellApplication {
     name = "marble-with-glycin-gtk4";
     text = ''
-      export GTK_THEME="${gtkTheme}"
       export GI_TYPELIB_PATH="${glycinGtk4TypelibPath}''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
       export LD_LIBRARY_PATH="${glycinGtk4LibraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       exec ${perSystem.marble.default}/bin/marble "$@"
@@ -234,7 +232,6 @@ in
     // graphicalSessionUserServiceEtc;
 
     sessionVariables = {
-      GTK_THEME = gtkTheme;
       NIXOS_OZONE_WL = "1";
       QT_STYLE_OVERRIDE = "adwaita-dark";
     };
