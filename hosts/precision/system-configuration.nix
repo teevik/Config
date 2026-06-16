@@ -21,6 +21,7 @@
 
   nix = {
     enable = true;
+    package = perSystem.determinate-nix.default;
     settings = {
       experimental-features = [
         "nix-command"
