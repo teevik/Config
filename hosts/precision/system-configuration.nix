@@ -8,6 +8,7 @@
 }:
 let
   hyprlandPackage = perSystem.hyprland.hyprland;
+  hyprlandModuleDir = ../../modules/nixos/standard/hyprland;
 
   nwgDisplays = pkgs.nwg-displays.overrideAttrs (_: {
     version = "0.4.3";
@@ -104,6 +105,83 @@ let
       value.source = "${pkgs.uwsm}/lib/systemd/user/${name}";
     }) uwsmUserUnits
   );
+
+  marbleService = pkgs.writeText "marble.service" ''
+    [Unit]
+    Description=Marble Shell
+    PartOf=graphical-session.target
+    After=graphical-session.target
+
+    [Service]
+    ExecStart=${perSystem.marble.default}/bin/marble
+    ExecReload=${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID
+    Restart=on-failure
+    KillMode=mixed
+
+    [Install]
+    WantedBy=graphical-session.target
+  '';
+
+  hypridleConfig = pkgs.writeText "hypridle.conf" ''
+    listener {
+        timeout = 300
+        on-timeout = ${pkgs.brightnessctl}/bin/brightnessctl s 50%-
+        on-resume = ${pkgs.brightnessctl}/bin/brightnessctl s 50%+
+    }
+
+    listener {
+        timeout = 600
+        on-timeout = ${hyprlandPackage}/bin/hyprctl dispatch dpms off
+        on-resume = ${hyprlandPackage}/bin/hyprctl dispatch dpms on
+    }
+  '';
+
+  hypridleService = pkgs.writeText "hypridle.service" ''
+    [Unit]
+    Description=Hyprland idle daemon
+    PartOf=graphical-session.target
+    After=graphical-session.target
+
+    [Service]
+    ExecStart=${pkgs.hypridle}/bin/hypridle -c ${hypridleConfig}
+    Restart=on-failure
+
+    [Install]
+    WantedBy=graphical-session.target
+  '';
+
+  swaybgService = pkgs.writeText "swaybg.service" ''
+    [Unit]
+    Description=Wayland wallpaper daemon
+    PartOf=graphical-session.target
+    After=graphical-session.target
+
+    [Service]
+    Type=simple
+    ExecStart=${lib.getExe pkgs.swaybg} -i ${hyprlandModuleDir}/background.png -m fill
+
+    [Install]
+    WantedBy=graphical-session.target
+  '';
+
+  graphicalSessionUserServices = {
+    "hypridle.service" = hypridleService;
+    "marble.service" = marbleService;
+    "swaybg.service" = swaybgService;
+  };
+
+  graphicalSessionUserServiceEtc = lib.listToAttrs (
+    lib.concatMap (name: [
+      {
+        name = "systemd/user/${name}";
+        value.source = graphicalSessionUserServices.${name};
+      }
+      {
+        name = "systemd/user/graphical-session.target.wants/${name}";
+        value.source = graphicalSessionUserServices.${name};
+      }
+    ]) (lib.attrNames graphicalSessionUserServices)
+  );
 in
 {
   imports = [
@@ -139,7 +217,8 @@ in
         trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= desktop-1:VvIgYHAClUfjQjKWeNaCiQTRm9Q3fO0Q3v08KLTp0yo= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM=
       '';
     }
-    // uwsmUserUnitEtc;
+    // uwsmUserUnitEtc
+    // graphicalSessionUserServiceEtc;
 
     sessionVariables = {
       NIXOS_OZONE_WL = "1";
@@ -168,8 +247,11 @@ in
     systemPackages = with pkgs; [
       perSystem.system-manager.default
 
+      firefox
       hyprlandPackage
       uwsm
+      brightnessctl
+      hypridle
       nwgDisplays
       perSystem.hyprland-scratchpad.default
       splitMonitorWorkspacesLua
