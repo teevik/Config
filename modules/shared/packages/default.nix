@@ -122,6 +122,7 @@ in
       # Wayland tools
       perSystem.hyprland-contrib.grimblast
       fuzzel
+      nwg-displays
       perSystem.self.peck
       swaybg
       tofi-patched

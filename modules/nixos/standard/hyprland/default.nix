@@ -8,16 +8,6 @@
 let
   hyprlandPackage = perSystem.hyprland.hyprland;
   portalPackage = perSystem.hyprland.xdg-desktop-portal-hyprland;
-  # TODO: use upstream
-  nwgDisplays = pkgs.nwg-displays.overrideAttrs (_: {
-    version = "0.4.3";
-    src = pkgs.fetchFromGitHub {
-      owner = "nwg-piotr";
-      repo = "nwg-displays";
-      tag = "v0.4.3";
-      hash = "sha256-f7x6PTsND0eprhqvIdkZdHujcCbkJnqoXIKeE0O/YPE=";
-    };
-  });
   splitMonitorWorkspacesLua = pkgs.runCommand "split-monitor-workspaces-lua" { } ''
     mkdir -p $out/share/hyprland/split-monitor-workspaces
     cp ${inputs.split-monitor-workspaces}/lua/*.lua $out/share/hyprland/split-monitor-workspaces/
@@ -94,7 +84,7 @@ in
   programs.uwsm.enable = true;
 
   environment.systemPackages = [
-    nwgDisplays
+    pkgs.nwg-displays
     perSystem.hyprland-scratchpad.default
     splitMonitorWorkspacesLua
     lidHandler
