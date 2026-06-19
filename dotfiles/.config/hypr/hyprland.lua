@@ -13,11 +13,6 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("hyprland-lid-handler")
 end)
 
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprland-lid-handler close"), { locked = true })
-hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("hyprland-lid-handler open"), { locked = true })
-hl.bind("switch:on:Control Method Lid Switch", hl.dsp.exec_cmd("hyprland-lid-handler close"), { locked = true })
-hl.bind("switch:off:Control Method Lid Switch", hl.dsp.exec_cmd("hyprland-lid-handler open"), { locked = true })
-
 hl.config({
   cursor = {
     inactive_timeout = 10,
@@ -169,15 +164,14 @@ hl.bind("SUPER + A", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "t
 hl.bind("SUPER + Space", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("SUPER + SHIFT + Q", exec("poweroff"))
 
-hl.bind("SUPER + L", exec("hyprctl keyword general:layout dwindle"))
+hl.bind("SUPER + L", exec("hyprland-lock"))
 hl.bind("SUPER + SHIFT + L", exec("hyprctl keyword general:layout master"))
-hl.bind("SUPER + SHIFT + M", exec("hyprland-enable-displays"))
 
 hl.bind("XF86MonBrightnessUp", exec("brightnessctl s --min-value=10 --exponent=2 7%+"), { repeating = true })
 hl.bind("XF86MonBrightnessDown", exec("brightnessctl s --min-value=10 --exponent=2 7%-"), { repeating = true })
-hl.bind("XF86AudioRaiseVolume", exec("pulsemixer --change-volume +10"), { repeating = true })
-hl.bind("XF86AudioLowerVolume", exec("pulsemixer --change-volume -10"), { repeating = true })
-hl.bind("XF86AudioMute", exec("pulsemixer --toggle-mute"))
+hl.bind("XF86AudioRaiseVolume", exec("wpctl set-volume @DEFAULT_AUDIO_SINK@ 10%+"), { repeating = true })
+hl.bind("XF86AudioLowerVolume", exec("wpctl set-volume @DEFAULT_AUDIO_SINK@ 10%-"), { repeating = true })
+hl.bind("XF86AudioMute", exec("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
 hl.bind("XF86AudioNext", exec("playerctl next"))
 hl.bind("XF86AudioPrev", exec("playerctl previous"))
 hl.bind("XF86AudioPlay", exec("playerctl play-pause"))

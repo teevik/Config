@@ -1,4 +1,5 @@
 {
+  "show_edit_predictions": true,
   "focus_follows_mouse": {
     "enabled": true
   },
@@ -15,6 +16,7 @@
   },
   "diff_view_style": "split",
   "agent": {
+    "default_profile": "ask",
     "dock": "right",
     "default_model": {
       "provider": "zed.dev",
@@ -38,7 +40,7 @@
   "load_direnv": "direct",
   "ui_font_size": 16,
   "buffer_font_size": 16,
-  "theme": "Catppuccin Mocha - No Italics",
+  "theme": "Catppuccin Frappé",
 
   // Editor settings (from nvim config)
   "vim_mode": true,

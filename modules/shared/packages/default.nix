@@ -118,6 +118,7 @@ in
       vesktop
       xournalpp
       zotero
+      pavucontrol
 
       # Wayland tools
       perSystem.hyprland-contrib.grimblast

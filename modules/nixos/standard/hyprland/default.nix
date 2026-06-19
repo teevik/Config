@@ -12,64 +12,6 @@ let
     mkdir -p $out/share/hyprland/split-monitor-workspaces
     cp ${inputs.split-monitor-workspaces}/lua/*.lua $out/share/hyprland/split-monitor-workspaces/
   '';
-
-  # Lid handler: disable internal display when lid closes and an external
-  # monitor is connected. Re-enable on lid open.
-  lidHandler = pkgs.writeShellApplication {
-    name = "hyprland-lid-handler";
-    runtimeInputs = with pkgs; [
-      hyprlandPackage
-      jq
-    ];
-    text = ''
-      INTERNAL="eDP-1"
-      state="''${1:-}"
-
-      # Auto-detect from /proc if no arg given (used on startup)
-      if [ -z "$state" ]; then
-        if grep -qs closed /proc/acpi/button/lid/*/state; then
-          state="close"
-        else
-          state="open"
-        fi
-      fi
-
-      case "$state" in
-        close)
-          external_count=$(hyprctl -j monitors | jq "[.[] | select(.name != \"$INTERNAL\")] | length")
-          if [ "$external_count" -gt 0 ]; then
-            hyprctl keyword monitor "$INTERNAL,disable"
-          fi
-          ;;
-        open)
-          # Re-source monitor config managed by nwg-displays to restore exact settings
-          hyprctl reload
-          ;;
-      esac
-    '';
-  };
-
-  enableDisplays = pkgs.writeShellApplication {
-    name = "hyprland-enable-displays";
-    runtimeInputs = [
-      hyprlandPackage
-      pkgs.jq
-    ];
-    text = ''
-      hyprctl dispatch dpms on || true
-
-      monitors="$(hyprctl -j monitors all | jq -r '.[]?.name // empty' || true)"
-
-      if [ -z "$monitors" ]; then
-        hyprctl keyword monitor ",preferred,auto,auto"
-        exit 0
-      fi
-
-      printf '%s\n' "$monitors" | while IFS= read -r monitor; do
-        hyprctl keyword monitor "$monitor,preferred,auto,auto"
-      done
-    '';
-  };
 in
 {
   imports = [ inputs.hyprland.nixosModules.default ];
@@ -87,8 +29,6 @@ in
     pkgs.nwg-displays
     perSystem.hyprland-scratchpad.default
     splitMonitorWorkspacesLua
-    lidHandler
-    enableDisplays
   ];
 
   # buildEnv only links share/ subdirs listed in pathsToLink. The upstream
