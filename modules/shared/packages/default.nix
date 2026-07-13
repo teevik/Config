@@ -113,7 +113,7 @@ in
       obs-studio
       obsidian
       perSystem.marble.default
-      pkgs.opencode-desktop
+      # pkgs.opencode-desktop
       rounded
       vesktop
       xournalpp
