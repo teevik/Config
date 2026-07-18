@@ -8,6 +8,46 @@ plugin use skim
 # Scripts from nu_scripts
 use /etc/nushell/scripts/ultimate_extractor.nu *
 
+def current-project-root [] {
+    let git_root = (^git rev-parse --show-toplevel | complete)
+
+    if $git_root.exit_code == 0 {
+        $git_root.stdout | str trim | path expand
+    } else {
+        $env.PWD | path expand
+    }
+}
+
+def --env ensure-project-index [] {
+    let root = (current-project-root)
+    let status = (idx status)
+    let indexed_root = ($status.base_path? | default "")
+
+    if (not $status.initialized) or (($indexed_root | path expand) != $root) {
+        idx init $root --wait | ignore
+    }
+
+    $root
+}
+
+def --env index-project [path: directory = .] {
+    idx init ($path | path expand) --wait
+}
+
+def --env insert-fuzzy-file [] {
+    ensure-project-index | ignore
+
+    let selected = (
+        idx files
+        | sk --format relative_path --height "40%" --reverse
+        | get -o 0.full_path
+    )
+
+    if $selected != null {
+        commandline edit --insert ($selected | to nuon)
+    }
+}
+
 let menus = []
 
 let keybindings = [
@@ -18,7 +58,7 @@ let keybindings = [
       mode: emacs
       event: {
           send: executehostcommand
-          cmd: "commandline edit --insert (fzf --layout=reverse)"
+          cmd: "insert-fuzzy-file"
       }
   }
 ]
@@ -32,6 +72,7 @@ let history = {
 
 $env.config = {
   show_banner: false
+  auto_cd_implicit: true
   menus: $menus
   keybindings: $keybindings
   history: $history
@@ -131,6 +172,15 @@ $env.config.hooks.env_change = {
 alias zed = zeditor
 alias neofetch = fastfetch
 
+def slow [since: duration = 1wk] {
+    history
+    | where duration != null
+    | where start_timestamp > ((date now) - $since)
+    | sort-by duration --reverse
+    | first 20
+    | select start_timestamp duration exit_status command cwd
+}
+
 $env.PROMPT_COMMAND = {||
   let path = ($env.PWD | str replace $env.HOME '~')
   let ssh_prefix = if ($env.SSH_CONNECTION? | is-not-empty) {
@@ -171,11 +221,19 @@ def with-clean-term [cmd: string, ...args] {
     kitty @ set-background-opacity 0.5
 }
 
+@complete external
 def --wrapped hx [...args] { with-clean-term "hx" ...$args }
+
+@complete external
 def --wrapped opencode [...args] { with-clean-term "opencode" ...$args }
+
+@complete external
 def --wrapped opencode2 [...args] { with-clean-term "opencode2" ...$args }
+
+@complete external
 def --wrapped nvim [...args] { with-clean-term "nvim" ...$args }
 
+@complete external
 def --wrapped sudo [...args] {
     notify-send "Sudo" "Password may be required"
     ^sudo ...$args
