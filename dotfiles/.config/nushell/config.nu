@@ -1,5 +1,4 @@
-# Source tool integrations
-# source ~/.cache/zoxide.nu
+# Optional tool integrations
 # source ~/.cache/worktrunk-init.nu
 
 # Plugins
@@ -7,6 +6,7 @@ plugin use skim
 
 # Scripts from nu_scripts
 use /etc/nushell/scripts/ultimate_extractor.nu *
+use /etc/nushell/scripts/completions.nu *
 
 def current-project-root [] {
     let git_root = (^git rev-parse --show-toplevel | complete)
@@ -50,18 +50,7 @@ def --env insert-fuzzy-file [] {
 
 let menus = []
 
-let keybindings = [
-  {
-      name: fuzzy_file
-      modifier: control
-      keycode: char_t
-      mode: emacs
-      event: {
-          send: executehostcommand
-          cmd: "insert-fuzzy-file"
-      }
-  }
-]
+let keybindings = []
 
 let history = {
     max_size: 100_000 # Session has to be reloaded for this to take effect
@@ -149,6 +138,12 @@ $env.config.completions.external = {
     max_results: 100
     completer: $external_completer
 }
+
+# FZF wraps the external completer above and adds Ctrl-T, Ctrl-R, Alt-C, and
+# **<Tab>. Zoxide and IntelliShell append their commands and keybindings.
+source /etc/nushell/scripts/fzf.nu
+source /etc/nushell/scripts/zoxide.nu
+source /etc/nushell/scripts/intelli-shell.nu
 
 # Direnv integration
 $env.config.hooks.env_change = {

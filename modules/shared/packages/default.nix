@@ -25,6 +25,7 @@ in
       bubblewrap
       btop
       fd
+      fastfetch
       fzf
       gh
       gtk3
@@ -45,9 +46,11 @@ in
       # Shells
       carapace
       fish
+      intelli-shell
       nu_scripts
       nushell
       nushellPlugins.skim
+      zoxide
 
       # Editors
       perSystem.helix.default

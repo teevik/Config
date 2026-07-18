@@ -11,6 +11,13 @@ if ("/run/secrets/excalidraw-token" | path exists) {
     $env.EXCALIDRAW_TOKEN = (open --raw /run/secrets/excalidraw-token | str trim)
 }
 
+if ("/run/secrets/gemini-api-key" | path exists) {
+    let gemini_api_key = (open --raw /run/secrets/gemini-api-key | str trim)
+    if ($gemini_api_key | is-not-empty) {
+        $env.GEMINI_API_KEY = $gemini_api_key
+    }
+}
+
 # Add cargo bin and npm-packages to PATH
 $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.cargo/bin" $"($nu.home-dir)/.npm-packages/bin"])
 
@@ -18,8 +25,8 @@ $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.carg
 mkdir ~/.cache/carapace
 $env.CARAPACE_BRIDGES = 'fish'
 $env.CARAPACE_LENIENT = '1'
+$env.INTELLI_SKIP_ESC_BIND = '1'
 carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
-# zoxide init nushell | save --force ~/.cache/zoxide.nu
 # wt config shell init nu | save --force ~/.cache/worktrunk-init.nu
 
 plugin add /etc/nushell/plugins/skim

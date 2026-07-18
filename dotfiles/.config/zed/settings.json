@@ -1,9 +1,17 @@
 {
+  "code_lens": "on",
   "show_edit_predictions": true,
   "focus_follows_mouse": {
     "enabled": true
   },
-  "agent_servers": {},
+  "agent_servers": {
+    "codex-acp": {
+      "default_config_options": {
+        "fast-mode": true
+      },
+      "type": "registry"
+    }
+  },
   "cli_default_open_behavior": "new_window",
   "project_panel": {
     "dock": "left"
@@ -16,6 +24,7 @@
   },
   "diff_view_style": "unified",
   "agent": {
+    "play_sound_when_agent_done": "always",
     "default_profile": "ask",
     "dock": "right",
     "default_model": {
@@ -49,9 +58,15 @@
   "preferred_line_length": 80,
   "current_line_highlight": "all",
   "cursor_blink": false,
+  "extend_comment_on_newline": false,
   "format_on_save": "on",
   "show_whitespaces": "boundary",
   "inlay_hints": {
+    "show_other_hints": true,
+    "show_parameter_hints": true,
+    "show_type_hints": true,
+    "show_value_hints": true,
+    "show_background": false,
     "enabled": false
   },
 

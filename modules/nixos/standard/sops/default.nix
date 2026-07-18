@@ -26,6 +26,10 @@
         mercury-ai-token = {
           owner = "teevik";
         };
+        gemini-api-key = {
+          owner = "teevik";
+          mode = "0400";
+        };
         excalidraw-token = {
           owner = "teevik";
         };

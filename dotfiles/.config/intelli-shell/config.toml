@@ -1,0 +1,20 @@
+check_updates = false
+inline = true
+
+[ai]
+enabled = true
+
+[ai.models]
+suggest = "main"
+fix = "main"
+import = "main"
+completion = "main"
+fallback = "fallback"
+
+[ai.catalog.main]
+provider = "gemini"
+model = "gemini-flash-latest"
+
+[ai.catalog.fallback]
+provider = "gemini"
+model = "gemini-flash-lite-latest"
