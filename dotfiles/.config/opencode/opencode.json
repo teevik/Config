@@ -44,6 +44,21 @@
       "model": "openai/gpt-5.6-sol-fast#low"
     }
   },
+  "permission": {
+    "external_directory": {
+      "*": "ask",
+      "/nix/store": "allow",
+      "/nix/store/**": "allow",
+      "/tmp": "allow",
+      "/tmp/**": "allow",
+      "/var/tmp": "allow",
+      "/var/tmp/**": "allow",
+      "~/.local/share/opencode/repos": "allow",
+      "~/.local/share/opencode/repos/**": "allow",
+      "~/.local/share/opencode/tool-output": "allow",
+      "~/.local/share/opencode/tool-output/**": "allow"
+    }
+  },
   "mcp": {
     "servers": {
       // "context7": {

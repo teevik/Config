@@ -173,6 +173,7 @@ def with-clean-term [cmd: string, ...args] {
 
 def --wrapped hx [...args] { with-clean-term "hx" ...$args }
 def --wrapped opencode [...args] { with-clean-term "opencode" ...$args }
+def --wrapped opencode2 [...args] { with-clean-term "opencode2" ...$args }
 def --wrapped nvim [...args] { with-clean-term "nvim" ...$args }
 
 def --wrapped sudo [...args] {

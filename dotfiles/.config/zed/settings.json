@@ -14,7 +14,7 @@
   "collaboration_panel": {
     "dock": "left"
   },
-  "diff_view_style": "split",
+  "diff_view_style": "unified",
   "agent": {
     "default_profile": "ask",
     "dock": "right",
@@ -40,7 +40,7 @@
   "load_direnv": "direct",
   "ui_font_size": 16,
   "buffer_font_size": 16,
-  "theme": "Catppuccin Frappé",
+  "theme": "Catppuccin Macchiato",
 
   // Editor settings (from nvim config)
   "vim_mode": true,
