@@ -9,7 +9,7 @@ bind \e\[3\;5~ kill-word
 set -gx EDITOR nvim
 
 # Tool integrations
-zoxide init fish | source
+# zoxide init fish | source
 fzf --fish | source
 carapace _carapace fish | source
 direnv hook fish | source

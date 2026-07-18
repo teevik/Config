@@ -2,13 +2,13 @@
 let
   inherit (pkgs) lib stdenv;
 
-  version = "0.0.0-next-15402";
+  version = "0.0.0-next-15796";
 
   platform =
     {
       x86_64-linux = {
         packageName = "cli-linux-x64-baseline";
-        hash = "sha512-+ICIrPuSGuHH+Mi2oFJyeMxJDoFJLo2s/hNcoqMLoQKom7h/w6COH7NRvYcoTieoNeRlTp1rQxs6AlOsWSgHTg==";
+        hash = "sha256-maKhs5Emk0/6ad6hGkn3CnQWaQ3Qcan3X0F/eXn1t1k=";
       };
       aarch64-linux = {
         packageName = "cli-linux-arm64";

@@ -1,7 +1,7 @@
 # Source tool integrations
 source ~/.cache/carapace/init.nu
-source ~/.cache/zoxide.nu
-source ~/.cache/worktrunk-init.nu
+# source ~/.cache/zoxide.nu
+# source ~/.cache/worktrunk-init.nu
 
 # Plugins
 plugin use skim

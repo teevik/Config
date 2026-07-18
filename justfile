@@ -50,7 +50,10 @@ setup:
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
 update:
-    nix run nixpkgs#nix-update -- -f packages/nix-update.nix opencode --custom-dep node_modules --build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version="$(npm view '@opencode-ai/cli-linux-x64-baseline@next' version)"
+    nix run nixpkgs#nix-update -- -f packages/nix-update.nix opencode --version "$version" --build
     # , nix-update --flake oh-my-pi --build
 
 build-iso:

@@ -17,8 +17,8 @@ $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.carg
 # Tool integrations
 mkdir ~/.cache/carapace
 carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
-zoxide init nushell | save --force ~/.cache/zoxide.nu
-wt config shell init nu | save --force ~/.cache/worktrunk-init.nu
+# zoxide init nushell | save --force ~/.cache/zoxide.nu
+# wt config shell init nu | save --force ~/.cache/worktrunk-init.nu
 
 plugin add /etc/nushell/plugins/skim
 

@@ -66,7 +66,6 @@ in
       git
 
       # Dev tools - general
-      claude-code
       devenv
       direnv
       gcc
