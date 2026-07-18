@@ -22,6 +22,7 @@ in
   environment.systemPackages =
     (with pkgs; [
       # CLI utilities
+      bubblewrap
       btop
       fd
       fzf
