@@ -105,6 +105,7 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default
 
 smw.setup({
   workspace_count = 10,
+  monitor_priority = { "HDMI-A-2", "DP-4" },
   keep_focused = true,
   enable_notifications = false,
   enable_persistent_workspaces = true,

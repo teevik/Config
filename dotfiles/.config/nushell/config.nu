@@ -1,5 +1,4 @@
 # Source tool integrations
-source ~/.cache/carapace/init.nu
 # source ~/.cache/zoxide.nu
 # source ~/.cache/worktrunk-init.nu
 
@@ -53,6 +52,61 @@ $env.config = {
       }
     ]
   }
+}
+
+# External completions
+# Load Carapace after assigning $env.config so its completer is not overwritten.
+source ~/.cache/carapace/init.nu
+
+let carapace_completer = $env.config.completions.external.completer
+
+# Fish has especially good completions for git and fills gaps in Carapace's
+# command coverage. Convert Fish's escaped paths to syntax Nushell accepts.
+let fish_completer = {|spans: list<string>|
+    fish --no-config --command $"complete '--do-complete=($spans | str replace --all "'" "\\'" | str join ' ')'"
+    | from tsv --flexible --noheaders --no-infer
+    | rename value description
+    | update value {|row|
+        let value = $row.value
+        let needs_quote = ['\\' ',' '[' ']' '(' ')' ' ' '\t' "'" '"' '`'] | any { $in in $value }
+
+        if ($needs_quote and ($value | path exists)) {
+            let expanded_path = if ($value starts-with '~') {
+                $value | path expand --no-symlink
+            } else {
+                $value
+            }
+            $'"($expanded_path | str replace --all '"' '\\"')"'
+        } else {
+            $value
+        }
+    }
+}
+
+let external_completer = {|spans: list<string>|
+    # External completers see the alias name, so expand its first command.
+    let expanded_alias = scope aliases
+        | where name == $spans.0
+        | get -o 0.expansion
+    let spans = if $expanded_alias != null {
+        $spans
+        | skip 1
+        | prepend ($expanded_alias | split row ' ' | take 1)
+    } else {
+        $spans
+    }
+
+    match $spans.0 {
+        # Fish is more accurate for Nushell itself and git refs.
+        nu | git | asdf => $fish_completer
+        _ => $carapace_completer
+    } | do $in $spans
+}
+
+$env.config.completions.external = {
+    enable: true
+    max_results: 100
+    completer: $external_completer
 }
 
 # Direnv integration

@@ -23,22 +23,22 @@
   },
   "agents": {
     "build": {
-      "model": "openai/gpt-5.6-sol-pro#max"
+      "model": "openai/gpt-5.6-sol-fast#max"
     },
     "plan": {
-      "model": "openai/gpt-5.6-sol-pro#max"
+      "model": "openai/gpt-5.6-sol-fast#max"
     },
     "general": {
-      "model": "openai/gpt-5.6-sol-pro#max-fast"
+      "model": "openai/gpt-5.6-sol-fast#max"
     },
     "explore": {
-      "model": "openai/gpt-5.6-sol-pro#max-fast"
+      "model": "openai/gpt-5.6-sol-fast#max"
     },
     "compaction": {
-      "model": "openai/gpt-5.6-sol-pro#max"
+      "model": "openai/gpt-5.6-sol-fast#max"
     },
     "summary": {
-      "model": "openai/gpt-5.6-sol-pro#max"
+      "model": "openai/gpt-5.6-sol-fast#max"
     },
     "title": {
       "model": "openai/gpt-5.6-sol-fast#low"

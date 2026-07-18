@@ -1087,11 +1087,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781643977,
-        "narHash": "sha256-LdouUs8HDatYgi4sFXbA7E9Ck6sS+CYbDmGKeBIBlmY=",
+        "lastModified": 1784395205,
+        "narHash": "sha256-zAWAszCHqLV62fhlf30DpC0oaXRUfd963/bGqjkUWHo=",
         "ref": "refs/heads/main",
-        "rev": "be086183afc30130678b736d119b8ec86d6794a8",
-        "revCount": 21,
+        "rev": "56e8bd366004724299685ca1c75ab482130e3c2f",
+        "revCount": 22,
         "submodules": true,
         "type": "git",
         "url": "ssh://git@github.com/teevik/marble-shell.git"

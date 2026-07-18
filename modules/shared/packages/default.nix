@@ -99,7 +99,7 @@ in
       nix-inspect
 
       # Work tools
-      perSystem.self.opencode
+      # perSystem.self.opencode
 
       # Desktop apps
       chromium
