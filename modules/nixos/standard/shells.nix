@@ -49,10 +49,6 @@ let
     export XDG_DATA_HOME="$TMPDIR/data"
     mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
     ${pkgs.intelli-shell}/bin/intelli-shell init nushell > "$out"
-    substituteInPlace "$out" \
-      --replace-fail \
-      'intelli-shell --extra-line --skip-execution --file-output $temp_file $command ...$args' \
-      'intelli-shell --extra-line --skip-execution --file-output $temp_file $command ...$args o+e> /dev/tty'
   '';
 in
 {

@@ -139,11 +139,207 @@ $env.config.completions.external = {
     completer: $external_completer
 }
 
-# FZF wraps the external completer above and adds Ctrl-T, Ctrl-R, Alt-C, and
-# **<Tab>. Zoxide and IntelliShell append their commands and keybindings.
+# FZF wraps the external completer above and adds Ctrl-R, Alt-C, and **<Tab>.
+# Its static Ctrl-T binding is replaced below with a context-aware picker.
 source /etc/nushell/scripts/fzf.nu
 source /etc/nushell/scripts/zoxide.nu
 source /etc/nushell/scripts/intelli-shell.nu
+
+def smart-fzf-token-span [line: string, cursor: int, completions: list<any>] {
+    let completion_span = ($completions | get -o 0.span)
+
+    if $completion_span != null {
+        {
+            start: $completion_span.start
+            end: $completion_span.end
+            token: ($line | str substring $completion_span.start..<$completion_span.end)
+        }
+    } else {
+        let before_cursor = ($line | str substring 0..<$cursor)
+        let token = (
+            $before_cursor
+            | parse --regex '(?<token>\S*)$'
+            | get -o 0.token
+            | default ""
+        )
+
+        {
+            start: ($cursor - ($token | str length))
+            end: $cursor
+            token: $token
+        }
+    }
+}
+
+def smart-fzf-path-context [token: string] {
+    let token = ($token | str trim -c '"' | str trim -c "'")
+    let has_separator = ($token | str contains (char separator))
+    let ends_with_separator = ($token | str ends-with (char separator))
+
+    let context = if $ends_with_separator and ($token | path expand | path type) == dir {
+        { root: $token, query: "" }
+    } else if $has_separator {
+        let root = ($token | path dirname)
+        let valid_root = if ($root | is-not-empty) and ($root | path expand | path type) == dir {
+            $root
+        } else {
+            "."
+        }
+        { root: $valid_root, query: ($token | path basename) }
+    } else {
+        { root: ".", query: $token }
+    }
+
+    {
+        root: (if ($context.root | str starts-with '~') { $context.root | path expand } else { $context.root })
+        query: $context.query
+        restore_tilde: ($token | str starts-with '~')
+    }
+}
+
+def smart-fzf-quote-path [path: string] {
+    let needs_quote = ['\\' ',' '[' ']' '(' ')' ' ' '\t' "'" '"' '`']
+        | any {|character| $path | str contains $character }
+
+    if $needs_quote { $path | to nuon } else { $path }
+}
+
+def smart-fzf-run-semantic [completions: list<any>, query: string] {
+    let candidates = (
+        $completions
+        | enumerate
+        | each {|row|
+            let description = (
+                $row.item.description?
+                | default ""
+                | str replace --all (char tab) " "
+                | str replace --all (char newline) " "
+            )
+            $"($row.index)(char tab)($row.item.value)(char tab)($description)"
+        }
+        | str join (char newline)
+    )
+    let fzf_opts = (__fzf_defaults '--reverse --scheme=default' $'($env.FZF_CTRL_T_OPTS) +m')
+    let fzfcmd = (__fzfcmd)
+    let fzf_args = ($fzfcmd | skip 1)
+    let selected = try {
+        $candidates
+        | with-env { FZF_DEFAULT_OPTS: $fzf_opts, FZF_DEFAULT_OPTS_FILE: "" } {
+            ^($fzfcmd | first) ...$fzf_args --delimiter (char tab) --with-nth '2,3' --query $query
+        }
+        | str trim
+    } catch {
+        ""
+    }
+
+    if ($selected | is-empty) {
+        null
+    } else {
+        let selected_index = ($selected | split row (char tab) | first | into int)
+        $completions | get -o $selected_index
+    }
+}
+
+def smart-fzf-run-paths [context: record, directories_only: bool] {
+    let walker = if $directories_only { 'dir,follow,hidden' } else { 'file,dir,follow,hidden' }
+    let multi = if $directories_only { '+m' } else { '-m' }
+    let fzf_opts = (
+        __fzf_defaults
+        $'--reverse --walker=($walker) --scheme=path'
+        $'($env.FZF_CTRL_T_OPTS) ($multi)'
+    )
+    let fzfcmd = (__fzfcmd)
+    let fzf_args = ($fzfcmd | skip 1)
+
+    try {
+        with-env { FZF_DEFAULT_OPTS: $fzf_opts, FZF_DEFAULT_OPTS_FILE: "" } {
+            ^($fzfcmd | first) ...$fzf_args --walker-root $context.root --query $context.query
+        }
+        | lines
+        | where { $in | is-not-empty }
+    } catch {
+        []
+    }
+}
+
+def --env smart-fzf-complete [] {
+    let line = (commandline)
+    let cursor = (commandline get-cursor)
+    let before_cursor = ($line | str substring 0..<$cursor)
+    let active_command = ($before_cursor | split row --regex '[;\n]' | last | str trim)
+    let is_cd = ($active_command =~ '^cd(?:\s|$)')
+    let cd_needs_space = $is_cd and ($active_command == 'cd') and not ($before_cursor | str ends-with ' ')
+    let completions = try { commandline complete --detailed } catch { [] }
+    let semantic_completions = if (not $is_cd) and ($active_command =~ '\s') {
+        $completions | where {|item| ($item.kind? | default "") not-in [file directory] }
+    } else {
+        []
+    }
+
+    if ($semantic_completions | is-not-empty) {
+        let span = (smart-fzf-token-span $line $cursor $semantic_completions)
+        let selected = (smart-fzf-run-semantic $semantic_completions $span.token)
+
+        if $selected != null {
+            let replacement = $selected.value
+            let updated = (
+                ($line | str substring 0..<$selected.span.start)
+                + $replacement
+                + ($line | str substring $selected.span.end..)
+            )
+            commandline edit --replace $updated
+            commandline set-cursor ($selected.span.start + ($replacement | str length))
+        }
+        return
+    }
+
+    let span = if $cd_needs_space {
+        { start: $cursor, end: $cursor, token: "" }
+    } else {
+        smart-fzf-token-span $line $cursor $completions
+    }
+    let path_context = (smart-fzf-path-context $span.token)
+    let selected_paths = (smart-fzf-run-paths $path_context $is_cd)
+
+    if ($selected_paths | is-empty) {
+        return
+    }
+
+    let home = ($nu.home-dir | path expand)
+    let replacement = (
+        $selected_paths
+        | each {|path|
+            let path = if $path_context.restore_tilde { $path | str replace $home '~' } else { $path }
+            smart-fzf-quote-path $path
+        }
+        | str join ' '
+    )
+    let replacement = if $cd_needs_space { $" ($replacement)" } else { $replacement }
+    let updated = (
+        ($line | str substring 0..<$span.start)
+        + $replacement
+        + ($line | str substring $span.end..)
+    )
+    commandline edit --replace $updated
+    commandline set-cursor ($span.start + ($replacement | str length))
+}
+
+let smart_ctrl_t = {
+    name: fzf_files
+    modifier: control
+    keycode: char_t
+    mode: [emacs vi_normal vi_insert]
+    event: {
+        send: executehostcommand
+        cmd: "smart-fzf-complete"
+    }
+}
+
+$env.config.keybindings = (
+    $env.config.keybindings
+    | where name != fzf_files
+    | append $smart_ctrl_t
+)
 
 # Direnv integration
 $env.config.hooks.env_change = {

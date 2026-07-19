@@ -37,8 +37,9 @@ in
       gleam
       rebar3
 
-      # Dev tools - GLSL
+      # Dev tools - shaders
       glsl_analyzer
+      shader-slang
 
       # Dev tools - Go
       delve
@@ -61,6 +62,7 @@ in
 
       # Dev tools - Odin
       odin
+      ols
 
       # Dev tools - Zig
       zig
