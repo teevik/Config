@@ -10,7 +10,8 @@
     "npm:pi-mcp-adapter",
     "npm:pi-rtk-optimizer",
     "git:github.com/otahontas/pi-coding-agent-catppuccin",
-    "npm:@narumitw/pi-goal"
+    "npm:@narumitw/pi-goal",
+    "npm:pi-doom"
   ],
   "pi-codex-fast": {
     "enabled": true
