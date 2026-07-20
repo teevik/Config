@@ -1,0 +1,19 @@
+{
+  "name": "pi-config",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"extensions/**/*.ts\"",
+    "format:check": "prettier --check \"extensions/**/*.ts\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.80.10",
+    "@earendil-works/pi-tui": "0.80.10",
+    "@types/turndown": "^5.0.6",
+    "prettier": "^3.8.3",
+    "typebox": "^1.1.24",
+    "typescript": "^5.9.3"
+  }
+}
