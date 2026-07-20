@@ -9,7 +9,8 @@
     "npm:pi-web-access@0.13.0",
     "npm:pi-mcp-adapter",
     "npm:pi-rtk-optimizer",
-    "git:github.com/otahontas/pi-coding-agent-catppuccin"
+    "git:github.com/otahontas/pi-coding-agent-catppuccin",
+    "npm:@narumitw/pi-goal"
   ],
   "pi-codex-fast": {
     "enabled": true
