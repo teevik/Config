@@ -68,6 +68,7 @@ in
       # Git
       delta
       git
+      git-subrepo
 
       # Dev tools - general
       devenv
