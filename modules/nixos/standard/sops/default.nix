@@ -30,6 +30,10 @@
           owner = "teevik";
           mode = "0400";
         };
+        brave-api-key = {
+          owner = "teevik";
+          mode = "0400";
+        };
         excalidraw-token = {
           owner = "teevik";
         };

@@ -18,6 +18,13 @@ if ("/run/secrets/gemini-api-key" | path exists) {
     }
 }
 
+if ("/run/secrets/brave-api-key" | path exists) {
+    let brave_api_key = (open --raw /run/secrets/brave-api-key | str trim)
+    if ($brave_api_key | is-not-empty) {
+        $env.BRAVE_API_KEY = $brave_api_key
+    }
+}
+
 # Add cargo bin and npm-packages to PATH
 $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.cargo/bin" $"($nu.home-dir)/.npm-packages/bin"])
 

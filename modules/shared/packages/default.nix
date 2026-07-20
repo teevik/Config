@@ -103,6 +103,7 @@ in
       nix-inspect
 
       # Work tools
+      pi-coding-agent
       # perSystem.self.opencode
 
       # Desktop apps

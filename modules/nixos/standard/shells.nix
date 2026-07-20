@@ -37,7 +37,6 @@ let
 
   fzfIntegration = pkgs.runCommand "fzf-nushell-integration.nu" { } ''
     ${pkgs.fzf}/bin/fzf --nushell > "$out"
-    substituteInPlace "$out" --replace-fail "str downcase" "str lowercase"
   '';
 
   zoxideIntegration = pkgs.runCommand "zoxide-nushell-integration.nu" { } ''
