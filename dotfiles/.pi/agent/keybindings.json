@@ -1,4 +1,5 @@
 {
   "app.session.toggleSort": [],
-  "app.models.save": []
+  "app.models.save": [],
+  "app.clipboard.pasteImage": []
 }

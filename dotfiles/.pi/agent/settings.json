@@ -13,7 +13,10 @@
     "npm:@narumitw/pi-goal",
     "npm:pi-doom",
     "npm:pi-btw",
-    "npm:pi-autoresearch"
+    "npm:pi-autoresearch",
+    "npm:pi-image-tools",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:pi-patty-bg-tasks"
   ],
   "pi-codex-fast": {
     "enabled": true
