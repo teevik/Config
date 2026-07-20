@@ -17,7 +17,8 @@
     "npm:pi-image-tools",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:@zigai/pi-prompt-history",
-    "npm:@furbyhaxx/pi-session-naming"
+    "npm:pi-title-renamer",
+    "git:github.com/aliou/pi-processes"
   ],
   "pi-codex-fast": {
     "enabled": true

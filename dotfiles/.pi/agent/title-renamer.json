@@ -1,0 +1,14 @@
+{
+  "apply": {
+    "terminalTitle": false,
+    "sessionName": true,
+    "overwriteSessionName": false
+  },
+  "style": {
+    "maxChars": 40,
+    "includeProject": false
+  },
+  "fallback": {
+    "useProjectName": false
+  }
+}
