@@ -1,4 +1,5 @@
 {
+  "tui.editor.cursorLeft": ["left"],
   "app.session.toggleSort": [],
   "app.models.save": [],
   "app.clipboard.pasteImage": []
