@@ -16,7 +16,8 @@
     "npm:pi-autoresearch",
     "npm:pi-image-tools",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:pi-patty-bg-tasks"
+    "npm:pi-patty-bg-tasks",
+    "npm:@zigai/pi-prompt-history"
   ],
   "pi-codex-fast": {
     "enabled": true
