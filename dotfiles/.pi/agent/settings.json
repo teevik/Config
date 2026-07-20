@@ -16,8 +16,8 @@
     "npm:pi-autoresearch",
     "npm:pi-image-tools",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:pi-subagents",
-    "npm:@zigai/pi-prompt-history"
+    "npm:@zigai/pi-prompt-history",
+    "npm:@furbyhaxx/pi-session-naming"
   ],
   "pi-codex-fast": {
     "enabled": true
