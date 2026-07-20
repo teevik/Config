@@ -225,6 +225,7 @@ in
 {
   imports = [
     inputs.nix-system-graphics.systemModules.default
+    inputs.sops-nix.nixosModules.sops
     flake.modules.shared.packages
     (inputs.nixpkgs + "/nixos/modules/security/chromium-suid-sandbox.nix")
   ];
@@ -240,6 +241,28 @@ in
   security.chromiumSuidSandbox.enable = true;
 
   fonts.fontconfig.enable = true;
+
+  sops = {
+    defaultSopsFile = ../../modules/nixos/standard/sops/secrets.yaml;
+    age = {
+      generateKey = false;
+      keyFile = "/home/teemu.vikoeren/.config/sops/age/keys.txt";
+    };
+
+    secrets =
+      lib.genAttrs
+        [
+          "mercury-ai-token"
+          "excalidraw-token"
+          "gemini-api-key"
+          "brave-api-key"
+        ]
+        (_: {
+          owner = "teemu.vikoeren";
+          group = "root";
+          mode = "0400";
+        });
+  };
 
   systemd.services.nix-electron-apparmor = {
     enable = true;
@@ -332,6 +355,8 @@ in
 
     systemPackages = with pkgs; [
       perSystem.system-manager.default
+      age
+      sops
 
       firefox
       hyprlandPackage
