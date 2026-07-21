@@ -28,6 +28,7 @@ in
       fastfetch
       fzf
       gh
+      glab
       gtk3
       hyperfine
       just
@@ -104,6 +105,7 @@ in
       nix-inspect
 
       # Work tools
+      agent-browser
       pi-coding-agent
       # perSystem.self.opencode
 
@@ -165,6 +167,7 @@ in
       wakatime-cli
     ])
     ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
+      perSystem.self.figma-linux
       pkgs.spotify
     ];
 }
