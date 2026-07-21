@@ -9,6 +9,7 @@
   {
     "context": "vim_mode == normal",
     "bindings": {
+      "ctrl-t": "project_symbols::Toggle",
       // File/Project navigation (from nvim <leader>f...)
       "space f f": "file_finder::Toggle",
       "space f g": "pane::DeploySearch",
