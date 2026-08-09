@@ -44,6 +44,33 @@
   virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
 
+  # Twitch Drops Miner
+  virtualisation.oci-containers = {
+    backend = "docker";
+    containers.twitchdropsminer = {
+      image = "docker.io/nokodo/twitchdropsminer:latest";
+      autoStart = true;
+      pull = "always";
+      ports = [ "127.0.0.1:5800:5800" ];
+      environment = {
+        DARK_MODE = "1";
+        USER_ID = "568";
+        GROUP_ID = "568";
+      };
+      user = "568:568";
+      volumes = [
+        "/var/lib/twitchdropsminer/config:/config"
+        "/var/lib/twitchdropsminer/cache:/cache"
+      ];
+    };
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/twitchdropsminer 0750 568 568 -"
+    "d /var/lib/twitchdropsminer/config 0750 568 568 -"
+    "d /var/lib/twitchdropsminer/cache 0750 568 568 -"
+  ];
+
   networking.firewall.checkReversePath = false;
   services.resolved.enable = true;
 
