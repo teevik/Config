@@ -23,5 +23,6 @@ let
 in
 {
   opencode = import ./opencode.nix { inherit pkgs; };
+  omp = perSystem.llm-agents.omp;
   t3code-nightly = import ./t3code-nightly.nix { inherit perSystem pkgs; };
 }

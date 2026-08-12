@@ -1,8 +1,12 @@
 modelRoles: 
   slow: opencode/claude-opus-4-6:xhigh
-  default: opencode/claude-opus-4-6:high
+  default: openai-codex/gpt-5.6-sol:high
   smol: opencode/claude-haiku-4-5:low
   plan: opencode/gemini-3.1-pro:high
   commit: opencode/claude-haiku-4-5:low
 browser: 
   headless: false
+symbolPreset: nerd
+theme: 
+  dark: dark-catppuccin
+setupVersion: 
