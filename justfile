@@ -53,11 +53,18 @@ setup:
     mkdir -p ~/.pi/agent
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
-# update:
-#     #!/usr/bin/env bash
-#     set -euo pipefail
-#     version="$(npm view '@opencode-ai/cli-linux-x64-baseline@next' version)"
-#     nix run nixpkgs#nix-update -- -f packages/nix-update.nix opencode --version "$version" --build
+update:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    nix run github:Mic92/nix-update -- \
+      --file packages/nix-update.nix \
+      --version unstable \
+      --version-regex '^v([0-9]+\.[0-9]+\.[0-9]+-nightly\.[0-9]{8}\.[0-9]+)$' \
+      --use-github-releases \
+      --subpackage resourceMonitor \
+      --build \
+      t3code-nightly
 
 build-iso:
     nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"

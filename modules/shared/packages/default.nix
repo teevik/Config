@@ -17,6 +17,10 @@ let
   tofi-patched = pkgs.tofi.overrideAttrs (_: {
     patches = [ ./tofi.patch ];
   });
+
+  t3code-desktop-nightly = perSystem.llm-agents.t3code-desktop.override {
+    t3code = perSystem.self.t3code-nightly;
+  };
 in
 {
   environment.systemPackages =
@@ -107,6 +111,11 @@ in
       # Work tools
       agent-browser
       pi-coding-agent
+      perSystem.llm-agents.claude-code
+      perSystem.llm-agents.claude-desktop
+      perSystem.llm-agents.codex
+      perSystem.self.t3code-nightly
+      t3code-desktop-nightly
       # perSystem.self.opencode
 
       # Desktop apps

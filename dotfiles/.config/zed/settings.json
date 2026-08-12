@@ -267,7 +267,6 @@
     "dockerfile": true,
     "latex": true,
     "sql": true,
-    "cargo-appraiser": true,
     "crates-lsp": true,
     "tsgo": true,
     "wakatime": true,

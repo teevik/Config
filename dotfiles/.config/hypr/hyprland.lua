@@ -30,7 +30,7 @@ hl.config({
 
   input = {
     kb_layout = "us,no",
-    kb_options = "grp:alt_shift_toggle,caps:escape",
+    kb_options = "grp:alt_shift_toggle,ctrl:nocaps",
     follow_mouse = 1,
     natural_scroll = false,
     sensitivity = 0,
@@ -124,7 +124,7 @@ hl.window_rule({
 hl.window_rule({ name = "steam-stay-focused", match = { class = "^(steam)$" }, stay_focused = true })
 hl.window_rule({ name = "steam-min-size", match = { class = "^(steam)$" }, min_size = { 1, 1 } })
 
-hl.layer_rule({ name = "blur-bar", match = { namespace = "bar" }, blur = true })
+hl.layer_rule({ name = "blur-bar", match = { namespace = "^marble-bar$" }, blur = true })
 hl.layer_rule({ name = "blur-osd", match = { namespace = "osd" }, blur = true })
 hl.layer_rule({ name = "blur-notifications", match = { namespace = "notifications" }, blur = true })
 hl.layer_rule({ name = "blur-launcher", match = { namespace = "launcher" }, blur = true })

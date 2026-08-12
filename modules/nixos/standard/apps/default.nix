@@ -6,6 +6,7 @@
 {
   imports = [
     # ./android-studio.nix
+    ./codex-desktop.nix
     ./nautilus.nix
     ./firefox.nix
   ];

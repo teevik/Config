@@ -8,6 +8,60 @@
 let
   hyprlandPackage = perSystem.hyprland.hyprland;
   portalPackage = perSystem.hyprland.xdg-desktop-portal-hyprland;
+  mkHyprlockConfig =
+    pamModule:
+    pkgs.writeText "hyprlock-${pamModule}.conf" (
+      lib.replaceStrings
+        [
+          "@date@"
+          "@pam-module@"
+          "@wallpaper@"
+        ]
+        [
+          "${pkgs.coreutils}/bin/date"
+          pamModule
+          "${./background.png}"
+        ]
+        (builtins.readFile ./hyprlock.conf)
+    );
+  hyprlockConfig = mkHyprlockConfig "hyprlock";
+  hyprlockManualConfig = mkHyprlockConfig "hyprlock-manual";
+  mkLockScreen =
+    {
+      name,
+      configFile,
+    }:
+    pkgs.writeShellApplication {
+      inherit name;
+      runtimeInputs = [ pkgs.procps ];
+      text = ''
+        pidof hyprlock >/dev/null || exec ${lib.getExe pkgs.hyprlock} --config ${configFile}
+      '';
+    };
+  lockScreen = mkLockScreen {
+    name = "hyprland-lock";
+    configFile = hyprlockManualConfig;
+  };
+  idleLockScreen = mkLockScreen {
+    name = "hyprland-idle-lock";
+    configFile = hyprlockConfig;
+  };
+  hypridleConfig = pkgs.writeText "hypridle.conf" (
+    lib.replaceStrings
+      [
+        "@brightnessctl@"
+        "@hyprctl@"
+        "@lock-screen@"
+        "@loginctl@"
+      ]
+      [
+        "${lib.getExe pkgs.brightnessctl}"
+        "${lib.getExe' hyprlandPackage "hyprctl"}"
+        "${lib.getExe idleLockScreen}"
+        "${pkgs.systemd}/bin/loginctl"
+      ]
+      (builtins.readFile ./hypridle.conf)
+  );
   splitMonitorWorkspacesLua = pkgs.runCommand "split-monitor-workspaces-lua" { } ''
     mkdir -p $out/share/hyprland/split-monitor-workspaces
     cp ${inputs.split-monitor-workspaces}/lua/*.lua $out/share/hyprland/split-monitor-workspaces/
@@ -27,9 +81,19 @@ in
 
   environment.systemPackages = [
     pkgs.nwg-displays
+    pkgs.hyprlock
+    lockScreen
     perSystem.hyprland-scratchpad.default
     splitMonitorWorkspacesLua
   ];
+
+  # Hyprlock uses this PAM service for password authentication. Individual
+  # hosts can add another PAM method (the Zenbook adds Howdy) without changing
+  # the lock screen itself.
+  security.pam.services = {
+    hyprlock = { };
+    hyprlock-manual = { };
+  };
 
   # buildEnv only links share/ subdirs listed in pathsToLink. The upstream
   # hyprland module adds /share/hypr (singular). split-monitor-workspaces
@@ -51,14 +115,14 @@ in
     fi
   '';
 
-  # Hypridle - screen dimming and DPMS
+  # Hypridle - screen dimming, locking, and DPMS
   systemd.user.services.hypridle = {
     description = "Hyprland idle daemon";
     partOf = [ "graphical-session.target" ];
     after = [ "graphical-session.target" ];
     wantedBy = [ "graphical-session.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.hypridle}/bin/hypridle -c ${./hypridle.conf}";
+      ExecStart = "${lib.getExe pkgs.hypridle} -c ${hypridleConfig}";
       Restart = "on-failure";
     };
   };

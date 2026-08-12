@@ -16,6 +16,7 @@
     # "${inputs.nixos-hardware}/asus/battery.nix"
 
     inputs.disko.nixosModules.disko
+    inputs.gaze.nixosModules.default
     flake.nixosModules.minimal
     flake.nixosModules.standard
     flake.nixosModules.laptop
@@ -30,6 +31,74 @@
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
+  # Gaze keeps its recognition models warm in a system daemon, but opens the
+  # camera only for enrollment or authentication. Use the IR sensor directly;
+  # linux-enable-ir-emitter below continues to apply the ASUS emitter controls.
+  services.gaze = {
+    enable = true;
+    package = inputs.gaze.packages.${pkgs.stdenv.hostPlatform.system}.gaze;
+    mutableConfig = false;
+    pam.defaultServices = [ ];
+    settings = {
+      cameras = {
+        rgb = "";
+        ir = "/dev/video2";
+        emitter_enabled = false;
+      };
+      security.level = "medium";
+      # IR liveness waits for eye motion across multiple matched frames. Turn
+      # it off for first-match unlocks; the medium face threshold remains.
+      liveness.enabled = false;
+      auth = {
+        abort_if_ssh = true;
+        abort_if_lid_closed = true;
+        start_delay_ms = 0;
+        start_delay_scope = "screen_lock";
+      };
+    };
+  };
+
+  # Face or password, with both available concurrently. Keep Gaze out of every
+  # other PAM service by using the empty defaultServices list above.
+  security.pam.services.sudo.gaze = {
+    enable = true;
+    control = "sufficient";
+    simultaneous = true;
+  };
+  security.pam.services.hyprlock.gaze = {
+    enable = true;
+    control = "sufficient";
+    simultaneous = true;
+  };
+  security.pam.services.hyprlock-manual = {
+    gaze = {
+      enable = true;
+      control = "sufficient";
+      simultaneous = true;
+    };
+
+    # The manual lock is active before this runs. Delay only its first Gaze
+    # scan so walking away after SUPER+L does not immediately unlock again.
+    rules.auth.faceScanDelay = {
+      order = config.security.pam.services.hyprlock-manual.rules.auth.gaze.order - 10;
+      control = "optional";
+      modulePath = "${config.security.pam.package}/lib/security/pam_exec.so";
+      args = [
+        "quiet"
+        "${pkgs.writeShellScript "delay-manual-face-scan" ''
+          ${lib.getExe' pkgs.coreutils "sleep"} 3
+        ''}"
+      ];
+    };
+  };
+
+  # Applies the camera's saved UVC emitter setting at boot/resume. Initial
+  # hardware discovery is still an explicit, one-time command after rebuild.
+  services.linux-enable-ir-emitter = {
+    enable = true;
+    device = "video2";
+  };
+
   # Logitech
   hardware.logitech.wireless = {
     enable = true;
@@ -43,33 +112,6 @@
   users.groups.libvirtd.members = [ "teevik" ];
   virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
-
-  # Twitch Drops Miner
-  virtualisation.oci-containers = {
-    backend = "docker";
-    containers.twitchdropsminer = {
-      image = "docker.io/nokodo/twitchdropsminer:latest";
-      autoStart = true;
-      pull = "always";
-      ports = [ "127.0.0.1:5800:5800" ];
-      environment = {
-        DARK_MODE = "1";
-        USER_ID = "568";
-        GROUP_ID = "568";
-      };
-      user = "568:568";
-      volumes = [
-        "/var/lib/twitchdropsminer/config:/config"
-        "/var/lib/twitchdropsminer/cache:/cache"
-      ];
-    };
-  };
-
-  systemd.tmpfiles.rules = [
-    "d /var/lib/twitchdropsminer 0750 568 568 -"
-    "d /var/lib/twitchdropsminer/config 0750 568 568 -"
-    "d /var/lib/twitchdropsminer/cache 0750 568 568 -"
-  ];
 
   networking.firewall.checkReversePath = false;
   services.resolved.enable = true;

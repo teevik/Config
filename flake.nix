@@ -1,4 +1,11 @@
 {
+  nixConfig = {
+    extra-substituters = [ "https://cache.numtide.com" ];
+    extra-trusted-public-keys = [
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+    ];
+  };
+
   inputs = {
 
     self.submodules = true;
@@ -57,6 +64,10 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    gaze = {
+      url = "github:GunduLabs/gaze";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Packages
     determinate-nix.url = "github:DeterminateSystems/nix-src";
@@ -86,6 +97,7 @@
       url = "github:ilysenko/codex-desktop-linux";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    llm-agents.url = "github:numtide/llm-agents.nix";
     neovim = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -102,7 +114,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland.url = "github:hyprwm/Hyprland";
+    # Temporary pin: the next commit crashes when xdg-system-bell rings
+    # without an associated surface (hyprwm/Hyprland#15502).
+    hyprland.url = "github:hyprwm/Hyprland/db95de4f5b4ce446984d873e5b51ebdc380dc76c";
     split-monitor-workspaces = {
       url = "github:zjeffer/split-monitor-workspaces";
       inputs.hyprland.follows = "hyprland";
