@@ -110,6 +110,7 @@ in
 
       # Work tools
       agent-browser
+      perSystem.self.agent-workspace-linux
       pi-coding-agent
       perSystem.llm-agents.claude-code
       perSystem.llm-agents.claude-desktop

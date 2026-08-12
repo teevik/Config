@@ -1,0 +1,10 @@
+{
+	"servers": {
+		"tsgo": {
+			"command": "tsgo",
+			"args": ["--lsp", "--stdio"],
+			"fileTypes": [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"],
+			"rootMarkers": ["package.json", "tsconfig.json", "jsconfig.json"]
+		}
+	}
+}

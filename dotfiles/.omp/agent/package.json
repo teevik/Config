@@ -1,0 +1,29 @@
+{
+	"name": "@teevik/omp-extensions",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check": "npm run format:check && npm run typecheck && npm test",
+		"format": "biome check --write .",
+		"format:check": "biome check .",
+		"prepare": "effect-tsgo patch --typescript",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"effect": "4.0.0-rc.108"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.8",
+		"@effect/tsgo": "0.36.4",
+		"@effect/vitest": "4.0.0-rc.108",
+		"@oh-my-pi/pi-coding-agent": "17.2.12",
+		"typescript": "7.0.2",
+		"vitest": "4.1.10"
+	},
+	"engines": {
+		"node": ">=24"
+	},
+	"packageManager": "npm@11.16.0"
+}

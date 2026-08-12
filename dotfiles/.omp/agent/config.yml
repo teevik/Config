@@ -9,4 +9,20 @@ browser:
 symbolPreset: nerd
 theme: 
   dark: dark-catppuccin
-setupVersion: 
+setupVersion: 1
+colorBlindMode: false
+statusLine: 
+  preset: default
+  separator: none
+  sessionAccent: true
+  transparent: true
+  showHookStatus: true
+  compactThinkingLevel: false
+tui: 
+  textSizing: true
+  codexResetFireworks: true
+  tight: false
+terminal: 
+  showProgress: true
+display: 
+  shimmer: classic

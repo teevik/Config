@@ -60,7 +60,7 @@ update:
     # OMP's generated Bun dependencies and build patches live in llm-agents.nix,
     # so update that package source as a unit rather than overriding its version.
     nix flake update llm-agents
-    nix build --no-link --file packages/nix-update.nix omp
+    nix build --no-link --print-build-logs --file packages/nix-update.nix omp
 
     nix run github:Mic92/nix-update -- \
       --file packages/nix-update.nix \

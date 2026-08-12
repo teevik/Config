@@ -1,0 +1,8 @@
+node_modules/
+
+# OMP runtime state. The tracked config.yml remains versioned.
+*.db
+*.db-shm
+*.db-wal
+last-changelog-version
+terminal-sessions/

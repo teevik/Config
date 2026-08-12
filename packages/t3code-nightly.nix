@@ -4,13 +4,13 @@
   ...
 }:
 let
-  version = "0.0.34-nightly.20260812.1076";
+  version = "0.0.34-nightly.20260812.1077";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-yb7A9a7n/r4iyXoM/zysy4oGJQ5vyuO6lqKdoCYrYV0=";
+    hash = "sha256-gXagBH3aQeNbt1EqGgk0zkJmXiRF8iiMVW6XHkZ6Y0o=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
