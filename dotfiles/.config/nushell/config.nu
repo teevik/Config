@@ -77,7 +77,7 @@ $env.config = {
         if $duration_ms > $threshold_ms {
           let duration_secs = ($duration_ms / 1000 | math round)
           let cmd = ($env.repl_commandline? | default "Command")
-          notify-send "Command finished" $"($cmd) completed in ($duration_secs)s"
+          notify-send --expire-time=10000 "Command finished" $"($cmd) completed in ($duration_secs)s"
         }
       }
     ]
@@ -324,6 +324,14 @@ def --env smart-fzf-complete [] {
     commandline set-cursor ($span.start + ($replacement | str length))
 }
 
+def --env join-backslash-lines [] {
+    let joined = (
+        commandline
+        | str replace --all --regex '[ \t]*\\\r?\n[ \t]*' ' '
+    )
+    commandline edit --replace $joined
+}
+
 let smart_ctrl_t = {
     name: fzf_files
     modifier: control
@@ -335,10 +343,23 @@ let smart_ctrl_t = {
     }
 }
 
+let join_backslash_lines = {
+    name: join_backslash_lines
+    modifier: none
+    keycode: f6
+    mode: [emacs vi_normal vi_insert]
+    event: {
+        send: executehostcommand
+        cmd: "join-backslash-lines"
+    }
+}
+
 $env.config.keybindings = (
     $env.config.keybindings
     | where name != fzf_files
+    | where name != join_backslash_lines
     | append $smart_ctrl_t
+    | append $join_backslash_lines
 )
 
 # Direnv integration

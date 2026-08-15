@@ -35,6 +35,7 @@ in
       glab
       gtk3
       hyperfine
+      immich-cli
       just
       libnotify
       magic-wormhole

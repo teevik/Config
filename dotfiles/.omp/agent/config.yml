@@ -6,7 +6,7 @@ modelRoles:
   commit: opencode/claude-haiku-4-5:low
 browser: 
   headless: false
-symbolPreset: nerd
+symbolPreset: unicode
 theme: 
   dark: dark-catppuccin
 setupVersion: 1
@@ -26,3 +26,9 @@ terminal:
   showProgress: true
 display: 
   shimmer: classic
+dev: 
+  autoqaConsent: denied
+startup: 
+  quiet: true
+github: 
+  enabled: true

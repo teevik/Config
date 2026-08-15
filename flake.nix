@@ -47,11 +47,15 @@
       url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    marble = {
-      url = "git+ssh://git@github.com/teevik/marble-shell.git";
+    astal = {
+      url = "git+ssh://git@github.com/teevik/astal.git?ref=feat/niri";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # marble.url = "path:./marble-shell";
+    marble = {
+      url = "git+ssh://git@github.com/teevik/marble-shell.git";
+      inputs.astal.follows = "astal";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     automatic-sunset = {
       url = "github:teevik/automatic-sunset";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -93,10 +97,6 @@
       url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    codex-desktop-linux = {
-      url = "github:ilysenko/codex-desktop-linux";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     llm-agents.url = "github:numtide/llm-agents.nix";
     neovim = {
       url = "github:nix-community/neovim-nightly-overlay";
@@ -133,11 +133,16 @@
 
         patchSpec = {
           nixpkgs.patches = [
-            # (patcher.fetchpatch {
-            #   name = "playwright-cli: init at 0.1.0";
-            #   url = "https://github.com/NixOS/nixpkgs/pull/490230.diff";
-            #   hash = "sha256-j8MYJHXA/FMZPO2peh5MYl6AvCp3aGO3GNCQx1SfKzM=";
-            # })
+            (patcher.fetchpatch {
+              name = "python3Packages.nanoemoji: fix hash";
+              url = "https://github.com/NixOS/nixpkgs/commit/1e544d5f3944e555dd7919258882562e616407a8.patch";
+              hash = "sha256-Ccq7SIHk9AS/OXwL55jtVdbH7Wb8aroSS+uXFkWvpNg=";
+            })
+            (patcher.fetchpatch {
+              name = "wf-recorder: pin ffmpeg_8";
+              url = "https://github.com/NixOS/nixpkgs/commit/fc31aa40b9bf77889afbcf495f3161a026bcb80a.patch";
+              hash = "sha256-yG0OLFacC5GB+BzQM8dnU+ucAak3onaIMmyoxQt3fx0=";
+            })
           ];
         };
       };

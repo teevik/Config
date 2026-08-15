@@ -71,5 +71,11 @@ update:
       --build \
       t3code-nightly
 
+# Build and activate local Marble and Astal working trees without publishing them
+marble-dev-switch:
+    nh os switch -- \
+      --override-input marble "path:${HOME}/Documents/Projects/marble-shell" \
+      --override-input astal "path:${HOME}/Documents/Projects/astal"
+
 build-iso:
     nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"
