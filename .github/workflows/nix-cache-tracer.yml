@@ -64,6 +64,27 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: |
+          disk_samples="$RUNNER_TEMP/disk-usage.log"
+          while true; do
+            df -B1 --output=used,avail / | tail -n 1 >> "$disk_samples"
+            sleep 30
+          done &
+          disk_monitor_pid=$!
+
+          report_disk_high_water_mark() {
+            kill "$disk_monitor_pid" 2>/dev/null || true
+            wait "$disk_monitor_pid" 2>/dev/null || true
+            awk '
+              NR == 1 || $1 > max_used { max_used = $1 }
+              NR == 1 || $2 < min_free { min_free = $2 }
+              END {
+                printf "Disk high-water mark: %d bytes used; minimum free: %d bytes\n", max_used, min_free
+              }
+            ' "$disk_samples"
+            df -h /
+          }
+          trap report_disk_high_water_mark EXIT
+
           nix run github:Mic92/nix-fast-build -- \
             --skip-cached \
             --cachix-cache teevik \
