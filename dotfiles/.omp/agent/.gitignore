@@ -6,3 +6,5 @@ node_modules/
 *.db-wal
 last-changelog-version
 terminal-sessions/
+blobs/
+sessions/
