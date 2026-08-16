@@ -89,7 +89,3 @@ jobs:
             --skip-cached \
             --cachix-cache teevik \
             --flake .#nixosConfigurations.desktop
-
-      - name: Report final disk usage
-        if: always()
-        run: df -h /
