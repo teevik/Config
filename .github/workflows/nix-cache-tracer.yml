@@ -1,0 +1,74 @@
+name: Nix cache tracer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-desktop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Config and its submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure SSH for private flake inputs
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+
+      - name: Trust GitHub's SSH host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Free runner disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h /
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/local/share/boost \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /opt/az \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          echo "Disk space after cleanup:"
+          df -h /
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+            substituters = https://cache.nixos.org https://teevik.cachix.org https://cache.numtide.com https://nyx-cache.chaotic.cx
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
+
+      - name: Configure Cachix streaming uploads
+        uses: cachix/cachix-action@v17
+        with:
+          name: teevik
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          pushFilter: (marble|marble-shell)
+
+      - name: Update flake inputs
+        run: nix flake update
+
+      - name: Build desktop and stream outputs to Cachix
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: |
+          nix run github:Mic92/nix-fast-build -- \
+            --skip-cached \
+            --cachix-cache teevik \
+            --flake .#nixosConfigurations.desktop
+
+      - name: Report final disk usage
+        if: always()
+        run: df -h /
