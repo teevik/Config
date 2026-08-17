@@ -47,6 +47,10 @@
       url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     astal = {
       url = "git+ssh://git@github.com/teevik/astal.git?ref=feat/niri";
       inputs.nixpkgs.follows = "nixpkgs";

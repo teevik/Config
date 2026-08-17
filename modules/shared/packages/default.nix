@@ -1,5 +1,4 @@
 {
-  inputs,
   lib,
   perSystem,
   pkgs,
@@ -105,8 +104,6 @@ in
       rustup
 
       # Nix and repo tools
-      comma
-      nix-index
       nix-inspect
 
       # Work tools

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 let
   lock-false = {
     Value = false;
@@ -174,17 +174,6 @@ in
           installation_mode = "force_installed";
         };
 
-        # TODO: Catppuccin userstyles (~130 sites) were previously managed via nix-userstyles
-        # and injected as userContent CSS through home-manager. To restore:
-        # 1. Install the Stylus extension
-        # 2. Import catppuccin userstyles manually from https://github.com/catppuccin/userstyles
-        # Or add Stylus extension here and manage userstyles through it.
-
-        # TODO: Betterfox preferences were previously applied via betterfox-nix home-manager module.
-        # To restore, either:
-        # 1. Copy betterfox user.js settings into the Preferences section above
-        # 2. Or manually place a user.js file in the Firefox profile directory
-        # See: https://github.com/yokoffing/Betterfox
       };
     };
   };

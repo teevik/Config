@@ -41,7 +41,7 @@ plugin add /etc/nushell/plugins/skim
 # nix-index command-not-found
 $env.config.hooks.command_not_found = { |cmd_name|
     try {
-        let attrs = (nix-locate --minimal --no-group --type x --type s --top-level --whole-name --at-root $"/bin/($cmd_name)")
+        let attrs = (nix-locate --minimal --no-group --type x --type s --whole-name --at-root $"/bin/($cmd_name)")
         if ($attrs | is-empty) {
             null
         } else {
