@@ -141,6 +141,7 @@ in
 
       # Wayland tools
       perSystem.hyprland-contrib.grimblast
+      cliphist
       fuzzel
       nwg-displays
       perSystem.self.peck

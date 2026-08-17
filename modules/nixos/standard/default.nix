@@ -91,9 +91,6 @@
   # gsettings set org.gnome.desktop.interface cursor-theme catppuccin-mocha-dark-cursors
   programs.dconf.enable = true;
 
-  # Clipboard history
-  # NOTE: cliphist must be started by the user or via a systemd user service
-
   # users.users.teevik.extraGroups = [ "geoclue" ];
   environment.localBinInPath = true;
 

@@ -42,6 +42,7 @@ pkgs.stdenv.mkDerivation {
 
   nativeBuildInputs = [
     pkgs.autoPatchelfHook
+    pkgs.copyDesktopItems
     pkgs.makeWrapper
   ];
 
@@ -54,6 +55,20 @@ pkgs.stdenv.mkDerivation {
   runtimeDependencies = [
     pkgs.vulkan-loader
     pkgs.wayland
+  ];
+
+  desktopItems = [
+    (pkgs.makeDesktopItem {
+      name = "agent-workspace-linux-viewer";
+      desktopName = "Agent Workspace Linux Viewer";
+      comment = "Monitor and control isolated AI agent workspaces";
+      exec = "agent-workspace-linux viewer";
+      categories = [
+        "Development"
+        "Utility"
+      ];
+      terminal = false;
+    })
   ];
 
   installPhase = ''

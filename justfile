@@ -31,6 +31,7 @@ install TARGET-IP HOST:
 stow:
     mkdir -p ~/.pi/agent
     stow -v -t ~ dotfiles
+    npm ci --prefix ~/.omp/agent
 
 # Remove stowed dotfiles
 unstow:
@@ -40,6 +41,7 @@ unstow:
 restow:
     mkdir -p ~/.pi/agent
     stow -v -t ~ -R dotfiles
+    npm ci --prefix ~/.omp/agent
 
 # First-time stow: adopt existing files, then check diff
 stow-adopt:

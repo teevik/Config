@@ -127,6 +127,29 @@ in
     };
   };
 
+  # Cliphist - clipboard history for text and images
+  systemd.user.services.cliphist = {
+    description = "Clipboard history daemon";
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${lib.getExe' pkgs.wl-clipboard "wl-paste"} --watch ${lib.getExe pkgs.cliphist} -max-dedupe-search 10 -max-items 500 store";
+      Restart = "on-failure";
+    };
+  };
+
+  systemd.user.services.cliphist-images = {
+    description = "Clipboard image history daemon";
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${lib.getExe' pkgs.wl-clipboard "wl-paste"} --type image --watch ${lib.getExe pkgs.cliphist} -max-dedupe-search 10 -max-items 500 store";
+      Restart = "on-failure";
+    };
+  };
+
   # Swaybg - wallpaper daemon
   systemd.user.services.swaybg = {
     description = "Wayland wallpaper daemon";

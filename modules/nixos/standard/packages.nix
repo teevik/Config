@@ -16,6 +16,11 @@
 
   users.users.teevik.extraGroups = [ "input" ];
 
+  system.userActivationScripts.clearTofiDrunCache.text = ''
+    cacheHome="''${XDG_CACHE_HOME:-$HOME/.cache}"
+    rm -f "$cacheHome/tofi-drun"
+  '';
+
   environment.systemPackages =
     (with pkgs; [
       # Dev tools - C++

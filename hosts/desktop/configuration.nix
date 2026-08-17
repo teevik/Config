@@ -28,12 +28,6 @@
   # Infinite timeout for bootloader
   boot.loader.timeout = null;
 
-  # Prevent sleep/suspend - desktop should always be on
-  systemd.targets.sleep.enable = false;
-  systemd.targets.suspend.enable = false;
-  systemd.targets.hibernate.enable = false;
-  systemd.targets.hybrid-sleep.enable = false;
-
   # # GitHub Actions Runner
   # users.users.github-runner = {
   #   isSystemUser = true;
