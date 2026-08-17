@@ -51,6 +51,11 @@ pkgs.stdenv.mkDerivation {
     pkgs.stdenv.cc.cc.lib
   ];
 
+  runtimeDependencies = [
+    pkgs.vulkan-loader
+    pkgs.wayland
+  ];
+
   installPhase = ''
     runHook preInstall
 
