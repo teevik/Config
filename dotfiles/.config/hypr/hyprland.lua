@@ -123,6 +123,11 @@ hl.window_rule({
 })
 hl.window_rule({ name = "steam-stay-focused", match = { class = "^(steam)$" }, stay_focused = true })
 hl.window_rule({ name = "steam-min-size", match = { class = "^(steam)$" }, min_size = { 1, 1 } })
+hl.window_rule({
+  name = "pin-solidtime-widget",
+  match = { class = "^solidtime$", float = true },
+  pin = true,
+})
 
 hl.layer_rule({ name = "blur-bar", match = { namespace = "^marble-bar$" }, blur = true })
 hl.layer_rule({ name = "blur-osd", match = { namespace = "osd" }, blur = true })
