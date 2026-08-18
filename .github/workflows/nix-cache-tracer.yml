@@ -1,7 +1,15 @@
 name: Nix cache
 
 on:
+  # Scheduled workflows are best-effort and may be delayed or disabled after
+  # 60 days without repository activity.
+  schedule:
+    - cron: "17 3 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: nix-cache-nightly-flake-update
+  cancel-in-progress: false
 
 permissions:
   contents: write
