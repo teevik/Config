@@ -4,12 +4,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   update-lock:
     name: Update flake lock
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out Config and its submodules
         uses: actions/checkout@v4
@@ -56,6 +59,8 @@ jobs:
     name: Build ${{ matrix.host }}
     needs: update-lock
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -155,3 +160,63 @@ jobs:
             --skip-cached \
             --no-nom \
             --flake ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
+
+  pull-request:
+    name: Open nightly update pull request
+    needs: build
+    if: ${{ needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Config
+        uses: actions/checkout@v4
+
+      - name: Download the built flake lock
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-flake-lock
+          path: ${{ runner.temp }}/updated-flake-lock
+
+      - name: Install the built lock and summarize input changes
+        id: input-changes
+        run: |
+          git show HEAD:flake.lock > "$RUNNER_TEMP/flake.lock.before"
+          cp "$RUNNER_TEMP/updated-flake-lock/flake.lock" flake.lock
+
+          rows="$(
+            jq -r --slurpfile old "$RUNNER_TEMP/flake.lock.before" '
+              ($old[0].nodes // {}) as $before
+              | (.nodes // {}) as $after
+              | ((($before | keys) + ($after | keys)) | unique[]) as $name
+              | ($before[$name].locked // null) as $old_lock
+              | ($after[$name].locked // null) as $new_lock
+              | select($old_lock != $new_lock)
+              | "| `\($name)` | `\($old_lock.rev // "not present")` | `\($new_lock.rev // "not present")` |"
+            ' flake.lock
+          )"
+
+          {
+            echo 'body<<EOF'
+            echo 'Automated flake input update. Every configured host was built and pushed to Cachix using this exact lock file.'
+            echo
+            echo '### Changed inputs'
+            echo
+            echo '| Input | Old revision | New revision |'
+            echo '| --- | --- | --- |'
+            if [[ -n "$rows" ]]; then
+              echo "$rows"
+            else
+              echo '| _No locked inputs changed_ | — | — |'
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update the nightly pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: flake.lock
+          commit-message: "chore: update flake inputs"
+          branch: nightly/flake-update
+          base: main
+          title: "chore: update flake inputs"
+          body: ${{ steps.input-changes.outputs.body }}
