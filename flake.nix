@@ -137,16 +137,11 @@
 
         patchSpec = {
           nixpkgs.patches = [
-            (patcher.fetchpatch {
-              name = "python3Packages.nanoemoji: fix hash";
-              url = "https://github.com/NixOS/nixpkgs/commit/1e544d5f3944e555dd7919258882562e616407a8.patch";
-              hash = "sha256-Ccq7SIHk9AS/OXwL55jtVdbH7Wb8aroSS+uXFkWvpNg=";
-            })
-            (patcher.fetchpatch {
-              name = "wf-recorder: pin ffmpeg_8";
-              url = "https://github.com/NixOS/nixpkgs/commit/fc31aa40b9bf77889afbcf495f3161a026bcb80a.patch";
-              hash = "sha256-yG0OLFacC5GB+BzQM8dnU+ucAak3onaIMmyoxQt3fx0=";
-            })
+            # (patcher.fetchpatch {
+            #   name = "wf-recorder: pin ffmpeg_8";
+            #   url = "https://github.com/NixOS/nixpkgs/commit/fc31aa40b9bf77889afbcf495f3161a026bcb80a.patch";
+            #   hash = "sha256-yG0OLFacC5GB+BzQM8dnU+ucAak3onaIMmyoxQt3fx0=";
+            # })
           ];
         };
       };
