@@ -1,4 +1,4 @@
-name: Nix cache tracer
+name: Nix cache
 
 on:
   workflow_dispatch:
@@ -7,7 +7,8 @@ permissions:
   contents: read
 
 jobs:
-  build-desktop:
+  update-lock:
+    name: Update flake lock
     runs-on: ubuntu-latest
     steps:
       - name: Check out Config and its submodules
@@ -15,10 +16,77 @@ jobs:
         with:
           submodules: recursive
 
+      # GitHub deploy keys belong to one repository, so each private flake
+      # input needs its own key. The key comments let ssh-agent route each
+      # repository fetch to the correct key.
       - name: Configure SSH for private flake inputs
         uses: webfactory/ssh-agent@v0.9.1
         with:
-          ssh-private-key: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+          ssh-private-key: |
+            ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+            ${{ secrets.ASTAL_DEPLOY_KEY }}
+
+      - name: Trust GitHub's SSH host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+            substituters = https://cache.nixos.org https://teevik.cachix.org https://cache.numtide.com https://nyx-cache.chaotic.cx
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
+
+      - name: Update flake inputs
+        run: |
+          nix flake update
+          echo "nixpkgs rev: $(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)"
+
+      - name: Upload updated flake lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-flake-lock
+          path: flake.lock
+          if-no-files-found: error
+          retention-days: 1
+
+  build:
+    name: Build ${{ matrix.host }}
+    needs: update-lock
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - desktop
+          - zenbook
+    steps:
+      - name: Check out Config and its submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download updated flake lock
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-flake-lock
+          path: .
+
+      - name: Log shared nixpkgs revision
+        run: |
+          echo "nixpkgs rev: $(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)"
+
+      # GitHub deploy keys belong to one repository, so each private flake
+      # input needs its own key. The key comments let ssh-agent route each
+      # repository fetch to the correct key.
+      - name: Configure SSH for private flake inputs
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: |
+            ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+            ${{ secrets.ASTAL_DEPLOY_KEY }}
 
       - name: Trust GitHub's SSH host key
         run: |
@@ -50,19 +118,17 @@ jobs:
             substituters = https://cache.nixos.org https://teevik.cachix.org https://cache.numtide.com https://nyx-cache.chaotic.cx
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
+      # Daemon mode streams each locally built path as it finishes and honours
+      # pushFilter. Passing --cachix-cache to nix-fast-build would bypass the
+      # filter for private-input outputs.
       - name: Configure Cachix streaming uploads
         uses: cachix/cachix-action@v17
         with:
           name: teevik
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          pushFilter: (marble|marble-shell)
+          pushFilter: (marble|astal)
 
-      - name: Update flake inputs
-        run: nix flake update
-
-      - name: Build desktop and stream outputs to Cachix
-        env:
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Build ${{ matrix.host }} and stream outputs to Cachix
         run: |
           disk_samples="$RUNNER_TEMP/disk-usage.log"
           while true; do
@@ -78,7 +144,7 @@ jobs:
               NR == 1 || $1 > max_used { max_used = $1 }
               NR == 1 || $2 < min_free { min_free = $2 }
               END {
-                printf "Disk high-water mark: %d bytes used; minimum free: %d bytes\n", max_used, min_free
+                printf "Disk high-water mark: %.1f GiB used; minimum free: %.1f GiB\n", max_used / 2^30, min_free / 2^30
               }
             ' "$disk_samples"
             df -h /
@@ -87,5 +153,5 @@ jobs:
 
           nix run github:Mic92/nix-fast-build -- \
             --skip-cached \
-            --cachix-cache teevik \
-            --flake .#nixosConfigurations.desktop
+            --no-nom \
+            --flake ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
