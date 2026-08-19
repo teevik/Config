@@ -20,6 +20,32 @@ let
   t3code-desktop-nightly = perSystem.llm-agents.t3code-desktop.override {
     t3code = perSystem.self.t3code-nightly;
   };
+
+  agentPython = pkgs.python3.withPackages (
+    ps: with ps; [
+      # HTTP and parsing
+      beautifulsoup4
+      httpx
+      lxml
+      requests
+
+      # Data, images, and documents
+      matplotlib
+      numpy
+      openpyxl
+      pandas
+      pillow
+      pypdf
+      python-docx
+      pyyaml
+      scipy
+
+      # General scripting and testing
+      pydantic
+      pytest
+      rich
+    ]
+  );
 in
 {
   environment.systemPackages =
@@ -92,6 +118,7 @@ in
       isort
       ty
       uv
+      agentPython
 
       # Dev tools - Rust
       cargo-pgo
