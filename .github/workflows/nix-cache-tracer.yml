@@ -50,16 +50,19 @@ jobs:
             substituters = https://cache.nixos.org https://teevik.cachix.org https://cache.numtide.com https://nyx-cache.chaotic.cx
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
-      - name: Update flake inputs
+      - name: Update flake inputs and packages
         run: |
           nix flake update
+          nix run nixpkgs#just -- update
           echo "nixpkgs rev: $(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)"
 
-      - name: Upload updated flake lock
+      - name: Upload nightly update
         uses: actions/upload-artifact@v4
         with:
-          name: updated-flake-lock
-          path: flake.lock
+          name: nightly-update
+          path: |
+            flake.lock
+            packages/t3code-nightly.nix
           if-no-files-found: error
           retention-days: 1
 
@@ -81,10 +84,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Download updated flake lock
+      - name: Download nightly update
         uses: actions/download-artifact@v4
         with:
-          name: updated-flake-lock
+          name: nightly-update
           path: .
 
       - name: Log shared nixpkgs revision
@@ -178,17 +181,18 @@ jobs:
       - name: Check out Config
         uses: actions/checkout@v4
 
-      - name: Download the built flake lock
+      - name: Download the built nightly update
         uses: actions/download-artifact@v4
         with:
-          name: updated-flake-lock
-          path: ${{ runner.temp }}/updated-flake-lock
+          name: nightly-update
+          path: ${{ runner.temp }}/nightly-update
 
-      - name: Install the built lock and summarize input changes
+      - name: Install the built update and summarize input changes
         id: input-changes
         run: |
           git show HEAD:flake.lock > "$RUNNER_TEMP/flake.lock.before"
-          cp "$RUNNER_TEMP/updated-flake-lock/flake.lock" flake.lock
+          cp "$RUNNER_TEMP/nightly-update/flake.lock" flake.lock
+          cp "$RUNNER_TEMP/nightly-update/packages/t3code-nightly.nix" packages/t3code-nightly.nix
 
           rows="$(
             jq -r --slurpfile old "$RUNNER_TEMP/flake.lock.before" '
@@ -204,7 +208,7 @@ jobs:
 
           {
             echo 'body<<EOF'
-            echo 'Automated flake input update. Every configured host was built and pushed to Cachix using this exact lock file.'
+            echo 'Automated flake input and package update. Every configured host was built and pushed to Cachix using these exact files.'
             echo
             echo '### Changed inputs'
             echo
@@ -222,9 +226,11 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          add-paths: flake.lock
-          commit-message: "chore: update flake inputs"
+          add-paths: |
+            flake.lock
+            packages/t3code-nightly.nix
+          commit-message: "chore: update flake inputs and packages"
           branch: nightly/flake-update
           base: main
-          title: "chore: update flake inputs"
+          title: "chore: update flake inputs and packages"
           body: ${{ steps.input-changes.outputs.body }}
