@@ -4,13 +4,13 @@
   ...
 }:
 let
-  version = "0.0.34-nightly.20260818.1124";
+  version = "0.0.34-nightly.20260819.1133";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-L/DeLW05N/BMpimvG1e9PbDcCY0nfgwN1YmdViSfmAw=";
+    hash = "sha256-uv/kD71zDPfaVyQ8EhxxwbKYaOq66T5tLeeFJmvEKrE=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -26,7 +26,7 @@ let
     inherit version src;
     inherit (perSystem.llm-agents.t3code) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-KxsxNNo/WU0pBy7lqwxU1OGQtZA7agTppPSGF3CCogw=";
+    hash = "sha256-AW7M/GU1AQJO8qcbv+aIGhxkCya28kp0TOwfBKlg2rQ=";
   };
 in
 perSystem.llm-agents.t3code.overrideAttrs (oldAttrs: {
