@@ -4,13 +4,16 @@
   ...
 }:
 let
-  version = "0.0.34-nightly.20260820.1140";
+  upstream = perSystem.llm-agents.t3code;
+  upstreamUnwrapped = upstream.unwrapped or upstream;
+
+  version = "0.0.34-nightly.20260825.1184";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-SDSDXgBOF5eTn53+BxfZ4FzzMmxU87nnmwfAvYKct8o=";
+    hash = "sha256-EIOdLJu1ivobEb/fE5IC1E3SY77RxbVdg1IF2bDrIyg=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -24,61 +27,72 @@ let
     pnpm = pkgs.pnpm_11;
     pname = "t3code";
     inherit version src;
-    inherit (perSystem.llm-agents.t3code) pnpmWorkspaces;
+    inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-klkRO8u32eau5AkqRloonJOmh6Ipsgtc+YW/4xP8xmA=";
+    hash = "sha256-wXsA9HHr9lppzbMGcQr+2Jq0oqMDtDKhnLhkmVgPIZo=";
   };
+
+  nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
+    inherit
+      version
+      src
+      pnpmDeps
+      resourceMonitor
+      ;
+
+    patches = (oldAttrs.patches or [ ]) ++ [
+      (pkgs.fetchurl {
+        # Temporary workaround for pingdotgg/t3code#523.
+        url = "https://github.com/user-attachments/files/30247737/t3code.patch";
+        hash = "sha256-pgtPTxdLSWGnyCEYBzbG7nfK1ZnfbrI99lz6rjH+L2k=";
+      })
+    ];
+
+    # The patch was written for T3 Code 0.0.31. Current nightlies renamed this
+    # Schema helper, so temporarily restore the old spelling while applying it.
+    prePatch = (oldAttrs.prePatch or "") + ''
+      substituteInPlace apps/server/src/provider/Layers/CursorAdapter.ts \
+        --replace-fail \
+          'Schema.fromJsonString(Schema.Unknown)' \
+          'Schema.UnknownFromJsonString'
+    '';
+
+    postPatch = (oldAttrs.postPatch or "") + ''
+      substituteInPlace apps/server/src/provider/Layers/CursorAdapter.ts \
+        --replace-fail \
+          'Schema.UnknownFromJsonString' \
+          'Schema.fromJsonString(Schema.Unknown)'
+    '';
+
+    # The upstream derivation interpolates its stable version into preBuild
+    # before overrideAttrs runs, so update that embedded argument as well.
+    preBuild = builtins.replaceStrings [ upstreamUnwrapped.version ] [ version ] oldAttrs.preBuild;
+
+    installPhase =
+      builtins.replaceStrings [ "${upstreamUnwrapped.resourceMonitor}" ] [ "${resourceMonitor}" ]
+        oldAttrs.installPhase;
+
+    passthru = (oldAttrs.passthru or { }) // {
+      # Exposed as a subpackage so nix-update refreshes its Cargo vendor hash.
+      inherit resourceMonitor;
+    };
+
+    meta = oldAttrs.meta // {
+      changelog = "https://github.com/pingdotgg/t3code/releases/tag/v${version}";
+    };
+  });
+
+  nightly =
+    if upstream ? unwrapped then
+      (upstream.override { t3code-unwrapped = nightlyUnwrapped; }).overrideAttrs (oldAttrs: {
+        # The wrapper exposes these build inputs through passthru. Define them
+        # here so nix-update sees this editable file as their source position.
+        passthru = (oldAttrs.passthru or { }) // {
+          inherit (nightlyUnwrapped) pnpmDeps resourceMonitor src;
+          unwrapped = nightlyUnwrapped;
+        };
+      })
+    else
+      nightlyUnwrapped;
 in
-perSystem.llm-agents.t3code.overrideAttrs (oldAttrs: {
-  inherit
-    version
-    src
-    pnpmDeps
-    resourceMonitor
-    ;
-
-  patches = (oldAttrs.patches or [ ]) ++ [
-    (pkgs.fetchurl {
-      # Temporary workaround for pingdotgg/t3code#523.
-      url = "https://github.com/user-attachments/files/30247737/t3code.patch";
-      hash = "sha256-pgtPTxdLSWGnyCEYBzbG7nfK1ZnfbrI99lz6rjH+L2k=";
-    })
-  ];
-
-  # The patch was written for T3 Code 0.0.31. Current nightlies renamed this
-  # Schema helper, so temporarily restore the old spelling while applying it.
-  prePatch = (oldAttrs.prePatch or "") + ''
-    substituteInPlace apps/server/src/provider/Layers/CursorAdapter.ts \
-      --replace-fail \
-        'Schema.fromJsonString(Schema.Unknown)' \
-        'Schema.UnknownFromJsonString'
-  '';
-
-  postPatch = (oldAttrs.postPatch or "") + ''
-    substituteInPlace apps/server/src/provider/Layers/CursorAdapter.ts \
-      --replace-fail \
-        'Schema.UnknownFromJsonString' \
-        'Schema.fromJsonString(Schema.Unknown)'
-  '';
-
-  # The upstream derivation interpolates its stable version into preBuild
-  # before overrideAttrs runs, so update that embedded argument as well.
-  preBuild =
-    builtins.replaceStrings [ perSystem.llm-agents.t3code.version ] [ version ]
-      oldAttrs.preBuild;
-
-  installPhase =
-    builtins.replaceStrings
-      [ "${perSystem.llm-agents.t3code.resourceMonitor}" ]
-      [ "${resourceMonitor}" ]
-      oldAttrs.installPhase;
-
-  passthru = (oldAttrs.passthru or { }) // {
-    # Exposed as a subpackage so nix-update refreshes its Cargo vendor hash.
-    inherit resourceMonitor;
-  };
-
-  meta = oldAttrs.meta // {
-    changelog = "https://github.com/pingdotgg/t3code/releases/tag/v${version}";
-  };
-})
+nightly
