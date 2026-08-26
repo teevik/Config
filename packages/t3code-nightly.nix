@@ -7,13 +7,13 @@ let
   upstream = perSystem.llm-agents.t3code;
   upstreamUnwrapped = upstream.unwrapped or upstream;
 
-  version = "0.0.34-nightly.20260825.1184";
+  version = "0.0.35-nightly.20260826.1193";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-EIOdLJu1ivobEb/fE5IC1E3SY77RxbVdg1IF2bDrIyg=";
+    hash = "sha256-E63FecvS2MugrU6hh7NBYDa1ryYx1HPGslVNgkJHcuo=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -29,7 +29,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-wXsA9HHr9lppzbMGcQr+2Jq0oqMDtDKhnLhkmVgPIZo=";
+    hash = "sha256-y/sJIluwbn65APmJ2p07FK1ScXpetCloTHtQzZMchDU=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
