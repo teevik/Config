@@ -4,10 +4,45 @@
   pkgs,
   ...
 }:
+let
+  nuPluginSkimOverlay = _final: prev: {
+    nushellPlugins = prev.nushellPlugins // {
+      skim = prev.nushellPlugins.skim.overrideAttrs (oldAttrs: rec {
+        version = "0.30.0";
+
+        src = prev.fetchFromGitHub {
+          owner = "idanarye";
+          repo = "nu_plugin_skim";
+          tag = "v${version}";
+          hash = "sha256-bZiNUQon4x82XQKINrDYTn6IgEZmLwhhFvmYMTBLOmA=";
+        };
+
+        cargoDeps = prev.rustPlatform.fetchCargoVendor {
+          inherit src;
+          hash = "sha256-s0VU8S/V/HJJ5DPLIFvUqhxu9391PJYY/tROUbfJnDQ=";
+        };
+
+        nativeInstallCheckInputs = (oldAttrs.nativeInstallCheckInputs or [ ]) ++ [ prev.nushell ];
+        doInstallCheck = true;
+        installCheckPhase = ''
+          runHook preInstallCheck
+
+          plugin_registry="$PWD/skim-plugins.msgpackz"
+          nu --plugin-config "$plugin_registry" \
+            -c "plugin add $out/bin/nu_plugin_skim"
+
+          runHook postInstallCheck
+        '';
+      });
+    };
+  };
+in
 {
   imports = [
     ../../shared/packages
   ];
+
+  nixpkgs.overlays = [ nuPluginSkimOverlay ];
 
   programs.ydotool = {
     enable = true;

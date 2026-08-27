@@ -13,6 +13,7 @@
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
     QT_STYLE_OVERRIDE = "adwaita-dark";
+    XKB_CONFIG_ROOT = "${pkgs.xkeyboard_config}/share/X11/xkb";
   };
 
   programs = {
@@ -27,6 +28,9 @@
       enable = true;
       libraries = with pkgs; [
         hyprland
+        libva
+        vulkan-loader
+        wayland
         stdenv.cc.cc.lib
         zlib
         # glib.dev

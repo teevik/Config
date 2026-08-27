@@ -76,6 +76,9 @@ in
     enableBashIntegration = false;
     enableFishIntegration = false;
     nix-direnv.enable = true;
+    settings.whitelist.prefix = [
+      "/home/teevik/Documents/Projects/"
+    ];
   };
 
   # Fish

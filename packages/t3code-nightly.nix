@@ -7,13 +7,13 @@ let
   upstream = perSystem.llm-agents.t3code;
   upstreamUnwrapped = upstream.unwrapped or upstream;
 
-  version = "0.0.35-nightly.20260826.1193";
+  version = "0.0.36-nightly.20260827.1205";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-E63FecvS2MugrU6hh7NBYDa1ryYx1HPGslVNgkJHcuo=";
+    hash = "sha256-OUMpX1v/3OvKPFeAbkKIqnSKgAmxXT+1rjfNwlwIe+I=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {

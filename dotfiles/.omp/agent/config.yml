@@ -1,34 +1,36 @@
-modelRoles: 
+modelRoles:
   slow: opencode/claude-opus-4-6:xhigh
   default: openai-codex/gpt-5.6-sol:high
   smol: opencode/claude-haiku-4-5:low
   plan: opencode/gemini-3.1-pro:high
   commit: opencode/claude-haiku-4-5:low
-browser: 
+browser:
   headless: false
 symbolPreset: unicode
-theme: 
+theme:
   dark: dark-catppuccin
-setupVersion: 1
+setupVersion: 2
 colorBlindMode: false
-statusLine: 
+statusLine:
   preset: default
   separator: none
   sessionAccent: true
   transparent: true
   showHookStatus: true
   compactThinkingLevel: false
-tui: 
+tui:
   textSizing: true
   codexResetFireworks: true
   tight: false
-terminal: 
+terminal:
   showProgress: true
-display: 
+display:
   shimmer: classic
-dev: 
+dev:
   autoqaConsent: denied
-startup: 
+startup:
   quiet: true
-github: 
+github:
   enabled: true
+composer:
+  shape: field
