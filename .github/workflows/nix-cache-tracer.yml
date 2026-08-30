@@ -62,6 +62,8 @@ jobs:
           name: nightly-update
           path: |
             flake.lock
+            packages/opencode.nix
+            packages/opencode-desktop.nix
             packages/t3code-nightly.nix
           if-no-files-found: error
           retention-days: 1
@@ -192,6 +194,8 @@ jobs:
         run: |
           git show HEAD:flake.lock > "$RUNNER_TEMP/flake.lock.before"
           cp "$RUNNER_TEMP/nightly-update/flake.lock" flake.lock
+          cp "$RUNNER_TEMP/nightly-update/packages/opencode.nix" packages/opencode.nix
+          cp "$RUNNER_TEMP/nightly-update/packages/opencode-desktop.nix" packages/opencode-desktop.nix
           cp "$RUNNER_TEMP/nightly-update/packages/t3code-nightly.nix" packages/t3code-nightly.nix
 
           rows="$(
@@ -228,6 +232,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
             flake.lock
+            packages/opencode.nix
+            packages/opencode-desktop.nix
             packages/t3code-nightly.nix
           commit-message: "chore: update flake inputs and packages"
           branch: nightly/flake-update

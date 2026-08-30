@@ -143,7 +143,7 @@ in
       perSystem.llm-agents.omp
       perSystem.self.t3code-nightly
       t3code-desktop-nightly
-      # perSystem.self.opencode
+      perSystem.self.opencode
 
       # Desktop apps
       chromium
@@ -156,7 +156,7 @@ in
       obs-studio
       obsidian
       perSystem.marble.default
-      # pkgs.opencode-desktop
+      perSystem.self.opencode-desktop
       rounded
       vesktop
       xournalpp

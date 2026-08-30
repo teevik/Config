@@ -19,10 +19,15 @@ let
     config.allowUnfree = true;
   };
   llmAgents = builtins.getFlake "github:${llmAgentsLocked.owner}/${llmAgentsLocked.repo}/${llmAgentsLocked.rev}";
-  perSystem.llm-agents = llmAgents.packages.${system};
+  perSystem = {
+    llm-agents = llmAgents.packages.${system};
+    self.opencode = opencode;
+  };
+  opencode = import ./opencode.nix { inherit pkgs; };
 in
 {
-  opencode = import ./opencode.nix { inherit pkgs; };
+  inherit opencode;
+  opencode-desktop = import ./opencode-desktop.nix { inherit perSystem pkgs; };
   omp = perSystem.llm-agents.omp;
   t3code-nightly = import ./t3code-nightly.nix { inherit perSystem pkgs; };
 }

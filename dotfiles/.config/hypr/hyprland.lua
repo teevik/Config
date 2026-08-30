@@ -115,6 +115,11 @@ local float_classes =
 "^(feh|yad|nm-connection-editor|pavucontrolk|xfce-polkit|kvantummanager|qt5ct|VirtualBox Manager|qemu|Qemu-system-x86_64|1Password|org.gnome.Calculator|org.gnome.Nautilus|pavucontrol|nm-connection-editor|blueberry.py|org.gnome.Settings|org.gnome.design.Palette|Color Picker|xdg-desktop-portal|xdg-desktop-portal-gnome|de.haeckerfelix.Fragments)$"
 
 hl.window_rule({ name = "float-common-dialogs", match = { class = float_classes }, float = true })
+hl.window_rule({
+  name = "float-obsidian-dialogs",
+  match = { class = "^md\\.Obsidian$", title = "^(Settings|Community themes) - .*$" },
+  float = true,
+})
 hl.window_rule({ name = "center-feh", match = { class = "^(feh)$" }, center = true })
 hl.window_rule({
   name = "suppress-libreoffice-maximize",

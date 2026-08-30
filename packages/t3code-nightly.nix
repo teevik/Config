@@ -7,13 +7,13 @@ let
   upstream = perSystem.llm-agents.t3code;
   upstreamUnwrapped = upstream.unwrapped or upstream;
 
-  version = "0.0.36-nightly.20260827.1205";
+  version = "0.0.37-nightly.20260830.1227";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-OUMpX1v/3OvKPFeAbkKIqnSKgAmxXT+1rjfNwlwIe+I=";
+    hash = "sha256-ZTEGl5NSd0KyFq7oIXzVf0aMY2r6BiOZ5RThP4ZOMQE=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -40,13 +40,9 @@ let
       resourceMonitor
       ;
 
-    patches = (oldAttrs.patches or [ ]) ++ [
-      (pkgs.fetchurl {
-        # Temporary workaround for pingdotgg/t3code#523.
-        url = "https://github.com/user-attachments/files/30247737/t3code.patch";
-        hash = "sha256-pgtPTxdLSWGnyCEYBzbG7nfK1ZnfbrI99lz6rjH+L2k=";
-      })
-    ];
+    # Temporary workaround for pingdotgg/t3code#523. This is kept locally
+    # because each nightly can partially overlap with the original patch.
+    patches = (oldAttrs.patches or [ ]) ++ [ ./t3code-direnv.patch ];
 
     # The patch was written for T3 Code 0.0.31. Current nightlies renamed this
     # Schema helper, so temporarily restore the old spelling while applying it.

@@ -1,0 +1,684 @@
+--- c/apps/server/src/provider/Drivers/ClaudeDriver.ts
++++ i/apps/server/src/provider/Drivers/ClaudeDriver.ts
+@@ -41,7 +41,10 @@ import {
+   type ProviderInstance,
+ } from "../ProviderDriver.ts";
+ import type { ServerProviderDraft } from "../providerSnapshot.ts";
+-import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
++import {
++  makeProviderEnvironmentResolver,
++  mergeProviderInstanceEnvironment,
++} from "../ProviderInstanceEnvironment.ts";
+ import {
+   enrichProviderSnapshotWithVersionAdvisory,
+   makePackageManagedProviderMaintenanceResolver,
+@@ -124,6 +127,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv> = {
+       const serverSettings = yield* ServerSettingsService;
+       const eventLoggers = yield* ProviderEventLoggers;
+       const processEnv = mergeProviderInstanceEnvironment(environment);
++      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
+       const fallbackContinuationIdentity = defaultProviderContinuationIdentity({
+         driverKind: DRIVER_KIND,
+         instanceId,
+@@ -144,6 +148,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv> = {
+       const adapterOptions = {
+         instanceId,
+         environment: processEnv,
++        resolveEnvironment,
+         ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
+       };
+       const adapter = yield* makeClaudeAdapter(effectiveConfig, adapterOptions);
+diff --git c/apps/server/src/provider/Drivers/CodexDriver.ts i/apps/server/src/provider/Drivers/CodexDriver.ts
+index ffcc94ca..d22e9431 100644
+--- c/apps/server/src/provider/Drivers/CodexDriver.ts
++++ i/apps/server/src/provider/Drivers/CodexDriver.ts
+@@ -41,7 +41,10 @@ import { ProviderEventLoggers } from "../Layers/ProviderEventLoggers.ts";
+ import { makeManagedServerProvider } from "../makeManagedServerProvider.ts";
+ import type { ProviderDriver, ProviderInstance } from "../ProviderDriver.ts";
+ import type { ServerProviderDraft } from "../providerSnapshot.ts";
+-import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
++import {
++  makeProviderEnvironmentResolver,
++  mergeProviderInstanceEnvironment,
++} from "../ProviderInstanceEnvironment.ts";
+ import {
+   enrichProviderSnapshotWithVersionAdvisory,
+   makePackageManagedProviderMaintenanceResolver,
+@@ -120,6 +123,7 @@ export const CodexDriver: ProviderDriver<CodexSettings, CodexDriverEnv> = {
+       const serverSettings = yield* ServerSettingsService;
+       const eventLoggers = yield* ProviderEventLoggers;
+       const processEnv = mergeProviderInstanceEnvironment(environment);
++      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
+       const homeLayout = yield* resolveCodexHomeLayout(config);
+       const continuationIdentity = codexContinuationIdentity(homeLayout);
+       const stampIdentity = withInstanceIdentity({
+@@ -158,6 +162,7 @@ export const CodexDriver: ProviderDriver<CodexSettings, CodexDriverEnv> = {
+       const adapter = yield* makeCodexAdapter(effectiveConfig, {
+         instanceId,
+         environment: processEnv,
++        resolveEnvironment,
+         ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
+       });
+       const textGeneration = yield* makeCodexTextGeneration(effectiveConfig, processEnv);
+diff --git c/apps/server/src/provider/Drivers/CursorDriver.ts i/apps/server/src/provider/Drivers/CursorDriver.ts
+index 61f80489..3a94f6a2 100644
+--- c/apps/server/src/provider/Drivers/CursorDriver.ts
++++ i/apps/server/src/provider/Drivers/CursorDriver.ts
+@@ -39,7 +39,10 @@ import {
+   type ProviderInstance,
+ } from "../ProviderDriver.ts";
+ import type { ServerProviderDraft } from "../providerSnapshot.ts";
+-import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
++import {
++  makeProviderEnvironmentResolver,
++  mergeProviderInstanceEnvironment,
++} from "../ProviderInstanceEnvironment.ts";
+ import {
+   makeProviderMaintenanceCapabilities,
+   type ProviderMaintenanceCapabilitiesResolver,
+@@ -109,6 +112,7 @@ export const CursorDriver: ProviderDriver<CursorSettings, CursorDriverEnv> = {
+       const serverSettings = yield* ServerSettingsService;
+       const eventLoggers = yield* ProviderEventLoggers;
+       const processEnv = mergeProviderInstanceEnvironment(environment);
++      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
+       const continuationIdentity = defaultProviderContinuationIdentity({
+         driverKind: DRIVER_KIND,
+         instanceId,
+@@ -127,6 +131,7 @@ export const CursorDriver: ProviderDriver<CursorSettings, CursorDriverEnv> = {
+ 
+       const adapter = yield* makeCursorAdapter(effectiveConfig, {
+         environment: processEnv,
++        resolveEnvironment,
+         ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
+         instanceId,
+       });
+diff --git c/apps/server/src/provider/Drivers/GrokDriver.ts i/apps/server/src/provider/Drivers/GrokDriver.ts
+index 4eb32c20..3ec30120 100644
+--- c/apps/server/src/provider/Drivers/GrokDriver.ts
++++ i/apps/server/src/provider/Drivers/GrokDriver.ts
+@@ -26,7 +26,10 @@ import {
+   type ProviderInstance,
+ } from "../ProviderDriver.ts";
+ import type { ServerProviderDraft } from "../providerSnapshot.ts";
+-import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
++import {
++  makeProviderEnvironmentResolver,
++  mergeProviderInstanceEnvironment,
++} from "../ProviderInstanceEnvironment.ts";
+ import {
+   makeManualOnlyProviderMaintenanceCapabilities,
+   makeStaticProviderMaintenanceResolver,
+@@ -90,6 +93,7 @@ export const GrokDriver: ProviderDriver<GrokSettings, GrokDriverEnv> = {
+       const serverSettings = yield* ServerSettingsService;
+       const eventLoggers = yield* ProviderEventLoggers;
+       const processEnv = mergeProviderInstanceEnvironment(environment);
++      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
+       const continuationIdentity = defaultProviderContinuationIdentity({
+         driverKind: DRIVER_KIND,
+         instanceId,
+@@ -108,6 +112,7 @@ export const GrokDriver: ProviderDriver<GrokSettings, GrokDriverEnv> = {
+ 
+       const adapter = yield* makeGrokAdapter(effectiveConfig, {
+         environment: processEnv,
++        resolveEnvironment,
+         ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
+         instanceId,
+       });
+diff --git c/apps/server/src/provider/Drivers/OpenCodeDriver.ts i/apps/server/src/provider/Drivers/OpenCodeDriver.ts
+index 6342d176..cdb8aa91 100644
+--- c/apps/server/src/provider/Drivers/OpenCodeDriver.ts
++++ i/apps/server/src/provider/Drivers/OpenCodeDriver.ts
+@@ -40,7 +40,10 @@ import {
+   type ProviderInstance,
+ } from "../ProviderDriver.ts";
+ import type { ServerProviderDraft } from "../providerSnapshot.ts";
+-import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
++import {
++  makeProviderEnvironmentResolver,
++  mergeProviderInstanceEnvironment,
++} from "../ProviderInstanceEnvironment.ts";
+ import {
+   enrichProviderSnapshotWithVersionAdvisory,
+   makePackageManagedProviderMaintenanceResolver,
+@@ -120,6 +123,7 @@ export const OpenCodeDriver: ProviderDriver<OpenCodeSettings, OpenCodeDriverEnv>
+       const serverSettings = yield* ServerSettingsService;
+       const eventLoggers = yield* ProviderEventLoggers;
+       const processEnv = mergeProviderInstanceEnvironment(environment);
++      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
+       const continuationIdentity = defaultProviderContinuationIdentity({
+         driverKind: DRIVER_KIND,
+         instanceId,
+@@ -139,6 +143,7 @@ export const OpenCodeDriver: ProviderDriver<OpenCodeSettings, OpenCodeDriverEnv>
+       const adapter = yield* makeOpenCodeAdapter(effectiveConfig, {
+         instanceId,
+         environment: processEnv,
++        resolveEnvironment,
+         ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
+       });
+       const textGeneration = yield* makeOpenCodeTextGeneration(effectiveConfig, processEnv);
+diff --git c/apps/server/src/provider/Layers/ClaudeAdapter.ts i/apps/server/src/provider/Layers/ClaudeAdapter.ts
+index f6e63eef..f9272893 100644
+--- c/apps/server/src/provider/Layers/ClaudeAdapter.ts
++++ i/apps/server/src/provider/Layers/ClaudeAdapter.ts
+@@ -215,6 +215,7 @@ interface ClaudeQueryRuntime extends AsyncIterable<SDKMessage> {
+ export interface ClaudeAdapterLiveOptions {
+   readonly instanceId?: ProviderInstanceId;
+   readonly environment?: NodeJS.ProcessEnv;
++  readonly resolveEnvironment?: import("../ProviderInstanceEnvironment.ts").ProviderEnvironmentResolver;
+   readonly createQuery?: (input: {
+     readonly prompt: AsyncIterable<SDKUserMessage>;
+     readonly options: ClaudeQueryOptions;
+@@ -1345,13 +1346,6 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
+   const path = yield* Path.Path;
+   const serverConfig = yield* ServerConfig;
+   const crypto = yield* Crypto.Crypto;
+-  const claudeEnvironment = yield* makeClaudeEnvironment(claudeSettings, options?.environment).pipe(
+-    Effect.provideService(Path.Path, path),
+-  );
+-  const claudeSdkExecutablePath = yield* resolveClaudeSdkExecutablePath(
+-    claudeSettings.binaryPath,
+-    claudeEnvironment,
+-  );
+   const nativeEventLogger =
+     options?.nativeEventLogger ??
+     (options?.nativeEventLogPath !== undefined
+@@ -3071,6 +3065,17 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
+         });
+       }
+ 
++      const environment = options?.resolveEnvironment
++        ? yield* options.resolveEnvironment(input.cwd ?? serverConfig.cwd)
++        : options?.environment;
++      const claudeEnvironment = yield* makeClaudeEnvironment(claudeSettings, environment).pipe(
++        Effect.provideService(Path.Path, path),
++      );
++      const claudeSdkExecutablePath = yield* resolveClaudeSdkExecutablePath(
++        claudeSettings.binaryPath,
++        claudeEnvironment,
++      );
++
+       const existingContext = sessions.get(input.threadId);
+       if (existingContext) {
+         yield* Effect.logWarning("claude.session.replacing", {
+diff --git c/apps/server/src/provider/Layers/CodexAdapter.test.ts i/apps/server/src/provider/Layers/CodexAdapter.test.ts
+index 4ae654a5..00076c88 100644
+--- c/apps/server/src/provider/Layers/CodexAdapter.test.ts
++++ i/apps/server/src/provider/Layers/CodexAdapter.test.ts
+@@ -423,6 +423,47 @@ sessionErrorLayer("CodexAdapterLive session errors", (it) => {
+     }).pipe(Effect.provide(layer));
+   });
+ 
++  it.effect("resolves the project environment for the session cwd", () => {
++    const runtimeFactory = makeRuntimeFactory();
++    const resolvedCwds: string[] = [];
++    const layer = Layer.effect(
++      CodexAdapter,
++      Effect.gen(function* () {
++        const codexConfig = decodeCodexSettings({});
++        return yield* makeCodexAdapter(codexConfig, {
++          resolveEnvironment: (cwd) => {
++            resolvedCwds.push(cwd);
++            return Effect.succeed({ PATH: "/project/bin", PROJECT_MARKER: "loaded" });
++          },
++          makeRuntime: runtimeFactory.factory,
++        });
++      }),
++    ).pipe(
++      Layer.provideMerge(ServerConfig.layerTest(process.cwd(), process.cwd())),
++      Layer.provideMerge(ServerSettingsService.layerTest()),
++      Layer.provideMerge(providerSessionDirectoryTestLayer),
++      Layer.provideMerge(NodeServices.layer),
++    );
++
++    return Effect.gen(function* () {
++      const adapter = yield* CodexAdapter;
++      yield* adapter.startSession({
++        provider: ProviderDriverKind.make("codex"),
++        threadId: asThreadId("sess-project-environment"),
++        cwd: "/workspace/project",
++        runtimeMode: "full-access",
++      });
++
++      const runtime = runtimeFactory.lastRuntime;
++      NodeAssert.ok(runtime);
++      NodeAssert.deepStrictEqual(resolvedCwds, ["/workspace/project"]);
++      NodeAssert.deepStrictEqual(runtime.options.environment, {
++        PATH: "/project/bin",
++        PROJECT_MARKER: "loaded",
++      });
++    }).pipe(Effect.provide(layer));
++  });
++
+   it.effect("maps codex model options for the adapter's bound custom instance id", () => {
+     const customInstanceId = ProviderInstanceId.make("codex_personal");
+     const customRuntimeFactory = makeRuntimeFactory();
+diff --git c/apps/server/src/provider/Layers/CodexAdapter.ts i/apps/server/src/provider/Layers/CodexAdapter.ts
+index 38a5887c..ffe9960b 100644
+--- c/apps/server/src/provider/Layers/CodexAdapter.ts
++++ i/apps/server/src/provider/Layers/CodexAdapter.ts
+@@ -62,6 +62,7 @@ import {
+ } from "./CodexSessionRuntime.ts";
+ import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
+ import { resolveCodexLaunchArgs } from "./codexLaunchArgs.ts";
++import type { ProviderEnvironmentResolver } from "../ProviderInstanceEnvironment.ts";
+ const isCodexAppServerProcessExitedError = Schema.is(CodexErrors.CodexAppServerProcessExitedError);
+ const isCodexAppServerTransportError = Schema.is(CodexErrors.CodexAppServerTransportError);
+ const isCodexSessionRuntimeThreadIdMissingError = Schema.is(
+@@ -74,6 +75,7 @@ const PROVIDER = ProviderDriverKind.make("codex");
+ export interface CodexAdapterLiveOptions {
+   readonly instanceId?: ProviderInstanceId;
+   readonly environment?: NodeJS.ProcessEnv;
++  readonly resolveEnvironment?: ProviderEnvironmentResolver;
+   readonly makeRuntime?: (
+     options: CodexSessionRuntimeOptions,
+   ) => Effect.Effect<
+@@ -1395,13 +1397,17 @@ export const makeCodexAdapter = Effect.fn("makeCodexAdapter")(function* (
+             ? getCodexServiceTierOptionValue(input.modelSelection)
+             : undefined;
+         const mcpSession = McpProviderSession.readMcpProviderSession(input.threadId);
++        const cwd = input.cwd ?? process.cwd();
++        const environment = options?.resolveEnvironment
++          ? yield* options.resolveEnvironment(cwd)
++          : options?.environment;
+         const runtimeInput: CodexSessionRuntimeOptions = {
+           threadId: input.threadId,
+           providerInstanceId: boundInstanceId,
+-          cwd: input.cwd ?? process.cwd(),
++          cwd,
+           binaryPath: codexConfig.binaryPath,
+-          launchArgs: resolveCodexLaunchArgs(codexConfig.launchArgs, options?.environment),
+-          ...(options?.environment ? { environment: options.environment } : {}),
++          launchArgs: resolveCodexLaunchArgs(codexConfig.launchArgs, environment),
++          ...(environment ? { environment } : {}),
+           ...(codexConfig.homePath ? { homePath: codexConfig.homePath } : {}),
+           ...(isCodexResumeCursorSchema(input.resumeCursor)
+             ? { resumeCursor: input.resumeCursor }
+@@ -1414,7 +1420,7 @@ export const makeCodexAdapter = Effect.fn("makeCodexAdapter")(function* (
+           ...(mcpSession
+             ? {
+                 environment: {
+-                  ...(options?.environment ?? process.env),
++                  ...(environment ?? process.env),
+                   T3_MCP_BEARER_TOKEN: mcpSession.authorizationHeader.replace(/^Bearer\s+/, ""),
+                 },
+                 appServerArgs: [
+diff --git c/apps/server/src/provider/Layers/CursorAdapter.ts i/apps/server/src/provider/Layers/CursorAdapter.ts
+index 4dd38519..7b2a7547 100644
+--- c/apps/server/src/provider/Layers/CursorAdapter.ts
++++ i/apps/server/src/provider/Layers/CursorAdapter.ts
+@@ -77,6 +77,7 @@ import {
+ import { type CursorAdapterShape } from "../Services/CursorAdapter.ts";
+ import { resolveCursorAcpBaseModelId } from "./CursorProvider.ts";
+ import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
++import type { ProviderEnvironmentResolver } from "../ProviderInstanceEnvironment.ts";
+ const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.UnknownFromJsonString);
+ 
+ const PROVIDER = ProviderDriverKind.make("cursor");
+@@ -92,6 +93,7 @@ function encodeJsonStringForDiagnostics(input: unknown): string | undefined {
+ 
+ export interface CursorAdapterLiveOptions {
+   readonly environment?: NodeJS.ProcessEnv;
++  readonly resolveEnvironment?: ProviderEnvironmentResolver;
+   readonly nativeEventLogPath?: string;
+   readonly nativeEventLogger?: EventNdjsonLogger;
+   /**
+@@ -496,6 +498,9 @@ export function makeCursorAdapter(
+           }
+ 
+           const cwd = path.resolve(input.cwd.trim());
++          const environment = options?.resolveEnvironment
++            ? yield* options.resolveEnvironment(cwd)
++            : options?.environment;
+           const cursorModelSelection =
+             input.modelSelection?.instanceId === boundInstanceId ? input.modelSelection : undefined;
+           const existing = sessions.get(input.threadId);
+@@ -534,7 +539,7 @@ export function makeCursorAdapter(
+           const mcpSession = McpProviderSession.readMcpProviderSession(input.threadId);
+           const acp = yield* makeCursorAcpRuntime({
+             cursorSettings: effectiveCursorSettings,
+-            ...(options?.environment ? { environment: options.environment } : {}),
++            ...(environment ? { environment } : {}),
+             childProcessSpawner,
+             cwd,
+             ...(resumeSessionId ? { resumeSessionId } : {}),
+diff --git c/apps/server/src/provider/Layers/GrokAdapter.ts i/apps/server/src/provider/Layers/GrokAdapter.ts
+index d8c288a8..48229260 100644
+--- c/apps/server/src/provider/Layers/GrokAdapter.ts
++++ i/apps/server/src/provider/Layers/GrokAdapter.ts
+@@ -68,6 +68,7 @@ import {
+ } from "../acp/XAiAcpExtension.ts";
+ import { type GrokAdapterShape } from "../Services/GrokAdapter.ts";
+ import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
++import type { ProviderEnvironmentResolver } from "../ProviderInstanceEnvironment.ts";
+ 
+ const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.UnknownFromJsonString);
+ 
+@@ -81,6 +82,7 @@ function encodeJsonStringForDiagnostics(input: unknown): string | undefined {
+ 
+ export interface GrokAdapterLiveOptions {
+   readonly environment?: NodeJS.ProcessEnv;
++  readonly resolveEnvironment?: ProviderEnvironmentResolver;
+   readonly nativeEventLogPath?: string;
+   readonly nativeEventLogger?: EventNdjsonLogger;
+   readonly instanceId?: ProviderInstanceId;
+@@ -547,6 +549,9 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
+           }
+ 
+           const cwd = path.resolve(input.cwd.trim());
++          const environment = options?.resolveEnvironment
++            ? yield* options.resolveEnvironment(cwd)
++            : options?.environment;
+           const grokModelSelection =
+             input.modelSelection?.instanceId === boundInstanceId ? input.modelSelection : undefined;
+           const existing = sessions.get(input.threadId);
+@@ -572,7 +577,7 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
+           const mcpSession = McpProviderSession.readMcpProviderSession(input.threadId);
+           const acp = yield* makeGrokAcpRuntime({
+             grokSettings,
+-            ...(options?.environment ? { environment: options.environment } : {}),
++            ...(environment ? { environment } : {}),
+             childProcessSpawner,
+             cwd,
+             ...(resumeSessionId ? { resumeSessionId } : {}),
+diff --git c/apps/server/src/provider/Layers/OpenCodeAdapter.ts i/apps/server/src/provider/Layers/OpenCodeAdapter.ts
+index 73c23b77..f4812e58 100644
+--- c/apps/server/src/provider/Layers/OpenCodeAdapter.ts
++++ i/apps/server/src/provider/Layers/OpenCodeAdapter.ts
+@@ -240,6 +240,7 @@ interface OpenCodeSessionContext {
+ export interface OpenCodeAdapterLiveOptions {
+   readonly instanceId?: ProviderInstanceId;
+   readonly environment?: NodeJS.ProcessEnv;
++  readonly resolveEnvironment?: import("../ProviderInstanceEnvironment.ts").ProviderEnvironmentResolver;
+   readonly nativeEventLogPath?: string;
+   readonly nativeEventLogger?: EventNdjsonLogger;
+ }
+@@ -1190,6 +1191,9 @@ export function makeOpenCodeAdapter(
+         const serverUrl = openCodeSettings.serverUrl;
+         const serverPassword = openCodeSettings.serverPassword;
+         const directory = input.cwd ?? serverConfig.cwd;
++        const environment = options?.resolveEnvironment
++          ? yield* options.resolveEnvironment(directory)
++          : options?.environment;
+         const resumeSessionId = parseOpenCodeResume(input.resumeCursor)?.sessionId;
+         const existing = sessions.get(input.threadId);
+         if (existing) {
+@@ -2311,4 +2315,4 @@ export function makeOpenCodeAdapter(
+                 serverUrl,
+                 ...(serverPassword ? { serverPassword } : {}),
+-                ...(options?.environment ? { environment: options.environment } : {}),
++                ...(environment ? { environment } : {}),
+               });
+diff --git c/apps/server/src/provider/ProviderInstanceEnvironment.test.ts i/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
+index 7ac3f2f2..36c6d581 100644
+--- c/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
++++ i/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
+@@ -1,10 +1,17 @@
+-import { describe, expect, it } from "vite-plus/test";
++import { assert, describe, it } from "@effect/vitest";
++import * as Effect from "effect/Effect";
++import * as NodeFS from "node:fs";
++import * as NodeOS from "node:os";
++import * as NodePath from "node:path";
+ 
+-import { mergeProviderInstanceEnvironment } from "./ProviderInstanceEnvironment.ts";
++import {
++  makeProviderEnvironmentResolver,
++  mergeProviderInstanceEnvironment,
++} from "./ProviderInstanceEnvironment.ts";
+ 
+ describe("mergeProviderInstanceEnvironment", () => {
+   it("overrides inherited environment values and preserves empty strings", () => {
+-    expect(
++    assert.deepStrictEqual(
+       mergeProviderInstanceEnvironment(
+         [
+           { name: "OPENROUTER_API_KEY", value: "sk-or-test", sensitive: true },
+@@ -12,10 +19,80 @@ describe("mergeProviderInstanceEnvironment", () => {
+         ],
+         { ANTHROPIC_API_KEY: "inherited", PATH: "/bin" },
+       ),
+-    ).toMatchObject({
+-      OPENROUTER_API_KEY: "sk-or-test",
+-      ANTHROPIC_API_KEY: "",
+-      PATH: "/bin",
+-    });
++      {
++        OPENROUTER_API_KEY: "sk-or-test",
++        ANTHROPIC_API_KEY: "",
++        PATH: "/bin",
++      },
++    );
+   });
+ });
++
++describe("makeProviderEnvironmentResolver", () => {
++  it.effect("captures an interactive shell environment in the project cwd", () =>
++    Effect.gen(function* () {
++      const fixture = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "t3-project-shell-"));
++      yield* Effect.addFinalizer(() =>
++        Effect.sync(() => NodeFS.rmSync(fixture, { recursive: true, force: true })),
++      );
++      const workspace = NodePath.join(fixture, "workspace");
++      const shell = NodePath.join(fixture, "project-shell");
++      const hostShell = process.env.SHELL;
++      assert.ok(hostShell);
++      NodeFS.mkdirSync(workspace);
++      NodeFS.writeFileSync(
++        shell,
++        [
++          `#!${hostShell}`,
++          'export PROJECT_MARKER="loaded"',
++          'export PROJECT_CWD="$PWD"',
++          `exec ${hostShell}`,
++        ].join("\n"),
++      );
++      NodeFS.chmodSync(shell, 0o755);
++
++      const resolve = makeProviderEnvironmentResolver(undefined, {
++        ...process.env,
++        SHELL: shell,
++      });
++      const environment = yield* resolve(workspace);
++
++      assert.strictEqual(environment.PROJECT_MARKER, "loaded");
++      assert.strictEqual(environment.PROJECT_CWD, workspace);
++    }),
++  );
++
++  it.effect("loads the cwd environment and applies provider overrides last", () =>
++    Effect.gen(function* () {
++      let receivedCwd: string | undefined;
++      const resolve = makeProviderEnvironmentResolver(
++        [{ name: "API_KEY", value: "configured", sensitive: true }],
++        { API_KEY: "inherited", PATH: "/bin", REMOVE_ME: "yes" },
++        (cwd) => {
++          receivedCwd = cwd;
++          return Effect.succeed({ API_KEY: "project", PATH: "/project/bin" });
++        },
++      );
++
++      const environment = yield* resolve("/workspace/project");
++
++      assert.strictEqual(receivedCwd, "/workspace/project");
++      assert.deepStrictEqual(environment, { API_KEY: "configured", PATH: "/project/bin" });
++    }),
++  );
++
++  it.effect("falls back to the inherited environment when shell activation fails", () =>
++    Effect.gen(function* () {
++      const resolve = makeProviderEnvironmentResolver(
++        [{ name: "API_KEY", value: "configured", sensitive: true }],
++        { PATH: "/bin" },
++        () => Effect.fail(new Error("shell activation unavailable")),
++      );
++
++      assert.deepStrictEqual(yield* resolve("/workspace/project"), {
++        API_KEY: "configured",
++        PATH: "/bin",
++      });
++    }),
++  );
++});
+diff --git c/apps/server/src/provider/ProviderInstanceEnvironment.ts i/apps/server/src/provider/ProviderInstanceEnvironment.ts
+index e4692536..eaa865f2 100644
+--- c/apps/server/src/provider/ProviderInstanceEnvironment.ts
++++ i/apps/server/src/provider/ProviderInstanceEnvironment.ts
+@@ -1,4 +1,121 @@
+ import type { ProviderInstanceEnvironment } from "@t3tools/contracts";
++import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
++import { listLoginShellCandidates } from "@t3tools/shared/shell";
++import * as NodeChildProcess from "node:child_process";
++import * as Effect from "effect/Effect";
++
++export type ProviderEnvironmentResolver = (cwd: string) => Effect.Effect<NodeJS.ProcessEnv, never>;
++
++type ProjectShellEnvironment = Record<string, string>;
++
++const ENVIRONMENT_CAPTURE_START = "__T3CODE_PROJECT_ENVIRONMENT_START__";
++const ENVIRONMENT_CAPTURE_END = "__T3CODE_PROJECT_ENVIRONMENT_END__";
++const POSIX_CAPTURE_COMMAND = `printf '\0%s\0' '${ENVIRONMENT_CAPTURE_START}'; env -0; printf '%s\0' '${ENVIRONMENT_CAPTURE_END}'`;
++const WINDOWS_CAPTURE_COMMAND = [
++  `[Console]::Out.Write([char]0 + '${ENVIRONMENT_CAPTURE_START}' + [char]0)`,
++  "Get-ChildItem Env: | ForEach-Object { [Console]::Out.Write($_.Name + '=' + $_.Value + [char]0) }",
++  `[Console]::Out.Write('${ENVIRONMENT_CAPTURE_END}' + [char]0)`,
++].join("; ");
++
++function parseCapturedEnvironment(output: string): ProjectShellEnvironment | undefined {
++  const entries = output.split("\0");
++  const start = entries.indexOf(ENVIRONMENT_CAPTURE_START);
++  const end = entries.indexOf(ENVIRONMENT_CAPTURE_END, start + 1);
++  if (start === -1 || end === -1) return undefined;
++
++  const environment: ProjectShellEnvironment = {};
++  for (const entry of entries.slice(start + 1, end)) {
++    const separator = entry.indexOf("=");
++    if (separator <= 0) continue;
++    environment[entry.slice(0, separator)] = entry.slice(separator + 1);
++  }
++  return environment;
++}
++
++const captureShellEnvironment = (
++  shell: string,
++  args: ReadonlyArray<string>,
++  command: string,
++  cwd: string,
++  baseEnv: NodeJS.ProcessEnv,
++): Effect.Effect<ProjectShellEnvironment, unknown> =>
++  Effect.callback<ProjectShellEnvironment, unknown>((resume) => {
++    const child = NodeChildProcess.spawn(shell, args, {
++      cwd,
++      env: baseEnv,
++      stdio: ["pipe", "pipe", "pipe"],
++    });
++    const chunks: Buffer[] = [];
++    let outputBytes = 0;
++    let settled = false;
++    const finish = (effect: Effect.Effect<ProjectShellEnvironment, unknown>) => {
++      if (settled) return;
++      settled = true;
++      clearTimeout(timeout);
++      resume(effect);
++    };
++    const timeout = setTimeout(() => {
++      child.kill();
++      finish(Effect.fail(new Error("Project shell environment capture timed out")));
++    }, 10_000);
++
++    child.stdout.on("data", (chunk: Buffer) => {
++      outputBytes += chunk.byteLength;
++      if (outputBytes > 1024 * 1024) {
++        child.kill();
++        finish(Effect.fail(new Error("Project shell environment capture exceeded 1 MiB")));
++        return;
++      }
++      chunks.push(chunk);
++    });
++    child.on("error", (cause) => finish(Effect.fail(cause)));
++    child.on("close", () => {
++      const environment = parseCapturedEnvironment(Buffer.concat(chunks).toString("utf8"));
++      finish(
++        environment
++          ? Effect.succeed(environment)
++          : Effect.fail(new Error("Shell environment capture markers were missing")),
++      );
++    });
++    child.stdin.end(`${command}\nexit\n`);
++
++    return Effect.sync(() => {
++      clearTimeout(timeout);
++      child.kill();
++    });
++  });
++
++const exportProjectShellEnvironment = Effect.fn("exportProjectShellEnvironment")(function* (
++  cwd: string,
++  baseEnv: NodeJS.ProcessEnv,
++) {
++  const platform = yield* HostProcessPlatform;
++  const candidates =
++    platform === "win32"
++      ? (["pwsh.exe", "powershell.exe"] as const).map((shell) => ({
++          shell,
++          args: ["-NoLogo", "-NoExit", "-Command", "-"],
++          command: WINDOWS_CAPTURE_COMMAND,
++        }))
++      : listLoginShellCandidates(platform, baseEnv.SHELL).map((shell) => ({
++          shell,
++          args: ["-il"],
++          command: POSIX_CAPTURE_COMMAND,
++        }));
++
++  for (const candidate of candidates) {
++    const environment = yield* captureShellEnvironment(
++      candidate.shell,
++      candidate.args,
++      candidate.command,
++      cwd,
++      baseEnv,
++    ).pipe(Effect.catch(() => Effect.succeed(undefined)));
++    if (environment) return environment;
++  }
++
++  return yield* Effect.fail(new Error("No project shell environment could be captured"));
++});
+ 
+ export function mergeProviderInstanceEnvironment(
+   environment: ProviderInstanceEnvironment | undefined,
+@@ -14,3 +131,25 @@ export function mergeProviderInstanceEnvironment(
+   }
+   return next;
+ }
++
++export function makeProviderEnvironmentResolver(
++  environment: ProviderInstanceEnvironment | undefined,
++  baseEnv: NodeJS.ProcessEnv = process.env,
++  exportEnvironment: (
++    cwd: string,
++    baseEnv: NodeJS.ProcessEnv,
++  ) => Effect.Effect<ProjectShellEnvironment, unknown> = exportProjectShellEnvironment,
++): ProviderEnvironmentResolver {
++  return (cwd) =>
++    exportEnvironment(cwd, baseEnv).pipe(
++      Effect.map((exported) => {
++        return mergeProviderInstanceEnvironment(environment, exported);
++      }),
++      Effect.catch((cause) =>
++        Effect.logDebug("Could not load project environment from the user's shell", {
++          cwd,
++          cause: cause instanceof Error ? cause.name : "UnknownError",
++        }).pipe(Effect.as(mergeProviderInstanceEnvironment(environment, baseEnv))),
++      ),
++    );
++}
+diff --git c/apps/server/src/provider/opencodeRuntime.ts i/apps/server/src/provider/opencodeRuntime.ts
+--- c/apps/server/src/provider/opencodeRuntime.ts
++++ i/apps/server/src/provider/opencodeRuntime.ts
+@@ -639,6 +639,7 @@ const makeOpenCodeRuntime = Effect.gen(function* () {
+       const child = yield* spawner
+         .spawn(
+           ChildProcess.make(spawnCommand.command, spawnCommand.args, {
++            ...(input.directory ? { cwd: input.directory } : {}),
+             detached: hostPlatform !== "win32",
+             shell: spawnCommand.shell,
+             env: {
