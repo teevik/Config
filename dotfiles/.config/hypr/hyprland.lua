@@ -117,7 +117,7 @@ local float_classes =
 hl.window_rule({ name = "float-common-dialogs", match = { class = float_classes }, float = true })
 hl.window_rule({
   name = "float-obsidian-dialogs",
-  match = { class = "^md\\.Obsidian$", title = "^(Settings|Community themes) - .*$" },
+  match = { class = "^md\\.Obsidian$", title = "^(Settings|Community themes|Community plugins) - .*$" },
   float = true,
 })
 hl.window_rule({ name = "center-feh", match = { class = "^(feh)$" }, center = true })
