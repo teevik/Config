@@ -287,7 +287,6 @@ in
   environment = {
     etc = {
       "nix/nix.custom.conf".text = ''
-        experimental-features = nix-command flakes ca-derivations dynamic-derivations
         auto-optimise-store = true
         trusted-users = root teemu.vikoeren
         max-substitution-jobs = 128

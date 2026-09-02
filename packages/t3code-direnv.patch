@@ -1,9 +1,12 @@
---- c/apps/server/src/provider/Drivers/ClaudeDriver.ts
-+++ i/apps/server/src/provider/Drivers/ClaudeDriver.ts
-@@ -41,7 +41,10 @@ import {
+# t3code-base-version: 0.0.39-nightly.20260902.1257
+diff --git a/apps/server/src/provider/Drivers/ClaudeDriver.ts b/apps/server/src/provider/Drivers/ClaudeDriver.ts
+index f1606bea7d76d2fef12e97fe4845c52a7492c995..b5e5fe76351642f01dfb0ff021f2b913bab0cc02 100644
+--- a/apps/server/src/provider/Drivers/ClaudeDriver.ts
++++ b/apps/server/src/provider/Drivers/ClaudeDriver.ts
+@@ -44,7 +44,10 @@ import {
    type ProviderInstance,
  } from "../ProviderDriver.ts";
- import type { ServerProviderDraft } from "../providerSnapshot.ts";
+ import { withInstanceIdentity } from "./instanceIdentity.ts";
 -import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
 +import {
 +  makeProviderEnvironmentResolver,
@@ -12,30 +15,30 @@
  import {
    enrichProviderSnapshotWithVersionAdvisory,
    makePackageManagedProviderMaintenanceResolver,
-@@ -124,6 +127,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv> = {
-       const serverSettings = yield* ServerSettingsService;
-       const eventLoggers = yield* ProviderEventLoggers;
+@@ -115,6 +118,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv> = {
+       const modelManifest = yield* ModelManifest.ModelManifest;
+       const modelCatalog = modelManifest.current.pipe(Effect.map(resolveClaudeModelCatalog));
        const processEnv = mergeProviderInstanceEnvironment(environment);
 +      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
        const fallbackContinuationIdentity = defaultProviderContinuationIdentity({
          driverKind: DRIVER_KIND,
          instanceId,
-@@ -144,6 +148,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv> = {
+@@ -135,6 +139,7 @@ export const ClaudeDriver: ProviderDriver<ClaudeSettings, ClaudeDriverEnv> = {
+
        const adapterOptions = {
          instanceId,
-         environment: processEnv,
 +        resolveEnvironment,
+         environment: processEnv,
+         modelCatalog,
          ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
-       };
-       const adapter = yield* makeClaudeAdapter(effectiveConfig, adapterOptions);
-diff --git c/apps/server/src/provider/Drivers/CodexDriver.ts i/apps/server/src/provider/Drivers/CodexDriver.ts
-index ffcc94ca..d22e9431 100644
---- c/apps/server/src/provider/Drivers/CodexDriver.ts
-+++ i/apps/server/src/provider/Drivers/CodexDriver.ts
-@@ -41,7 +41,10 @@ import { ProviderEventLoggers } from "../Layers/ProviderEventLoggers.ts";
- import { makeManagedServerProvider } from "../makeManagedServerProvider.ts";
+diff --git a/apps/server/src/provider/Drivers/CodexDriver.ts b/apps/server/src/provider/Drivers/CodexDriver.ts
+index e9a75780a544d1e424b4721af31c5bade3fb84b6..58d9d83b1c10c6ccc522fd1459fb4db5d7319efa 100644
+--- a/apps/server/src/provider/Drivers/CodexDriver.ts
++++ b/apps/server/src/provider/Drivers/CodexDriver.ts
+@@ -47,7 +47,10 @@ import { makeManagedServerProvider } from "../makeManagedServerProvider.ts";
+ import * as ModelManifest from "../ModelManifest.ts";
  import type { ProviderDriver, ProviderInstance } from "../ProviderDriver.ts";
- import type { ServerProviderDraft } from "../providerSnapshot.ts";
+ import { withInstanceIdentity } from "./instanceIdentity.ts";
 -import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
 +import {
 +  makeProviderEnvironmentResolver,
@@ -44,15 +47,15 @@ index ffcc94ca..d22e9431 100644
  import {
    enrichProviderSnapshotWithVersionAdvisory,
    makePackageManagedProviderMaintenanceResolver,
-@@ -120,6 +123,7 @@ export const CodexDriver: ProviderDriver<CodexSettings, CodexDriverEnv> = {
-       const serverSettings = yield* ServerSettingsService;
+@@ -106,6 +109,7 @@ export const CodexDriver: ProviderDriver<CodexSettings, CodexDriverEnv> = {
        const eventLoggers = yield* ProviderEventLoggers;
+       const modelManifest = yield* ModelManifest.ModelManifest;
        const processEnv = mergeProviderInstanceEnvironment(environment);
 +      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
        const homeLayout = yield* resolveCodexHomeLayout(config);
        const continuationIdentity = codexContinuationIdentity(homeLayout);
        const stampIdentity = withInstanceIdentity({
-@@ -158,6 +162,7 @@ export const CodexDriver: ProviderDriver<CodexSettings, CodexDriverEnv> = {
+@@ -145,6 +149,7 @@ export const CodexDriver: ProviderDriver<CodexSettings, CodexDriverEnv> = {
        const adapter = yield* makeCodexAdapter(effectiveConfig, {
          instanceId,
          environment: processEnv,
@@ -60,14 +63,14 @@ index ffcc94ca..d22e9431 100644
          ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
        });
        const textGeneration = yield* makeCodexTextGeneration(effectiveConfig, processEnv);
-diff --git c/apps/server/src/provider/Drivers/CursorDriver.ts i/apps/server/src/provider/Drivers/CursorDriver.ts
-index 61f80489..3a94f6a2 100644
---- c/apps/server/src/provider/Drivers/CursorDriver.ts
-+++ i/apps/server/src/provider/Drivers/CursorDriver.ts
+diff --git a/apps/server/src/provider/Drivers/CursorDriver.ts b/apps/server/src/provider/Drivers/CursorDriver.ts
+index 1187b6b035053452c8759166ee34f6cc574569d7..a90cbec500df6230bd09d468b506dd2e31bbbc0f 100644
+--- a/apps/server/src/provider/Drivers/CursorDriver.ts
++++ b/apps/server/src/provider/Drivers/CursorDriver.ts
 @@ -39,7 +39,10 @@ import {
    type ProviderInstance,
  } from "../ProviderDriver.ts";
- import type { ServerProviderDraft } from "../providerSnapshot.ts";
+ import { withInstanceIdentity } from "./instanceIdentity.ts";
 -import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
 +import {
 +  makeProviderEnvironmentResolver,
@@ -76,7 +79,7 @@ index 61f80489..3a94f6a2 100644
  import {
    makeProviderMaintenanceCapabilities,
    type ProviderMaintenanceCapabilitiesResolver,
-@@ -109,6 +112,7 @@ export const CursorDriver: ProviderDriver<CursorSettings, CursorDriverEnv> = {
+@@ -93,6 +96,7 @@ export const CursorDriver: ProviderDriver<CursorSettings, CursorDriverEnv> = {
        const serverSettings = yield* ServerSettingsService;
        const eventLoggers = yield* ProviderEventLoggers;
        const processEnv = mergeProviderInstanceEnvironment(environment);
@@ -84,22 +87,22 @@ index 61f80489..3a94f6a2 100644
        const continuationIdentity = defaultProviderContinuationIdentity({
          driverKind: DRIVER_KIND,
          instanceId,
-@@ -127,6 +131,7 @@ export const CursorDriver: ProviderDriver<CursorSettings, CursorDriverEnv> = {
- 
+@@ -112,6 +116,7 @@ export const CursorDriver: ProviderDriver<CursorSettings, CursorDriverEnv> = {
+
        const adapter = yield* makeCursorAdapter(effectiveConfig, {
          environment: processEnv,
 +        resolveEnvironment,
          ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
          instanceId,
        });
-diff --git c/apps/server/src/provider/Drivers/GrokDriver.ts i/apps/server/src/provider/Drivers/GrokDriver.ts
-index 4eb32c20..3ec30120 100644
---- c/apps/server/src/provider/Drivers/GrokDriver.ts
-+++ i/apps/server/src/provider/Drivers/GrokDriver.ts
+diff --git a/apps/server/src/provider/Drivers/GrokDriver.ts b/apps/server/src/provider/Drivers/GrokDriver.ts
+index 32d6149c3b504d9eb5311fac4ffcb4679b71f8a0..3d7baa9346565ad2f67f07e7c5b1ea7447d19312 100644
+--- a/apps/server/src/provider/Drivers/GrokDriver.ts
++++ b/apps/server/src/provider/Drivers/GrokDriver.ts
 @@ -26,7 +26,10 @@ import {
    type ProviderInstance,
  } from "../ProviderDriver.ts";
- import type { ServerProviderDraft } from "../providerSnapshot.ts";
+ import { withInstanceIdentity } from "./instanceIdentity.ts";
 -import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
 +import {
 +  makeProviderEnvironmentResolver,
@@ -108,30 +111,30 @@ index 4eb32c20..3ec30120 100644
  import {
    makeManualOnlyProviderMaintenanceCapabilities,
    makeStaticProviderMaintenanceResolver,
-@@ -90,6 +93,7 @@ export const GrokDriver: ProviderDriver<GrokSettings, GrokDriverEnv> = {
-       const serverSettings = yield* ServerSettingsService;
+@@ -75,6 +78,7 @@ export const GrokDriver: ProviderDriver<GrokSettings, GrokDriverEnv> = {
+       const { cwd } = yield* ServerConfig;
        const eventLoggers = yield* ProviderEventLoggers;
        const processEnv = mergeProviderInstanceEnvironment(environment);
 +      const resolveEnvironment = makeProviderEnvironmentResolver(environment);
        const continuationIdentity = defaultProviderContinuationIdentity({
          driverKind: DRIVER_KIND,
          instanceId,
-@@ -108,6 +112,7 @@ export const GrokDriver: ProviderDriver<GrokSettings, GrokDriverEnv> = {
- 
+@@ -94,6 +98,7 @@ export const GrokDriver: ProviderDriver<GrokSettings, GrokDriverEnv> = {
+
        const adapter = yield* makeGrokAdapter(effectiveConfig, {
          environment: processEnv,
 +        resolveEnvironment,
          ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
          instanceId,
        });
-diff --git c/apps/server/src/provider/Drivers/OpenCodeDriver.ts i/apps/server/src/provider/Drivers/OpenCodeDriver.ts
-index 6342d176..cdb8aa91 100644
---- c/apps/server/src/provider/Drivers/OpenCodeDriver.ts
-+++ i/apps/server/src/provider/Drivers/OpenCodeDriver.ts
-@@ -40,7 +40,10 @@ import {
+diff --git a/apps/server/src/provider/Drivers/OpenCodeDriver.ts b/apps/server/src/provider/Drivers/OpenCodeDriver.ts
+index 8ff01946644ce246a0d62e1be6aa69d30dd7dde9..4f601b90b40f111958efc592ab63d67e5ac60a1f 100644
+--- a/apps/server/src/provider/Drivers/OpenCodeDriver.ts
++++ b/apps/server/src/provider/Drivers/OpenCodeDriver.ts
+@@ -42,7 +42,10 @@ import {
    type ProviderInstance,
  } from "../ProviderDriver.ts";
- import type { ServerProviderDraft } from "../providerSnapshot.ts";
+ import { withInstanceIdentity } from "./instanceIdentity.ts";
 -import { mergeProviderInstanceEnvironment } from "../ProviderInstanceEnvironment.ts";
 +import {
 +  makeProviderEnvironmentResolver,
@@ -140,7 +143,7 @@ index 6342d176..cdb8aa91 100644
  import {
    enrichProviderSnapshotWithVersionAdvisory,
    makePackageManagedProviderMaintenanceResolver,
-@@ -120,6 +123,7 @@ export const OpenCodeDriver: ProviderDriver<OpenCodeSettings, OpenCodeDriverEnv>
+@@ -106,6 +109,7 @@ export const OpenCodeDriver: ProviderDriver<OpenCodeSettings, OpenCodeDriverEnv>
        const serverSettings = yield* ServerSettingsService;
        const eventLoggers = yield* ProviderEventLoggers;
        const processEnv = mergeProviderInstanceEnvironment(environment);
@@ -148,19 +151,19 @@ index 6342d176..cdb8aa91 100644
        const continuationIdentity = defaultProviderContinuationIdentity({
          driverKind: DRIVER_KIND,
          instanceId,
-@@ -139,6 +143,7 @@ export const OpenCodeDriver: ProviderDriver<OpenCodeSettings, OpenCodeDriverEnv>
+@@ -126,6 +130,7 @@ export const OpenCodeDriver: ProviderDriver<OpenCodeSettings, OpenCodeDriverEnv>
        const adapter = yield* makeOpenCodeAdapter(effectiveConfig, {
          instanceId,
          environment: processEnv,
 +        resolveEnvironment,
          ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
        });
-       const textGeneration = yield* makeOpenCodeTextGeneration(effectiveConfig, processEnv);
-diff --git c/apps/server/src/provider/Layers/ClaudeAdapter.ts i/apps/server/src/provider/Layers/ClaudeAdapter.ts
-index f6e63eef..f9272893 100644
---- c/apps/server/src/provider/Layers/ClaudeAdapter.ts
-+++ i/apps/server/src/provider/Layers/ClaudeAdapter.ts
-@@ -215,6 +215,7 @@ interface ClaudeQueryRuntime extends AsyncIterable<SDKMessage> {
+       const serverOwner = yield* OpenCodeServerOwner.make({
+diff --git a/apps/server/src/provider/Layers/ClaudeAdapter.ts b/apps/server/src/provider/Layers/ClaudeAdapter.ts
+index 07739146b074900a8319c810304270dac02ad367..5f294e7cf1d3a629aaf2fff27d5feec8e0caf552 100644
+--- a/apps/server/src/provider/Layers/ClaudeAdapter.ts
++++ b/apps/server/src/provider/Layers/ClaudeAdapter.ts
+@@ -334,6 +334,7 @@ interface ClaudeQueryRuntime extends AsyncIterable<SDKMessage> {
  export interface ClaudeAdapterLiveOptions {
    readonly instanceId?: ProviderInstanceId;
    readonly environment?: NodeJS.ProcessEnv;
@@ -168,7 +171,7 @@ index f6e63eef..f9272893 100644
    readonly createQuery?: (input: {
      readonly prompt: AsyncIterable<SDKUserMessage>;
      readonly options: ClaudeQueryOptions;
-@@ -1345,13 +1346,6 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
+@@ -1728,13 +1729,6 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
    const path = yield* Path.Path;
    const serverConfig = yield* ServerConfig;
    const crypto = yield* Crypto.Crypto;
@@ -182,10 +185,10 @@ index f6e63eef..f9272893 100644
    const nativeEventLogger =
      options?.nativeEventLogger ??
      (options?.nativeEventLogPath !== undefined
-@@ -3071,6 +3065,17 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
+@@ -3861,6 +3855,17 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
          });
        }
- 
+
 +      const environment = options?.resolveEnvironment
 +        ? yield* options.resolveEnvironment(input.cwd ?? serverConfig.cwd)
 +        : options?.environment;
@@ -200,14 +203,28 @@ index f6e63eef..f9272893 100644
        const existingContext = sessions.get(input.threadId);
        if (existingContext) {
          yield* Effect.logWarning("claude.session.replacing", {
-diff --git c/apps/server/src/provider/Layers/CodexAdapter.test.ts i/apps/server/src/provider/Layers/CodexAdapter.test.ts
-index 4ae654a5..00076c88 100644
---- c/apps/server/src/provider/Layers/CodexAdapter.test.ts
-+++ i/apps/server/src/provider/Layers/CodexAdapter.test.ts
-@@ -423,6 +423,47 @@ sessionErrorLayer("CodexAdapterLive session errors", (it) => {
+@@ -4651,6 +4656,13 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
+       });
+     }
+
++    const environment = options?.resolveEnvironment
++      ? yield* options.resolveEnvironment(context.session.cwd)
++      : options?.environment;
++    const claudeEnvironment = yield* makeClaudeEnvironment(claudeSettings, environment).pipe(
++      Effect.provideService(Path.Path, path),
++    );
++
+     // Re-scan on every send: skills are added and switched off mid-session,
+     // and the scan is a few directory reads. A skill switched off via
+     // skillOverrides, or reserved for the agent with `user-invocable: false`,
+diff --git a/apps/server/src/provider/Layers/CodexAdapter.test.ts b/apps/server/src/provider/Layers/CodexAdapter.test.ts
+index f01192f8d70760b8262391bd3ed55d4fde2be021..86119454ce7e77226fa88db6e4160ac293eb211a 100644
+--- a/apps/server/src/provider/Layers/CodexAdapter.test.ts
++++ b/apps/server/src/provider/Layers/CodexAdapter.test.ts
+@@ -468,6 +468,47 @@ sessionErrorLayer("CodexAdapterLive session errors", (it) => {
      }).pipe(Effect.provide(layer));
    });
- 
+
 +  it.effect("resolves the project environment for the session cwd", () => {
 +    const runtimeFactory = makeRuntimeFactory();
 +    const resolvedCwds: string[] = [];
@@ -252,11 +269,11 @@ index 4ae654a5..00076c88 100644
    it.effect("maps codex model options for the adapter's bound custom instance id", () => {
      const customInstanceId = ProviderInstanceId.make("codex_personal");
      const customRuntimeFactory = makeRuntimeFactory();
-diff --git c/apps/server/src/provider/Layers/CodexAdapter.ts i/apps/server/src/provider/Layers/CodexAdapter.ts
-index 38a5887c..ffe9960b 100644
---- c/apps/server/src/provider/Layers/CodexAdapter.ts
-+++ i/apps/server/src/provider/Layers/CodexAdapter.ts
-@@ -62,6 +62,7 @@ import {
+diff --git a/apps/server/src/provider/Layers/CodexAdapter.ts b/apps/server/src/provider/Layers/CodexAdapter.ts
+index 1aed82a28868a5e63bb4cdf11d8973ae0d45dc7f..0cdc37c5d07bed62808d794777ab7e5dee331582 100644
+--- a/apps/server/src/provider/Layers/CodexAdapter.ts
++++ b/apps/server/src/provider/Layers/CodexAdapter.ts
+@@ -65,6 +65,7 @@ import {
  } from "./CodexSessionRuntime.ts";
  import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
  import { resolveCodexLaunchArgs } from "./codexLaunchArgs.ts";
@@ -264,7 +281,7 @@ index 38a5887c..ffe9960b 100644
  const isCodexAppServerProcessExitedError = Schema.is(CodexErrors.CodexAppServerProcessExitedError);
  const isCodexAppServerTransportError = Schema.is(CodexErrors.CodexAppServerTransportError);
  const isCodexSessionRuntimeThreadIdMissingError = Schema.is(
-@@ -74,6 +75,7 @@ const PROVIDER = ProviderDriverKind.make("codex");
+@@ -77,6 +78,7 @@ const PROVIDER = ProviderDriverKind.make("codex");
  export interface CodexAdapterLiveOptions {
    readonly instanceId?: ProviderInstanceId;
    readonly environment?: NodeJS.ProcessEnv;
@@ -272,7 +289,7 @@ index 38a5887c..ffe9960b 100644
    readonly makeRuntime?: (
      options: CodexSessionRuntimeOptions,
    ) => Effect.Effect<
-@@ -1395,13 +1397,17 @@ export const makeCodexAdapter = Effect.fn("makeCodexAdapter")(function* (
+@@ -1684,13 +1686,17 @@ export const makeCodexAdapter = Effect.fn("makeCodexAdapter")(function* (
              ? getCodexServiceTierOptionValue(input.modelSelection)
              : undefined;
          const mcpSession = McpProviderSession.readMcpProviderSession(input.threadId);
@@ -293,7 +310,7 @@ index 38a5887c..ffe9960b 100644
            ...(codexConfig.homePath ? { homePath: codexConfig.homePath } : {}),
            ...(isCodexResumeCursorSchema(input.resumeCursor)
              ? { resumeCursor: input.resumeCursor }
-@@ -1414,7 +1420,7 @@ export const makeCodexAdapter = Effect.fn("makeCodexAdapter")(function* (
+@@ -1703,7 +1709,7 @@ export const makeCodexAdapter = Effect.fn("makeCodexAdapter")(function* (
            ...(mcpSession
              ? {
                  environment: {
@@ -302,20 +319,20 @@ index 38a5887c..ffe9960b 100644
                    T3_MCP_BEARER_TOKEN: mcpSession.authorizationHeader.replace(/^Bearer\s+/, ""),
                  },
                  appServerArgs: [
-diff --git c/apps/server/src/provider/Layers/CursorAdapter.ts i/apps/server/src/provider/Layers/CursorAdapter.ts
-index 4dd38519..7b2a7547 100644
---- c/apps/server/src/provider/Layers/CursorAdapter.ts
-+++ i/apps/server/src/provider/Layers/CursorAdapter.ts
+diff --git a/apps/server/src/provider/Layers/CursorAdapter.ts b/apps/server/src/provider/Layers/CursorAdapter.ts
+index 818fe567b9b3cc61840b84faa87aa45b45890df8..bc95e4d16f65d01e38281d8cf5f035a35dbceab8 100644
+--- a/apps/server/src/provider/Layers/CursorAdapter.ts
++++ b/apps/server/src/provider/Layers/CursorAdapter.ts
 @@ -77,6 +77,7 @@ import {
  import { type CursorAdapterShape } from "../Services/CursorAdapter.ts";
  import { resolveCursorAcpBaseModelId } from "./CursorProvider.ts";
  import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
 +import type { ProviderEnvironmentResolver } from "../ProviderInstanceEnvironment.ts";
- const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.UnknownFromJsonString);
- 
+ const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.fromJsonString(Schema.Unknown));
+
  const PROVIDER = ProviderDriverKind.make("cursor");
 @@ -92,6 +93,7 @@ function encodeJsonStringForDiagnostics(input: unknown): string | undefined {
- 
+
  export interface CursorAdapterLiveOptions {
    readonly environment?: NodeJS.ProcessEnv;
 +  readonly resolveEnvironment?: ProviderEnvironmentResolver;
@@ -324,7 +341,7 @@ index 4dd38519..7b2a7547 100644
    /**
 @@ -496,6 +498,9 @@ export function makeCursorAdapter(
            }
- 
+
            const cwd = path.resolve(input.cwd.trim());
 +          const environment = options?.resolveEnvironment
 +            ? yield* options.resolveEnvironment(cwd)
@@ -341,29 +358,29 @@ index 4dd38519..7b2a7547 100644
              childProcessSpawner,
              cwd,
              ...(resumeSessionId ? { resumeSessionId } : {}),
-diff --git c/apps/server/src/provider/Layers/GrokAdapter.ts i/apps/server/src/provider/Layers/GrokAdapter.ts
-index d8c288a8..48229260 100644
---- c/apps/server/src/provider/Layers/GrokAdapter.ts
-+++ i/apps/server/src/provider/Layers/GrokAdapter.ts
-@@ -68,6 +68,7 @@ import {
+diff --git a/apps/server/src/provider/Layers/GrokAdapter.ts b/apps/server/src/provider/Layers/GrokAdapter.ts
+index da9bdf6030f430315e367f2d01537efe42b90885..db70cd45787326f997087cc5eeedebbb2a00cad5 100644
+--- a/apps/server/src/provider/Layers/GrokAdapter.ts
++++ b/apps/server/src/provider/Layers/GrokAdapter.ts
+@@ -80,6 +80,7 @@ import {
  } from "../acp/XAiAcpExtension.ts";
  import { type GrokAdapterShape } from "../Services/GrokAdapter.ts";
  import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
 +import type { ProviderEnvironmentResolver } from "../ProviderInstanceEnvironment.ts";
- 
- const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.UnknownFromJsonString);
- 
-@@ -81,6 +82,7 @@ function encodeJsonStringForDiagnostics(input: unknown): string | undefined {
- 
+
+ const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.fromJsonString(Schema.Unknown));
+
+@@ -102,6 +103,7 @@ function encodeJsonStringForDiagnostics(input: unknown): string | undefined {
+
  export interface GrokAdapterLiveOptions {
    readonly environment?: NodeJS.ProcessEnv;
 +  readonly resolveEnvironment?: ProviderEnvironmentResolver;
    readonly nativeEventLogPath?: string;
    readonly nativeEventLogger?: EventNdjsonLogger;
    readonly instanceId?: ProviderInstanceId;
-@@ -547,6 +549,9 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
+@@ -962,6 +964,9 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
            }
- 
+
            const cwd = path.resolve(input.cwd.trim());
 +          const environment = options?.resolveEnvironment
 +            ? yield* options.resolveEnvironment(cwd)
@@ -371,7 +388,7 @@ index d8c288a8..48229260 100644
            const grokModelSelection =
              input.modelSelection?.instanceId === boundInstanceId ? input.modelSelection : undefined;
            const existing = sessions.get(input.threadId);
-@@ -572,7 +577,7 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
+@@ -988,7 +993,7 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
            const mcpSession = McpProviderSession.readMcpProviderSession(input.threadId);
            const acp = yield* makeGrokAcpRuntime({
              grokSettings,
@@ -379,12 +396,12 @@ index d8c288a8..48229260 100644
 +            ...(environment ? { environment } : {}),
              childProcessSpawner,
              cwd,
-             ...(resumeSessionId ? { resumeSessionId } : {}),
-diff --git c/apps/server/src/provider/Layers/OpenCodeAdapter.ts i/apps/server/src/provider/Layers/OpenCodeAdapter.ts
-index 73c23b77..f4812e58 100644
---- c/apps/server/src/provider/Layers/OpenCodeAdapter.ts
-+++ i/apps/server/src/provider/Layers/OpenCodeAdapter.ts
-@@ -240,6 +240,7 @@ interface OpenCodeSessionContext {
+             runtimeMode: input.runtimeMode,
+diff --git a/apps/server/src/provider/Layers/OpenCodeAdapter.ts b/apps/server/src/provider/Layers/OpenCodeAdapter.ts
+index d0b4f0de78ce1a207c67d3687199dd493d6349cb..d708a6280860d33603bc0bda79df0457164290d6 100644
+--- a/apps/server/src/provider/Layers/OpenCodeAdapter.ts
++++ b/apps/server/src/provider/Layers/OpenCodeAdapter.ts
+@@ -370,6 +370,7 @@ interface OpenCodeSessionContext {
  export interface OpenCodeAdapterLiveOptions {
    readonly instanceId?: ProviderInstanceId;
    readonly environment?: NodeJS.ProcessEnv;
@@ -392,7 +409,7 @@ index 73c23b77..f4812e58 100644
    readonly nativeEventLogPath?: string;
    readonly nativeEventLogger?: EventNdjsonLogger;
  }
-@@ -1190,6 +1191,9 @@ export function makeOpenCodeAdapter(
+@@ -2380,6 +2381,9 @@ export function makeOpenCodeAdapter(
          const serverUrl = openCodeSettings.serverUrl;
          const serverPassword = openCodeSettings.serverPassword;
          const directory = input.cwd ?? serverConfig.cwd;
@@ -402,16 +419,19 @@ index 73c23b77..f4812e58 100644
          const resumeSessionId = parseOpenCodeResume(input.resumeCursor)?.sessionId;
          const existing = sessions.get(input.threadId);
          if (existing) {
-@@ -2311,4 +2315,4 @@ export function makeOpenCodeAdapter(
+@@ -2402,7 +2406,7 @@ export function makeOpenCodeAdapter(
+                 directory,
                  serverUrl,
                  ...(serverPassword ? { serverPassword } : {}),
 -                ...(options?.environment ? { environment: options.environment } : {}),
 +                ...(environment ? { environment } : {}),
                });
-diff --git c/apps/server/src/provider/ProviderInstanceEnvironment.test.ts i/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
-index 7ac3f2f2..36c6d581 100644
---- c/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
-+++ i/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
+               const client = openCodeRuntime.createOpenCodeSdkClient({
+                 baseUrl: server.url,
+diff --git a/apps/server/src/provider/ProviderInstanceEnvironment.test.ts b/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
+index 7ac3f2f2837dea121216957cbf3e15cb10822966..36c6d581b4f4df0dac6fef41ae902872f788c079 100644
+--- a/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
++++ b/apps/server/src/provider/ProviderInstanceEnvironment.test.ts
 @@ -1,10 +1,17 @@
 -import { describe, expect, it } from "vite-plus/test";
 +import { assert, describe, it } from "@effect/vitest";
@@ -419,13 +439,13 @@ index 7ac3f2f2..36c6d581 100644
 +import * as NodeFS from "node:fs";
 +import * as NodeOS from "node:os";
 +import * as NodePath from "node:path";
- 
+
 -import { mergeProviderInstanceEnvironment } from "./ProviderInstanceEnvironment.ts";
 +import {
 +  makeProviderEnvironmentResolver,
 +  mergeProviderInstanceEnvironment,
 +} from "./ProviderInstanceEnvironment.ts";
- 
+
  describe("mergeProviderInstanceEnvironment", () => {
    it("overrides inherited environment values and preserves empty strings", () => {
 -    expect(
@@ -519,10 +539,10 @@ index 7ac3f2f2..36c6d581 100644
 +    }),
 +  );
 +});
-diff --git c/apps/server/src/provider/ProviderInstanceEnvironment.ts i/apps/server/src/provider/ProviderInstanceEnvironment.ts
-index e4692536..eaa865f2 100644
---- c/apps/server/src/provider/ProviderInstanceEnvironment.ts
-+++ i/apps/server/src/provider/ProviderInstanceEnvironment.ts
+diff --git a/apps/server/src/provider/ProviderInstanceEnvironment.ts b/apps/server/src/provider/ProviderInstanceEnvironment.ts
+index e469253604e6b5714010dae11cdee02944cc5878..eaa865f2c3fd5b6e06f4dc2247ec58f0269d9f30 100644
+--- a/apps/server/src/provider/ProviderInstanceEnvironment.ts
++++ b/apps/server/src/provider/ProviderInstanceEnvironment.ts
 @@ -1,4 +1,121 @@
  import type { ProviderInstanceEnvironment } from "@t3tools/contracts";
 +import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
@@ -642,7 +662,7 @@ index e4692536..eaa865f2 100644
 +
 +  return yield* Effect.fail(new Error("No project shell environment could be captured"));
 +});
- 
+
  export function mergeProviderInstanceEnvironment(
    environment: ProviderInstanceEnvironment | undefined,
 @@ -14,3 +131,25 @@ export function mergeProviderInstanceEnvironment(
@@ -671,10 +691,11 @@ index e4692536..eaa865f2 100644
 +      ),
 +    );
 +}
-diff --git c/apps/server/src/provider/opencodeRuntime.ts i/apps/server/src/provider/opencodeRuntime.ts
---- c/apps/server/src/provider/opencodeRuntime.ts
-+++ i/apps/server/src/provider/opencodeRuntime.ts
-@@ -639,6 +639,7 @@ const makeOpenCodeRuntime = Effect.gen(function* () {
+diff --git a/apps/server/src/provider/opencodeRuntime.ts b/apps/server/src/provider/opencodeRuntime.ts
+index afd806e5666e96131cce8b44dbf8dc0aa110f9a3..32ec3340af8d544ba2befd457b3af51bcb99c471 100644
+--- a/apps/server/src/provider/opencodeRuntime.ts
++++ b/apps/server/src/provider/opencodeRuntime.ts
+@@ -659,6 +659,7 @@ const makeOpenCodeRuntime = Effect.gen(function* () {
        const child = yield* spawner
          .spawn(
            ChildProcess.make(spawnCommand.command, spawnCommand.args, {

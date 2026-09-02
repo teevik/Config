@@ -68,14 +68,7 @@ update:
     nix flake update llm-agents
     nix build --no-link --print-build-logs --file packages/nix-update.nix omp
 
-    nix run github:Mic92/nix-update -- \
-      --file packages/nix-update.nix \
-      --version unstable \
-      --version-regex '^v([0-9]+\.[0-9]+\.[0-9]+-nightly\.[0-9]{8}\.[0-9]+)$' \
-      --use-github-releases \
-      --subpackage resourceMonitor \
-      --build \
-      t3code-nightly
+    bash packages/update-t3code.sh
 
 # Build and activate local Marble and Astal working trees without publishing them
 marble-dev-switch:

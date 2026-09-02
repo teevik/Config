@@ -43,14 +43,6 @@ in
       # package = perSystem.self.lix;
 
       settings = {
-        experimental-features = [
-          "nix-command"
-          "flakes"
-
-          "ca-derivations"
-          "dynamic-derivations"
-          "parallel-eval"
-        ];
         auto-optimise-store = true;
 
         trusted-users = [

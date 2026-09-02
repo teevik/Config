@@ -5,15 +5,23 @@
 }:
 let
   upstream = perSystem.llm-agents.t3code;
-  upstreamUnwrapped = upstream.unwrapped or upstream;
+  providerPackages = [
+    perSystem.llm-agents.codex
+    perSystem.llm-agents.claude-code
+  ];
+  upstreamUnwrapped = (upstream.unwrapped or upstream).override {
+    # Stable T3 Code is pinned to an older Electron; nightlies track nixpkgs'
+    # current Electron instead.
+    electron_43 = pkgs.electron;
+  };
 
-  version = "0.0.37-nightly.20260830.1227";
+  version = "0.0.39-nightly.20260902.1257";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-ZTEGl5NSd0KyFq7oIXzVf0aMY2r6BiOZ5RThP4ZOMQE=";
+    hash = "sha256-gwFR9KdkXHOzZAW969Uv23m/mPbuPCdRu/mAVYleL24=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -29,7 +37,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-y/sJIluwbn65APmJ2p07FK1ScXpetCloTHtQzZMchDU=";
+    hash = "sha256-t/hmpXdYPnBFx18A6NrSL4zSvVnUDIjIPtLjGOzoaDk=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
@@ -40,25 +48,9 @@ let
       resourceMonitor
       ;
 
-    # Temporary workaround for pingdotgg/t3code#523. This is kept locally
-    # because each nightly can partially overlap with the original patch.
+    # Temporary workaround for pingdotgg/t3code#523. update-t3code.sh rebases
+    # this patch onto each nightly before asking Nix to build it.
     patches = (oldAttrs.patches or [ ]) ++ [ ./t3code-direnv.patch ];
-
-    # The patch was written for T3 Code 0.0.31. Current nightlies renamed this
-    # Schema helper, so temporarily restore the old spelling while applying it.
-    prePatch = (oldAttrs.prePatch or "") + ''
-      substituteInPlace apps/server/src/provider/Layers/CursorAdapter.ts \
-        --replace-fail \
-          'Schema.fromJsonString(Schema.Unknown)' \
-          'Schema.UnknownFromJsonString'
-    '';
-
-    postPatch = (oldAttrs.postPatch or "") + ''
-      substituteInPlace apps/server/src/provider/Layers/CursorAdapter.ts \
-        --replace-fail \
-          'Schema.UnknownFromJsonString' \
-          'Schema.fromJsonString(Schema.Unknown)'
-    '';
 
     # The upstream derivation interpolates its stable version into preBuild
     # before overrideAttrs runs, so update that embedded argument as well.
@@ -80,7 +72,10 @@ let
 
   nightly =
     if upstream ? unwrapped then
-      (upstream.override { t3code-unwrapped = nightlyUnwrapped; }).overrideAttrs (oldAttrs: {
+      (upstream.override {
+        t3code-unwrapped = nightlyUnwrapped;
+        inherit providerPackages;
+      }).overrideAttrs (oldAttrs: {
         # The wrapper exposes these build inputs through passthru. Define them
         # here so nix-update sees this editable file as their source position.
         passthru = (oldAttrs.passthru or { }) // {
