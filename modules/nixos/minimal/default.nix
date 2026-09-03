@@ -43,6 +43,11 @@ in
       # package = perSystem.self.lix;
 
       settings = {
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+
         auto-optimise-store = true;
 
         trusted-users = [
