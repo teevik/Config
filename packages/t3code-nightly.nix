@@ -48,10 +48,6 @@ let
       resourceMonitor
       ;
 
-    # Temporary workaround for pingdotgg/t3code#523. update-t3code.sh rebases
-    # this patch onto each nightly before asking Nix to build it.
-    patches = (oldAttrs.patches or [ ]) ++ [ ./t3code-direnv.patch ];
-
     # The upstream derivation interpolates its stable version into preBuild
     # before overrideAttrs runs, so update that embedded argument as well.
     preBuild = builtins.replaceStrings [ upstreamUnwrapped.version ] [ version ] oldAttrs.preBuild;

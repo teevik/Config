@@ -60,13 +60,13 @@ update:
     set -euo pipefail
 
     bash packages/update-opencode.sh
-    nix build --no-link --print-build-logs --file packages/nix-update.nix \
+    nix build --no-link --print-build-logs --file packages/update-targets.nix \
       opencode opencode-desktop
 
     # OMP's generated Bun dependencies and build patches live in llm-agents.nix,
     # so update that package source as a unit rather than overriding its version.
     nix flake update llm-agents
-    nix build --no-link --print-build-logs --file packages/nix-update.nix omp
+    nix build --no-link --print-build-logs --file packages/update-targets.nix omp
 
     bash packages/update-t3code.sh
 

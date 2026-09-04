@@ -132,6 +132,7 @@ in
 
       # Nix and repo tools
       nix-inspect
+      perSystem.self.nix-update
 
       # Work tools
       agent-browser

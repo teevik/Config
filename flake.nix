@@ -79,6 +79,10 @@
 
     # Packages
     determinate-nix.url = "github:DeterminateSystems/nix-src";
+    cargo-nix-plugin = {
+      url = "github:anthropics/cargo-nix-plugin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     iwmenu = {
       url = "github:e-tho/iwmenu";
       inputs.nixpkgs.follows = "nixpkgs";
