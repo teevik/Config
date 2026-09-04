@@ -48,13 +48,19 @@ let
       resourceMonitor
       ;
 
-    nativeBuildInputs = (oldAttrs.nativeBuildInputs or [ ]) ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-      pkgs.pkg-config
-    ];
+    # New nightlies build a libsecret helper that the inherited stable
+    # derivation neither has build inputs for nor installs.
+    nativeBuildInputs =
+      (oldAttrs.nativeBuildInputs or [ ])
+      ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+        pkgs.pkg-config
+      ];
 
-    buildInputs = (oldAttrs.buildInputs or [ ]) ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-      pkgs.libsecret
-    ];
+    buildInputs =
+      (oldAttrs.buildInputs or [ ])
+      ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+        pkgs.libsecret
+      ];
 
     # The upstream derivation interpolates its stable version into preBuild
     # before overrideAttrs runs, so update that embedded argument as well.
@@ -63,6 +69,13 @@ let
     installPhase =
       builtins.replaceStrings [ "${upstreamUnwrapped.resourceMonitor}" ] [ "${resourceMonitor}" ]
         oldAttrs.installPhase;
+
+    postInstall =
+      (oldAttrs.postInstall or "")
+      + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+        install -Dm755 native/browser-secret/build/${pkgs.stdenv.hostPlatform.node.arch}/t3-browser-secret \
+          "$desktop/libexec/t3code/apps/desktop/prod-resources/browser-secret/t3-browser-secret"
+      '';
 
     passthru = (oldAttrs.passthru or { }) // {
       # Exposed as a subpackage so nix-update refreshes its Cargo vendor hash.
@@ -79,14 +92,15 @@ let
       (upstream.override {
         t3code-unwrapped = nightlyUnwrapped;
         inherit providerPackages;
-      }).overrideAttrs (oldAttrs: {
-        # The wrapper exposes these build inputs through passthru. Define them
-        # here so nix-update sees this editable file as their source position.
-        passthru = (oldAttrs.passthru or { }) // {
-          inherit (nightlyUnwrapped) pnpmDeps resourceMonitor src;
-          unwrapped = nightlyUnwrapped;
-        };
-      })
+      }).overrideAttrs
+        (oldAttrs: {
+          # The wrapper exposes these build inputs through passthru. Define them
+          # here so nix-update sees this editable file as their source position.
+          passthru = (oldAttrs.passthru or { }) // {
+            inherit (nightlyUnwrapped) pnpmDeps resourceMonitor src;
+            unwrapped = nightlyUnwrapped;
+          };
+        })
     else
       nightlyUnwrapped;
 in

@@ -77,6 +77,11 @@
   },
 
   "languages": {
+    "C++": {
+      "format_on_save": "on",
+      "formatter": "language_server",
+      "semantic_tokens": "combined"
+    },
     "Odin": {
       "format_on_save": "on",
       "formatter": "language_server",
@@ -213,6 +218,18 @@
     }
   },
   "lsp": {
+    "clangd": {
+      "binary": {
+        "path": "/run/current-system/sw/bin/clangd",
+        "arguments": [
+          "--background-index",
+          "--header-insertion=never",
+          "--completion-style=detailed",
+          "--function-arg-placeholders=0",
+          "--pch-storage=memory"
+        ]
+      }
+    },
     "ols": {
       "initialization_options": {
         "enable_fake_methods": true,

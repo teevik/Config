@@ -56,6 +56,9 @@
       "g shift-i": "editor::GoToImplementation",
       "g y": "editor::GoToTypeDefinition",
 
+      // Switch between header and source (clangd)
+      "g h": "editor::SwitchSourceHeader",
+
       // Code action (from nvim <leader>a)
       "space a": "editor::ToggleCodeActions",
 
