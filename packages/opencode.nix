@@ -2,17 +2,17 @@
 let
   inherit (pkgs) lib stdenv;
 
-  version = "0.0.0-beta-19059";
+  version = "0.0.0-beta-19086";
 
   platform =
     {
       x86_64-linux = {
         packageName = "cli-linux-x64-baseline";
-        hash = "sha512-u10N60j6oKEMI5LMyjWDh8lGEPEK8sSI9g5wDCcMBIBQ9PVaQF3FnjJBJQZXD/jOnlYfQFmq5NSCcMXEDp2ujw==";
+        hash = "sha512-UZ0BQb+0LuqPj02jmX35JOSCIrwx/qt8m+aoFOEnwydCpn/zETLQcF+6Z1qkeC4Dgsj55hnc2oc/O1kkoTuzUg==";
       };
       aarch64-linux = {
         packageName = "cli-linux-arm64";
-        hash = "sha512-ci1eaEGmAxElAA2oCPdWLfPCOFqpaOyPGeBUmRhHBD9tVMu6ZJU/PZD9wggu9LdT+aiLCNbHdjckNKdtJrsvPA==";
+        hash = "sha512-bGVr6JkW5EfQf/KvsUEupV5HQoqBMXb0B5YahHclNk+lI0cjeIWdPMFD5L8qAtwwGaIsHS/0XduwR1CK+76OQw==";
       };
     }
     .${stdenv.hostPlatform.system}

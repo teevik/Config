@@ -15,13 +15,13 @@ let
     electron_43 = pkgs.electron;
   };
 
-  version = "0.0.39-nightly.20260903.1268";
+  version = "0.0.39-nightly.20260904.1277";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-undnTP1gg6AwGuSWVkJi6IAvWJ/p5aCqwmFFnMmHVdk=";
+    hash = "sha256-O01785Di+s/RxanONwHAwVXLnyxwdfW9Oq8dBSm8O8I=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -37,7 +37,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-H1wn6RohCREpPISkBhGVci+bR5BreqNPOkICLhtAk+o=";
+    hash = "sha256-A9llQc6umnGZTNlvzG7yt+qu39scGHho8Xvf0vScLtU=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
@@ -47,6 +47,14 @@ let
       pnpmDeps
       resourceMonitor
       ;
+
+    nativeBuildInputs = (oldAttrs.nativeBuildInputs or [ ]) ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+      pkgs.pkg-config
+    ];
+
+    buildInputs = (oldAttrs.buildInputs or [ ]) ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+      pkgs.libsecret
+    ];
 
     # The upstream derivation interpolates its stable version into preBuild
     # before overrideAttrs runs, so update that embedded argument as well.

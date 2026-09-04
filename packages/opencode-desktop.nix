@@ -13,11 +13,11 @@ let
     {
       x86_64-linux = {
         arch = "x86_64";
-        hash = "sha256-oBQI+/bWprjfvhkvhsczg3LEkj2/h59CpjHigRauHDA=";
+        hash = "sha256-weprcuVF/zQL1tiov9C1EvhuJfRFT1/pC6EQA1zsXQs=";
       };
       aarch64-linux = {
         arch = "arm64";
-        hash = "sha256-bV3N8RCWnLXu8+aCpbCuVOko398IxRfmYSBwsfWl/hc=";
+        hash = "sha256-rmGUzjnseKW180yproe1LwgzF6Y7bIDNwOhZxYLrjdU=";
       };
     }
     .${pkgs.stdenv.hostPlatform.system}
