@@ -55,7 +55,7 @@ jobs:
       - name: Update flake inputs and packages
         run: |
           nix flake update
-          nix run nixpkgs#just -- update
+          nix shell nixpkgs#just .#nix-update -c just update
           echo "nixpkgs rev: $(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)"
 
       - name: Upload nightly update
