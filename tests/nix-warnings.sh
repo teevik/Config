@@ -14,6 +14,7 @@ fi
 status=0
 for host in "$@"; do
   if ! nix eval --option eval-cache false --option warn-dirty false \
+    --abort-on-warn --show-trace \
     --raw ".#nixosConfigurations.${host}.config.system.build.toplevel.drvPath" \
     > /dev/null 2> "$warning_log"; then
     cat -- "$warning_log" >&2

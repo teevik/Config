@@ -69,12 +69,13 @@
         "narHash": "sha256-s8wbe1YD/KrZojvz+e6FHTe7qcZ2SHodUyBgyn6NGy8=",
         "ref": "feat/niri",
         "rev": "d22d0faded27469af32ddd29029cfbfbf91c745a",
-        "revCount": 899,
+        "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/teevik/astal.git"
       },
       "original": {
         "ref": "feat/niri",
+        "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/teevik/astal.git"
       }
@@ -931,15 +932,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1786743690,
-        "narHash": "sha256-HWXFfCOcxdKZJmk2GWcqRNrMLJeex+/9FfVp995/VR4=",
+        "lastModified": 1788628985,
+        "narHash": "sha256-t0D2SlXX5dNCEn/bfuNODoBNM4APT1uuFhzuiVamPIo=",
         "ref": "refs/heads/main",
-        "rev": "64fa890b2ad8adee5c02b0541ceb67427caef31c",
-        "revCount": 30,
+        "rev": "9410e894a7b676bbc7694639a81cf096b3f744c3",
+        "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/teevik/marble-shell.git"
       },
       "original": {
+        "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/teevik/marble-shell.git"
       }

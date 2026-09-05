@@ -44,9 +44,12 @@ jobs:
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: DeterminateSystems/determinate-nix-action@v3.22.3
         with:
-          extra_nix_config: |
+          extra-conf: |
+            extra-experimental-features = parallel-eval
+            eval-cores = 0
+            lazy-trees = true
             accept-flake-config = true
             connect-timeout = 5
             fallback = true
@@ -132,23 +135,26 @@ jobs:
           df -h /
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: DeterminateSystems/determinate-nix-action@v3.22.3
         with:
-          extra_nix_config: |
+          extra-conf: |
+            extra-experimental-features = parallel-eval
+            eval-cores = 0
+            lazy-trees = true
             accept-flake-config = true
             connect-timeout = 5
             fallback = true
             substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems https://cache.numtide.com https://nyx-cache.chaotic.cx
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
-      # Daemon mode streams each locally built path as it finishes and honours
-      # pushFilter. Passing --cachix-cache to nix-fast-build would bypass the
-      # filter for private-input outputs.
+      # Stream public builds. The root-name filter alone does not protect
+      # private dependencies; the build step wraps this hook with a closure check.
       - name: Configure Cachix streaming uploads
         uses: cachix/cachix-action@v17
         with:
           name: teevik
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          useDaemon: true
           pushFilter: (marble|astal)
 
       - name: Build ${{ matrix.host }} and stream outputs to Cachix
@@ -174,10 +180,20 @@ jobs:
           }
           trap report_disk_high_water_mark EXIT
 
-          nix run github:Mic92/nix-fast-build -- \
-            --skip-cached \
-            --no-nom \
-            --flake ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
+          # Fail closed if cachix-action fell back to its unfiltered store scan.
+          test -n "${CACHIX_DAEMON_DIR:-}"
+          original_hook=$(nix config show --json | jq -er '."post-build-hook".value')
+          test "$original_hook" = "$CACHIX_DAEMON_DIR/post-build-hook.sh"
+          test -x "$original_hook"
+          guard="$RUNNER_TEMP/cachix-safe-post-build-hook"
+          printf '#!/usr/bin/env bash\nexport NIX_STORE_BIN=%q\nexport CACHIX_ORIGINAL_HOOK=%q\nexec bash %q\n' \
+            "$(command -v nix-store)" "$original_hook" "$GITHUB_WORKSPACE/tests/cachix-safe-hook.sh" > "$guard"
+          chmod +x "$guard"
+
+          # Use the installed Determinate evaluator, not nix-eval-jobs' separately
+          # linked Nix. Nix itself skips cached builds; Cachix still streams.
+          nix build --no-link --print-build-logs --option post-build-hook "$guard" \
+            ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
 
   pull-request:
     name: Open nightly update pull request

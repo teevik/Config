@@ -115,23 +115,9 @@ in
 
       # Keep a reproducible registry snapshot, but don't make the system
       # closure depend on unrelated stowed dotfiles or research documents.
-      # Include new Nix source directories here if the flake grows any.
       registry.teevik.to = {
         type = "path";
-        path = lib.fileset.toSource {
-          root = ../../..;
-          fileset = lib.fileset.unions [
-            ../../../flake.nix
-            ../../../flake.lock
-            ../../../formatter.nix
-            ../../../checks
-            ../../../hosts
-            ../../../modules
-            ../../../packages
-            ../../../templates
-            ../../../tests
-          ];
-        };
+        path = import ./flake-source.nix { inherit lib; };
       };
     };
 

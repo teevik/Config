@@ -17,8 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/determinate-nix-action@v3.22.3
       # Same derivation as checks.x86_64-linux.nix-lint, without discovering
       # every Blueprint package/host or fetching private flake inputs.
       - name: Check Nix sources and lint regression tests
         run: nix build --file checks/nix-lint.nix --no-link --print-build-logs
+      - name: Check private-cache exclusion
+        run: nix build --file checks/cachix-privacy.nix --no-link --print-build-logs
+      - name: Check relative-input prefetch handling
+        run: nix build --file checks/nix-prefetch.nix --no-link --print-build-logs

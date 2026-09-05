@@ -37,11 +37,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     astal = {
-      url = "git+ssh://git@github.com/teevik/astal.git?ref=feat/niri";
+      # These private projects do not use revision counts for versioning.
+      url = "git+ssh://git@github.com/teevik/astal.git?ref=feat/niri&shallow=1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     marble = {
-      url = "git+ssh://git@github.com/teevik/marble-shell.git";
+      url = "git+ssh://git@github.com/teevik/marble-shell.git?shallow=1";
       inputs.astal.follows = "astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };

@@ -75,6 +75,21 @@ update-sources:
 update-inputs *inputs:
     nix flake update {{inputs}}
 
+# Fetch the locked input graph ahead of offline work; does not update pins.
+prefetch-inputs:
+    nix eval --impure --json --expr 'import ./tests/evaluation/prefetch-inputs.nix {}'
+
+# Fail on evaluation warnings, with a stack trace for builtins.warn.
+eval-warnings *hosts="zenbook":
+    bash tests/nix-warnings.sh {{hosts}}
+
+# Reveal evaluation-time builds and unusually broad source copies.
+eval-diagnostics host="zenbook":
+    nix eval --option eval-cache false --option warn-dirty false \
+      --option trace-import-from-derivation true \
+      --option warn-large-path-threshold 100M \
+      --raw '.#nixosConfigurations.{{host}}.config.system.build.toplevel.drvPath'
+
 # Read-only source linting; uses only the already-pinned nixpkgs input.
 lint:
     nix run --impure --expr 'import ./packages/nix-lint {}'
@@ -87,6 +102,16 @@ lint-check:
 benchmark-eval host="zenbook" runs="5":
     hyperfine --warmup 1 --runs {{runs}} --parameter-list engine blueprint,native \
       'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{host}}'
+
+# Snapshot tracked Nix sources, preserving cache hits across unrelated dotfile edits.
+# Use with: nh os switch "path:$(just flake-source)"
+flake-source:
+    @nix eval --impure --raw --file tests/evaluation/source-snapshot.nix
+
+# Compare a derivation lookup with and without Nix's evaluation cache; no builds.
+benchmark-eval-cache host="zenbook" runs="5":
+    hyperfine --warmup 1 --runs {{runs}} --parameter-list cache false,true \
+      'nix path-info --derivation --option eval-cache {cache} .#nixosConfigurations.{{host}}.config.system.build.toplevel'
 
 # Build and activate local Marble and Astal working trees without publishing them
 marble-dev-switch:
