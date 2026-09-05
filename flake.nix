@@ -102,40 +102,6 @@
   outputs =
     unpatchedInputs:
     let
-      # Re-evaluate only the two Zed flakes, preserving their locked sources
-      # and dependency sets (and therefore their binary-cache compatibility).
-      withInputs =
-        flake: overrides:
-        let
-          inputs = flake.inputs // overrides;
-          outputs = (import (flake.outPath + "/flake.nix")).outputs (inputs // { self = result; });
-          result = flake // outputs // { inherit inputs outputs; };
-        in
-        result;
-      upstreamZed = unpatchedInputs.zed.inputs.zed;
-      crane = upstreamZed.inputs.crane;
-      pinnedCrane = crane // {
-        mkLib =
-          pkgs:
-          (crane.mkLib pkgs).overrideScope (
-            _final: prev: {
-              downloadCargoPackageFromGit =
-                args:
-                let
-                  ref = args.ref or null;
-                  allRefs = args.allRefs or (ref == null);
-                in
-                prev.downloadCargoPackageFromGit (
-                  args
-                  // pkgs.lib.optionalAttrs (ref == null && allRefs) {
-                    # Cargo.lock pins the commit; don't resolve remote HEAD.
-                    ref = args.rev;
-                    allRefs = true;
-                  }
-                );
-            }
-          );
-      };
       inputs = unpatchedInputs // {
         # The public packages set eagerly filters the whole catalog by
         # platform. Use its lazy constructor with the SAME upstream pkgs,
@@ -149,9 +115,6 @@
             in
             (upstream.overlays.shared-nixpkgs pkgs pkgs).llm-agents
           ) unpatchedInputs.llm-agents.packages;
-        };
-        zed = withInputs unpatchedInputs.zed {
-          zed = withInputs upstreamZed { crane = pinnedCrane; };
         };
       };
     in

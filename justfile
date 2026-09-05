@@ -83,6 +83,11 @@ lint:
 lint-check:
     nix build --file checks/nix-lint.nix --no-link --print-build-logs
 
+# Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
+benchmark-eval host="zenbook" runs="5":
+    hyperfine --warmup 1 --runs {{runs}} --parameter-list engine blueprint,native \
+      'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{host}}'
+
 # Build and activate local Marble and Astal working trees without publishing them
 marble-dev-switch:
     nh os switch -- \

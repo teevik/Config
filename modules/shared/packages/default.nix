@@ -86,7 +86,7 @@ in
       # Editors
       perSystem.self.helix
       perSystem.neovim.default
-      perSystem.zed.default
+      perSystem.self.zed
       unzip # needed by neovim
       vscode
 
