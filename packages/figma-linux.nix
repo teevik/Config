@@ -11,7 +11,7 @@ let
     hash = "sha256-SLn4y+NVCcBDZrGqIpmpIEQavY7xngt5JMI8yG1g6/0=";
   };
 
-  appimageContents = appimageTools.extractType2 {
+  appimageContents = appimageTools.extract {
     inherit pname version src;
     postExtract = ''
       substituteInPlace $out/AppRun \

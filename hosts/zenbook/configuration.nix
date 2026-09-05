@@ -108,10 +108,8 @@
   };
 
   # Logitech
-  hardware.logitech.wireless = {
-    enable = true;
-    enableGraphical = true;
-  };
+  hardware.logitech.wireless.enable = true;
+  programs.solaar.enable = true;
 
   networking.firewall.allowedTCPPorts = [ 9001 ];
 
@@ -131,7 +129,7 @@
     virtiofsd
     sof-firmware
     wireguard-tools
-    protonvpn-gui
+    proton-vpn
   ];
 
   # TODO: remove when https://nixpk.gs/pr-tracker.html?pr=449133 is merged

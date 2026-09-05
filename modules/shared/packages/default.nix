@@ -84,7 +84,7 @@ in
       zoxide
 
       # Editors
-      perSystem.helix.default
+      perSystem.self.helix
       perSystem.neovim.default
       perSystem.zed.default
       unzip # needed by neovim
@@ -150,7 +150,7 @@ in
       chromium
       graphviz
       koji
-      libreoffice-qt6-fresh
+      libreoffice-qt-stable
       loupe
       mpv
       ngrok

@@ -27,7 +27,7 @@
       clang-tools
 
       # Dev tools - Gleam
-      erlang
+      beamPackages.erlang
       gleam
       rebar3
 
