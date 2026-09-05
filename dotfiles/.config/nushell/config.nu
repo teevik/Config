@@ -357,6 +357,12 @@ $env.config.keybindings = (
 )
 
 # Direnv integration
+$env.DIRENV_LOG_FORMAT = if (config use-colors) {
+    $"(ansi attr_dimmed)↳ %s(ansi reset)"
+} else {
+    "↳ %s"
+}
+
 $env.config.hooks.env_change = {
     PWD: [{||
         if (which direnv | is-empty) {
