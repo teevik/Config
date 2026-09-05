@@ -25,6 +25,14 @@
 
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "zenbook";
+  # Keep simultaneous heavy builds bounded on this 8-core laptop. For a
+  # single large compilation, --max-jobs 1 --cores 8 can use the whole CPU.
+  nix.settings = {
+    # Four evaluator threads beat eight in the uncached toplevel benchmark.
+    eval-cores = 4;
+    max-jobs = 2;
+    cores = 4;
+  };
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
 
   # Enable bluetooth

@@ -13,6 +13,7 @@ in
   imports = [
     # inputs.determinate.nixosModules.default
     ./networking.nix
+    ./parallel-eval.nix
     ./ssh.nix
   ];
 
@@ -50,6 +51,9 @@ in
     nix = {
       package = perSystem.determinate-nix.default;
       channel.enable = false;
+      # Deduplicate on an idle, AC-powered maintenance timer instead of
+      # adding hashing/linking work to every build and substitution.
+      optimise.automatic = true;
       # package = pkgs.lix;
       # package = perSystem.self.lix;
 
@@ -57,9 +61,10 @@ in
         experimental-features = [
           "nix-command"
           "flakes"
+          "parallel-eval"
         ];
 
-        auto-optimise-store = true;
+        auto-optimise-store = false;
 
         trusted-users = [
           "root"
@@ -69,7 +74,7 @@ in
         max-substitution-jobs = 32;
         http-connections = 32;
 
-        eval-cores = 0;
+        eval-cores = lib.mkDefault 0;
         lazy-trees = true;
 
         # Built against the same Determinate Nix components as `nix.package`,
