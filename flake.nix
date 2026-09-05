@@ -133,6 +133,18 @@
         flakePath = ./.;
 
         patchSpec = {
+          # Cargo.lock already pins these commits. With allRefs enabled, use
+          # the revision as ref too so Nix need not query each remote's HEAD.
+          # This preserves Zed's derivation and binary-cache compatibility.
+          zed.inputs.zed.inputs.crane.patches = [
+            (builtins.toFile "crane-pinned-git-ref.patch" ''
+              --- a/lib/downloadCargoPackageFromGit.nix
+              +++ b/lib/downloadCargoPackageFromGit.nix
+              @@ -28,1 +28,1 @@
+              -  maybeRef = lib.optionalAttrs (ref != null) { inherit ref; };
+              +  maybeRef = lib.optionalAttrs (ref != null || allRefs) { ref = if ref != null then ref else rev; };
+            '')
+          ];
           nixpkgs.patches = [
             # (patcher.fetchpatch {
             #   name = "wf-recorder: pin ffmpeg_8";

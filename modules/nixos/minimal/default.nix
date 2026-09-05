@@ -21,6 +21,9 @@ in
   config = {
     documentation = {
       man.cache.enable = false;
+      # Fish enables this separately, even when the cache is disabled above.
+      # Avoid rebuilding and indexing all system man pages on each switch.
+      man.cache.generateAtRuntime = false;
       doc.enable = false;
       nixos.enable = false;
     };
