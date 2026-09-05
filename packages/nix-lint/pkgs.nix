@@ -5,4 +5,7 @@ let
   lock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   locked = lock.nodes.${lock.nodes.root.inputs.nixpkgs}.locked;
 in
-import (builtins.fetchTree locked) { }
+import (builtins.fetchTree locked) {
+  config = { };
+  overlays = [ ];
+}
