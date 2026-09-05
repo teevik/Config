@@ -5,6 +5,7 @@ on:
   # 60 days without repository activity.
   schedule:
     - cron: "17 3 * * *"
+      timezone: "Europe/Oslo"
   workflow_dispatch:
 
 concurrency:
