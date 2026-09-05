@@ -12,13 +12,21 @@ in
 {
   imports = [
     # inputs.determinate.nixosModules.default
-    inputs.chaotic.nixosModules.default
-
     ./networking.nix
     ./ssh.nix
   ];
 
   config = {
+    # Blueprint already creates the configured package set for this platform.
+    # Avoid NixOS re-instantiating it through appendOverlays, even for [].
+    # Hosts that need overlays (e.g. Apple Silicon) retain the normal behavior.
+    _module.args.pkgs = lib.mkForce (
+      if config.nixpkgs.overlays == [ ] then
+        config.nixpkgs.pkgs
+      else
+        config.nixpkgs.pkgs.appendOverlays config.nixpkgs.overlays
+    );
+
     documentation = {
       man.cache.enable = false;
       # Fish enables this separately, even when the cache is disabled above.
@@ -101,11 +109,23 @@ in
         ];
       };
 
-      registry = {
-        # default.flake = nixpkgs;
-        # default-flake.flake = nixpkgs;
-        # nixpkgs.flake = lib.mkForce inputs.nixpkgs-unfree;
-        teevik.flake = inputs.self;
+      # Keep a reproducible registry snapshot, but don't make the system
+      # closure depend on unrelated stowed dotfiles or research documents.
+      # Include new Nix source directories here if the flake grows any.
+      registry.teevik.to = {
+        type = "path";
+        path = lib.fileset.toSource {
+          root = ../../..;
+          fileset = lib.fileset.unions [
+            ../../../flake.nix
+            ../../../flake.lock
+            ../../../formatter.nix
+            ../../../hosts
+            ../../../modules
+            ../../../packages
+            ../../../templates
+          ];
+        };
       };
     };
 

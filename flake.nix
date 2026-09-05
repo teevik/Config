@@ -4,12 +4,6 @@
     self.submodules = true;
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-unfree = {
-      url = "github:numtide/nixpkgs-unfree";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
     nixos-apple-silicon = {
       url = "github:nix-community/nixos-apple-silicon";
@@ -31,8 +25,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-input-patcher.url = "github:jfly/flake-input-patcher";
-
     # Modules
     # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
@@ -53,14 +45,6 @@
       inputs.astal.follows = "astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    automatic-sunset = {
-      url = "github:teevik/automatic-sunset";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    selfhostblocks = {
-      url = "github:ibizaman/selfhostblocks";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -76,10 +60,6 @@
       url = "github:anthropics/cargo-nix-plugin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    iwmenu = {
-      url = "github:e-tho/iwmenu";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     helix = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -89,13 +69,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     openconnect-sso.url = "github:active-group/openconnect-sso";
-    nix-dram.url = "github:dramforever/nix-dram";
     titdb = {
       url = "github:GarrettGR/titdb-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    antigravity = {
-      url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
@@ -127,31 +102,56 @@
   outputs =
     unpatchedInputs:
     let
-      patcher = unpatchedInputs.flake-input-patcher.lib.x86_64-linux;
-      inputs = patcher.patch {
-        inherit unpatchedInputs;
-        flakePath = ./.;
-
-        patchSpec = {
-          # Cargo.lock already pins these commits. With allRefs enabled, use
-          # the revision as ref too so Nix need not query each remote's HEAD.
-          # This preserves Zed's derivation and binary-cache compatibility.
-          zed.inputs.zed.inputs.crane.patches = [
-            (builtins.toFile "crane-pinned-git-ref.patch" ''
-              --- a/lib/downloadCargoPackageFromGit.nix
-              +++ b/lib/downloadCargoPackageFromGit.nix
-              @@ -28,1 +28,1 @@
-              -  maybeRef = lib.optionalAttrs (ref != null) { inherit ref; };
-              +  maybeRef = lib.optionalAttrs (ref != null || allRefs) { ref = if ref != null then ref else rev; };
-            '')
-          ];
-          nixpkgs.patches = [
-            # (patcher.fetchpatch {
-            #   name = "wf-recorder: pin ffmpeg_8";
-            #   url = "https://github.com/NixOS/nixpkgs/commit/fc31aa40b9bf77889afbcf495f3161a026bcb80a.patch";
-            #   hash = "sha256-yG0OLFacC5GB+BzQM8dnU+ucAak3onaIMmyoxQt3fx0=";
-            # })
-          ];
+      # Re-evaluate only the two Zed flakes, preserving their locked sources
+      # and dependency sets (and therefore their binary-cache compatibility).
+      withInputs =
+        flake: overrides:
+        let
+          inputs = flake.inputs // overrides;
+          outputs = (import (flake.outPath + "/flake.nix")).outputs (inputs // { self = result; });
+          result = flake // outputs // { inherit inputs outputs; };
+        in
+        result;
+      upstreamZed = unpatchedInputs.zed.inputs.zed;
+      crane = upstreamZed.inputs.crane;
+      pinnedCrane = crane // {
+        mkLib =
+          pkgs:
+          (crane.mkLib pkgs).overrideScope (
+            _final: prev: {
+              downloadCargoPackageFromGit =
+                args:
+                let
+                  ref = args.ref or null;
+                  allRefs = args.allRefs or (ref == null);
+                in
+                prev.downloadCargoPackageFromGit (
+                  args
+                  // pkgs.lib.optionalAttrs (ref == null && allRefs) {
+                    # Cargo.lock pins the commit; don't resolve remote HEAD.
+                    ref = args.rev;
+                    allRefs = true;
+                  }
+                );
+            }
+          );
+      };
+      inputs = unpatchedInputs // {
+        # The public packages set eagerly filters the whole catalog by
+        # platform. Use its lazy constructor with the SAME upstream pkgs,
+        # not our system pkgs, to preserve all selected package derivations.
+        llm-agents = unpatchedInputs.llm-agents // {
+          packages = builtins.mapAttrs (
+            system: _:
+            let
+              upstream = unpatchedInputs.llm-agents;
+              pkgs = import upstream.inputs.nixpkgs { inherit system; };
+            in
+            (upstream.overlays.shared-nixpkgs pkgs pkgs).llm-agents
+          ) unpatchedInputs.llm-agents.packages;
+        };
+        zed = withInputs unpatchedInputs.zed {
+          zed = withInputs upstreamZed { crane = pinnedCrane; };
         };
       };
     in

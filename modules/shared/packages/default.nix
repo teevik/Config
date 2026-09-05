@@ -80,7 +80,7 @@ in
       intelli-shell
       nu_scripts
       nushell
-      nushellPlugins.skim
+      perSystem.self.nu-plugin-skim
       zoxide
 
       # Editors

@@ -55,20 +55,25 @@ setup:
     mkdir -p ~/.pi/agent
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
-update:
+# Refresh package sources, then evaluate/build the validation targets together.
+update: update-sources
+    nix build --no-link --print-build-logs --file packages/update-targets.nix \
+      opencode opencode-desktop omp t3code-nightly
+
+# Quick source-only update; use `just update` to also validate the builds.
+update-sources:
     #!/usr/bin/env bash
     set -euo pipefail
 
     bash packages/update-opencode.sh
-    nix build --no-link --print-build-logs --file packages/update-targets.nix \
-      opencode opencode-desktop
-
     # OMP's generated Bun dependencies and build patches live in llm-agents.nix,
     # so update that package source as a unit rather than overriding its version.
     nix flake update llm-agents
-    nix build --no-link --print-build-logs --file packages/update-targets.nix omp
+    bash packages/update-t3code.sh --no-build
 
-    bash packages/update-t3code.sh
+# Pass input names for a targeted update, or omit them to update all inputs.
+update-inputs *inputs:
+    nix flake update {{inputs}}
 
 # Build and activate local Marble and Astal working trees without publishing them
 marble-dev-switch:

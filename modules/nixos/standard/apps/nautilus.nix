@@ -1,4 +1,16 @@
 { pkgs, ... }:
+let
+  # This customization is only needed by the installed file manager, not by
+  # every package depending on Nautilus in the nixpkgs fixed point.
+  nautilus = pkgs.nautilus.overrideAttrs (old: {
+    buildInputs =
+      old.buildInputs
+      ++ (with pkgs.gst_all_1; [
+        gst-plugins-good
+        gst-plugins-bad
+      ]);
+  });
+in
 {
   services.gvfs.enable = true;
   services.gnome.sushi.enable = true;
@@ -23,18 +35,4 @@
       "share/thumbnailers"
     ];
   };
-
-  # gstreamer
-  nixpkgs.overlays = [
-    (final: prev: {
-      nautilus = prev.nautilus.overrideAttrs (nprev: {
-        buildInputs =
-          nprev.buildInputs
-          ++ (with pkgs.gst_all_1; [
-            gst-plugins-good
-            gst-plugins-bad
-          ]);
-      });
-    })
-  ];
 }

@@ -19,8 +19,11 @@ let
     config.allowUnfree = true;
   };
   llmAgents = builtins.getFlake "github:${llmAgentsLocked.owner}/${llmAgentsLocked.repo}/${llmAgentsLocked.rev}";
+  # Match flake.nix: keep upstream's package set for cache compatibility,
+  # but don't evaluate platform metadata for the entire agent catalog.
+  agentPkgs = import llmAgents.inputs.nixpkgs { inherit system; };
   perSystem = {
-    llm-agents = llmAgents.packages.${system};
+    llm-agents = (llmAgents.overlays.shared-nixpkgs agentPkgs agentPkgs).llm-agents;
     self.opencode = opencode;
   };
   opencode = import ./opencode.nix { inherit pkgs; };
