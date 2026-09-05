@@ -27,13 +27,14 @@
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme0n1" ]; };
 
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
-  services.scx.enable = true;
 
   # Enable bluetooth
   hardware.bluetooth.enable = true;
-  services.blueman.enable = true;
 
   services = {
+    scx.enable = true;
+    blueman.enable = true;
+
     asusd = {
       enable = true;
     };

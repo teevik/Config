@@ -9,9 +9,16 @@
     ../../shared/packages
   ];
 
-  programs.ydotool = {
-    enable = true;
-    group = "input";
+  programs = {
+    ydotool = {
+      enable = true;
+      group = "input";
+    };
+
+    # Nix-index database for command-not-found
+    nix-index.enable = true;
+    nix-index-database.comma.enable = true;
+    command-not-found.enable = false;
   };
 
   users.users.teevik.extraGroups = [ "input" ];
@@ -81,8 +88,4 @@
       pkgs.stremio-linux-shell
     ];
 
-  # Nix-index database for command-not-found
-  programs.nix-index.enable = true;
-  programs.nix-index-database.comma.enable = true;
-  programs.command-not-found.enable = false;
 }

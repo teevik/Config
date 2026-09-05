@@ -19,21 +19,40 @@
   nixpkgs.hostPlatform = "aarch64-linux";
   networking.hostName = "macbook";
 
-  boot.binfmt.emulatedSystems = [
-    "x86_64-linux"
-  ];
+  boot = {
+    binfmt.emulatedSystems = [
+      "x86_64-linux"
+    ];
 
-  boot.kernelParams = [
-    # Use whole display
-    "apple_dcp.show_notch=1"
-    # Enable zswap
-    "zswap.enabled=1"
-    # "zswap.compressor=zstd"
-    "zswap.zpool=zsmalloc"
-    "zswap.max_pool_percent=50"
-  ];
+    kernelParams = [
+      # Use whole display
+      "apple_dcp.show_notch=1"
+      # Enable zswap
+      "zswap.enabled=1"
+      # "zswap.compressor=zstd"
+      "zswap.zpool=zsmalloc"
+      "zswap.max_pool_percent=50"
+    ];
 
-  hardware.graphics.enable32Bit = lib.mkForce false;
+    extraModprobeConfig = ''
+      options hid_apple swap_opt_cmd=1 swap_fn_leftctrl=1
+    '';
+
+    loader.efi.canTouchEfiVariables = lib.mkForce false;
+  };
+
+  hardware = {
+    graphics.enable32Bit = lib.mkForce false;
+    asahi = {
+      enable = true;
+      peripheralFirmwareDirectory = ./firmware;
+      # useExperimentalGPUDriver is no longer needed - GPU support is in mainline mesa
+      # setupAsahiSound = true;
+    };
+
+    # Enable bluetooth
+    bluetooth.enable = true;
+  };
 
   swapDevices = [
     {
@@ -66,22 +85,7 @@
     device = "/dev/input/event2";
   };
 
-  boot.extraModprobeConfig = ''
-    options hid_apple swap_opt_cmd=1 swap_fn_leftctrl=1
-  '';
-
-  hardware.asahi = {
-    enable = true;
-    peripheralFirmwareDirectory = ./firmware;
-    # useExperimentalGPUDriver is no longer needed - GPU support is in mainline mesa
-    # setupAsahiSound = true;
-  };
-
-  # Enable bluetooth
-  hardware.bluetooth.enable = true;
   services.blueman.enable = true;
-
-  boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
   system.stateVersion = "25.11";
 }

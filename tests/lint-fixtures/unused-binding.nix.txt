@@ -1,0 +1,4 @@
+let
+  unused = 42;
+in
+{ answer = 0; }

@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   pkgs,
   lib,
   perSystem,
@@ -125,10 +124,12 @@ in
             ../../../flake.nix
             ../../../flake.lock
             ../../../formatter.nix
+            ../../../checks
             ../../../hosts
             ../../../modules
             ../../../packages
             ../../../templates
+            ../../../tests
           ];
         };
       };

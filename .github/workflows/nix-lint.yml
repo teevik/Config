@@ -1,0 +1,24 @@
+name: Nix lint
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nix-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      # Same derivation as checks.x86_64-linux.nix-lint, without discovering
+      # every Blueprint package/host or fetching private flake inputs.
+      - name: Check Nix sources and lint regression tests
+        run: nix build --file checks/nix-lint.nix --no-link --print-build-logs

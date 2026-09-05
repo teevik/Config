@@ -14,9 +14,11 @@
         tailscale.file = ./tailscale.age;
         nix-access-tokens-github.file = ./nix-access-tokens-github.age;
         cachix.file = ./cachix.age;
-        wakatime.file = ./wakatime.age;
-        wakatime.owner = "teevik";
-        wakatime.path = "/home/teevik/.wakatime.cfg";
+        wakatime = {
+          file = ./wakatime.age;
+          owner = "teevik";
+          path = "/home/teevik/.wakatime.cfg";
+        };
       };
     };
   };

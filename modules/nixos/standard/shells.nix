@@ -67,43 +67,47 @@ in
     # variables.SHELL = "${pkgs.nushell}/bin/nu";
     variables.SHELL = "${pkgs.bash}/bin/bash";
 
-    etc."nushell/plugins/skim".source = "${perSystem.self.nu-plugin-skim}/bin/nu_plugin_skim";
-    etc."nushell/scripts/ultimate_extractor.nu".source =
-      "${pkgs.nu_scripts}/share/nu_scripts/modules/data_extraction/ultimate_extractor.nu";
-    etc."nushell/scripts/completions.nu".source = nuCompletions;
-    etc."nushell/scripts/fzf.nu".source = fzfIntegration;
-    etc."nushell/scripts/zoxide.nu".source = zoxideIntegration;
-    etc."nushell/scripts/intelli-shell.nu".source = intelliShellIntegration;
+    etc = {
+      "nushell/plugins/skim".source = "${perSystem.self.nu-plugin-skim}/bin/nu_plugin_skim";
+      "nushell/scripts/ultimate_extractor.nu".source =
+        "${pkgs.nu_scripts}/share/nu_scripts/modules/data_extraction/ultimate_extractor.nu";
+      "nushell/scripts/completions.nu".source = nuCompletions;
+      "nushell/scripts/fzf.nu".source = fzfIntegration;
+      "nushell/scripts/zoxide.nu".source = zoxideIntegration;
+      "nushell/scripts/intelli-shell.nu".source = intelliShellIntegration;
+    };
   };
 
-  programs.direnv = {
-    enable = true;
-    enableBashIntegration = false;
-    enableFishIntegration = false;
-    nix-direnv.enable = true;
-    settings.global.hide_env_diff = true;
-    settings.whitelist.prefix = [
-      "/home/teevik/Documents/Projects/"
-    ];
-  };
+  programs = {
+    direnv = {
+      enable = true;
+      enableBashIntegration = false;
+      enableFishIntegration = false;
+      nix-direnv.enable = true;
+      settings.global.hide_env_diff = true;
+      settings.whitelist.prefix = [
+        "/home/teevik/Documents/Projects/"
+      ];
+    };
 
-  # Fish
-  programs.fish = {
-    enable = true;
+    # Fish
+    fish = {
+      enable = true;
 
-    interactiveShellInit = ''
-      set fish_greeting
-    '';
-  };
+      interactiveShellInit = ''
+        set fish_greeting
+      '';
+    };
 
-  # Bash, start Nu
-  programs.bash = {
-    interactiveShellInit = ''
-      if [[ $(${pkgs.procps}/bin/ps --no-header --pid=$PPID --format=comm) != "nu" && -z ''${BASH_EXECUTION_STRING} ]]
-      then
-        shopt -q login_shell && LOGIN_OPTION='--login' || LOGIN_OPTION=""
-        exec ${pkgs.nushell}/bin/nu $LOGIN_OPTION
-      fi
-    '';
+    # Bash, start Nu
+    bash = {
+      interactiveShellInit = ''
+        if [[ $(${pkgs.procps}/bin/ps --no-header --pid=$PPID --format=comm) != "nu" && -z ''${BASH_EXECUTION_STRING} ]]
+        then
+          shopt -q login_shell && LOGIN_OPTION='--login' || LOGIN_OPTION=""
+          exec ${pkgs.nushell}/bin/nu $LOGIN_OPTION
+        fi
+      '';
+    };
   };
 }

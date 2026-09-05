@@ -21,7 +21,6 @@ let
     libx11
     libsoup_3
     webkitgtk_6_0
-    fetchurl
     libadwaita
     libepoxy
     gettext
@@ -45,20 +44,8 @@ let
   #   '';
   # };
 
-  # NOTE stremio downloads server.js into XDG_DATA_DIR. Packaging it is not required.
-  # I'm patching this because I don't enjoy stremio downloading code at runtime.
-  # This and the postPatch are not needed if you're okay with stremio downloading server.js at runtime
-  # Latest server.js version found at https://www.strem.io/updater/server/check
-  server = fetchurl {
-    pname = "stremio-server";
-    version = "4.20.11";
-    url = "http://web.archive.org/web/20251017122515if_/https://dl.strem.io/server/v4.20.11/desktop/server.js";
-    hash = "sha256-2QCwUlusNTGqbOmOGjyKOx0bHaoGmn9vy93qViXx95E=";
-    meta.license = lib.licenses.unfree;
-  };
-
 in
-rustPlatform.buildRustPackage (finalAttrs: {
+rustPlatform.buildRustPackage {
   name = "stremio-linux-shell";
 
   src = fetchFromGitHub {
@@ -94,17 +81,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gettext
   ];
 
-  # postPatch = ''
-  #   substituteInPlace ./src/server/mod.rs \
-  #     --replace-fail \
-  #       'let file = data_dir.join(FILE);' \
-  #       'let file = PathBuf::from(r"${server}");'
-
-  #   substituteInPlace ./src/server/mod.rs \
-  #     --replace-fail \
-  #       'let should_download = current_version.as_deref() != Some(latest_version.as_str());' \
-  #       'let should_download = false;'
-  # '';
+  # Stremio currently downloads server.js into XDG_DATA_DIR at runtime.
 
   postInstall = ''
     mkdir -p $out/share/applications
@@ -157,4 +134,4 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ];
     platforms = lib.platforms.linux;
   };
-})
+}

@@ -75,6 +75,14 @@ update-sources:
 update-inputs *inputs:
     nix flake update {{inputs}}
 
+# Read-only source linting; uses only the already-pinned nixpkgs input.
+lint:
+    nix run --impure --expr 'import ./packages/nix-lint {}'
+
+# Run the same source lint plus its regression tests in a sandbox (CI entry).
+lint-check:
+    nix build --file checks/nix-lint.nix --no-link --print-build-logs
+
 # Build and activate local Marble and Astal working trees without publishing them
 marble-dev-switch:
     nh os switch -- \

@@ -1,0 +1,2 @@
+# Keep every default lint enabled, including repeated_keys.
+disabled = []

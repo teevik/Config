@@ -1,4 +1,3 @@
-{ config, ... }:
 {
   # nixpkgs.config.cudaSupport = true;
 

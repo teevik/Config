@@ -1,0 +1,5 @@
+{
+  services.one.enable = true;
+  services.two.enable = true;
+  services.three.enable = true;
+}

@@ -19,7 +19,7 @@ let
   # but don't evaluate platform metadata for the entire agent catalog.
   agentPkgs = import llmAgents.inputs.nixpkgs { inherit system; };
   perSystem = {
-    llm-agents = (llmAgents.overlays.shared-nixpkgs agentPkgs agentPkgs).llm-agents;
+    inherit (llmAgents.overlays.shared-nixpkgs agentPkgs agentPkgs) llm-agents;
     self.opencode = opencode;
   };
   opencode = import ./opencode.nix { inherit pkgs; };
