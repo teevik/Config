@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Companion to nh-source-hook.patch. Only plain local references to
+# this checkout use the existing Git-aware snapshot; other references pass through.
+set -euo pipefail
+
+if (( $# != 1 )); then
+    printf 'Usage: nh-prepare-source FLAKE_REFERENCE\n' >&2
+    exit 64
+fi
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+config_root="$(realpath -- "$script_dir/../..")"
+reference=$1
+
+if [[ -d "$reference" && "$(realpath -- "$reference")" == "$config_root" ]]; then
+    snapshot="$(nix eval --impure --raw --file "$config_root/tests/evaluation/source-snapshot.nix")"
+    printf 'path:%s\n' "$snapshot"
+else
+    printf '%s\n' "$reference"
+fi

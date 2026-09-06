@@ -2,16 +2,12 @@
   pkgs ? import ./pkgs.nix,
   ...
 }:
-pkgs.writeShellApplication {
+(import ../nu-scripts/write-application.nix { inherit pkgs; }) {
   name = "nix-lint";
   runtimeInputs = with pkgs; [
-    coreutils
-    findutils
     statix
     deadnix
   ];
-  text = ''
-    statix_config=${./statix.toml}
-  ''
-  + builtins.readFile ./lint.sh;
+  runtimeEnv.STATIX_CONFIG = ./statix.toml;
+  script = ./lint.nu;
 }

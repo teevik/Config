@@ -185,10 +185,12 @@ jobs:
           original_hook=$(nix config show --json | jq -er '."post-build-hook".value')
           test "$original_hook" = "$CACHIX_DAEMON_DIR/post-build-hook.sh"
           test -x "$original_hook"
-          guard="$RUNNER_TEMP/cachix-safe-post-build-hook"
-          printf '#!/usr/bin/env bash\nexport NIX_STORE_BIN=%q\nexport CACHIX_ORIGINAL_HOOK=%q\nexec bash %q\n' \
-            "$(command -v nix-store)" "$original_hook" "$GITHUB_WORKSPACE/tests/cachix-safe-hook.sh" > "$guard"
-          chmod +x "$guard"
+          # Bootstrap the pinned Nu hook without invoking the unguarded uploader.
+          guard_package=$(nix build --file tests/cachix-hook.nix \
+            --argstr originalHook "$original_hook" \
+            --argstr nixStoreBin "$(command -v nix-store)" \
+            --option post-build-hook '' --no-link --print-out-paths)
+          guard="$guard_package/bin/cachix-safe-hook"
 
           # Use the installed Determinate evaluator, not nix-eval-jobs' separately
           # linked Nix. Nix itself skips cached builds; Cachix still streams.

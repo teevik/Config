@@ -8,6 +8,7 @@
     # ./android-studio.nix
     ./nautilus.nix
     ./firefox.nix
+    ./nh-eval-cache.nix
   ];
 
   environment.sessionVariables = {

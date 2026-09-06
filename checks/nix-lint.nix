@@ -7,7 +7,8 @@ let
   source = pkgs.lib.fileset.toSource {
     root = ../.;
     fileset =
-      pkgs.lib.fileset.intersection (pkgs.lib.fileset.fileFilter (file: file.hasExt "nix") ../.)
+      pkgs.lib.fileset.intersection
+        (pkgs.lib.fileset.fileFilter (file: file.hasExt "nix" || file.hasExt "nu") ../.)
         (
           pkgs.lib.fileset.unions [
             ../flake.nix
@@ -24,6 +25,7 @@ let
 in
 pkgs.runCommand "nix-lint-check" { nativeBuildInputs = [ lint ]; } ''
   nix-lint ${source}
-  bash ${../tests/nix-lint.sh} ${pkgs.lib.getExe lint} ${../tests/lint-fixtures}
+  ${pkgs.lib.getExe pkgs.nushell} --no-config-file \
+    ${../tests}/nix-lint.nu ${pkgs.lib.getExe lint} ${../tests/lint-fixtures}
   touch "$out"
 ''

@@ -62,14 +62,12 @@ update: update-sources
 
 # Quick source-only update; use `just update` to also validate the builds.
 update-sources:
-    #!/usr/bin/env bash
-    set -euo pipefail
+    @just nu packages/update.nu
 
-    bash packages/update-opencode.sh
-    # OMP's generated Bun dependencies and build patches live in llm-agents.nix,
-    # so update that package source as a unit rather than overriding its version.
-    nix flake update llm-agents
-    bash packages/update-t3code.sh --no-build
+# Run a repository script with pinned Nu/tools and no personal shell config.
+[positional-arguments]
+nu +args:
+    @nix run --impure --expr 'import ./packages/nu-scripts {}' . -- "$@"
 
 # Pass input names for a targeted update, or omit them to update all inputs.
 update-inputs *inputs:
@@ -80,8 +78,9 @@ prefetch-inputs:
     nix eval --impure --json --expr 'import ./tests/evaluation/prefetch-inputs.nix {}'
 
 # Fail on evaluation warnings, with a stack trace for builtins.warn.
+[positional-arguments]
 eval-warnings *hosts="zenbook":
-    bash tests/nix-warnings.sh {{hosts}}
+    @just nu tests/nix-warnings.nu "$@"
 
 # Reveal evaluation-time builds and unusually broad source copies.
 eval-diagnostics host="zenbook":
@@ -90,7 +89,7 @@ eval-diagnostics host="zenbook":
       --option warn-large-path-threshold 100M \
       --raw '.#nixosConfigurations.{{host}}.config.system.build.toplevel.drvPath'
 
-# Read-only source linting; uses only the already-pinned nixpkgs input.
+# Read-only Nix linting and Nu syntax checking; uses the pinned nixpkgs input.
 lint:
     nix run --impure --expr 'import ./packages/nix-lint {}'
 
@@ -98,13 +97,17 @@ lint:
 lint-check:
     nix build --file checks/nix-lint.nix --no-link --print-build-logs
 
+# Offline regression tests for Nu helpers, evaluation checks, and update scripts.
+script-check:
+    nix build --file checks/nu-scripts.nix --no-link --print-build-logs
+
 # Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
 benchmark-eval host="zenbook" runs="5":
     hyperfine --warmup 1 --runs {{runs}} --parameter-list engine blueprint,native \
       'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{host}}'
 
 # Snapshot tracked Nix sources, preserving cache hits across unrelated dotfile edits.
-# Use with: nh os switch "path:$(just flake-source)"
+# nh prepares this automatically; this recipe is useful for manual cache lookups.
 flake-source:
     @nix eval --impure --raw --file tests/evaluation/source-snapshot.nix
 

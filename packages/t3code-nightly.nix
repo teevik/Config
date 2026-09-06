@@ -15,13 +15,13 @@ let
     electron_43 = pkgs.electron;
   };
 
-  version = "0.0.39-nightly.20260905.1285";
+  version = "0.0.39-nightly.20260906.1303";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-3r4c2khUpwyIipdyVtyGGlXZ5q8RHK9VvTVsDZz0lUI=";
+    hash = "sha256-61aayKHL0CCmqfqM9qQTxQjEcuYwjCi90JARMSG1DrA=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -37,7 +37,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-mgRMeBpJmiTat38APyE4guNJ+6RiQhenphP7tRcmc+k=";
+    hash = "sha256-xtON4Zds68LiB182QF/IWgSqLLj6hvJOL8Ywz3ME+MU=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
