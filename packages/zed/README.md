@@ -14,6 +14,12 @@ The plugin must be loaded by the evaluating Nix. The existing
 `upstream.nix` retains the Crane build as the source of shared packaging and
 as a fallback that can be imported directly.
 
+The GitHub cache workers build `cargo-nix-plugin` and its matching Nix
+(`cargo-nix-plugin.nix`) from the downloaded nightly lock, then load the plugin
+through `NIX_CONFIG`. They verify Zed's resolver before evaluating the full host.
+The installer action only bootstraps this pair; its version need not match a
+newly updated lock.
+
 The build reuses Zed's pinned toolchain, native dependencies, WebRTC patches,
 release-channel setting, license generation, and final packaging. Workspace
 crate sources are filtered individually, with explicit shared assets for the

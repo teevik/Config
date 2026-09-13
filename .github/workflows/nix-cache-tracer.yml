@@ -147,6 +147,32 @@ jobs:
             substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems https://cache.numtide.com https://nyx-cache.chaotic.cx
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
+      - name: Load cargo-nix-plugin with its matching Nix
+        run: |
+          # Bootstrap without a plugin; use the downloaded nightly lock for
+          # both the plugin and its exact Nix ABI. Do this before Cachix installs
+          # its hook so all later nix-store invocations use the matching Nix.
+          nix_package=$(nix build .#cargo-nix-plugin.nix \
+            --option plugin-files '' --no-link --print-out-paths)
+          plugin_package=$(nix build .#cargo-nix-plugin \
+            --option plugin-files '' --no-link --print-out-paths)
+          echo "$nix_package/bin" >> "$GITHUB_PATH"
+          {
+            echo 'NIX_CONFIG<<CARGO_NIX_CONFIG'
+            printf '%s\n' "${NIX_CONFIG:-}"
+            echo "plugin-files = $plugin_package/lib/nix/plugins"
+            echo 'CARGO_NIX_CONFIG'
+          } >> "$GITHUB_ENV"
+
+      - name: Verify Zed's Cargo resolver
+        run: |
+          # Fail before the full host evaluation if loading or API matching
+          # breaks, and exercise the real Zed graph with this evaluator.
+          nix eval --raw .#zed --apply 'zed:
+            assert builtins ? resolveCargoWorkspace;
+            assert zed.cargoNix.apiLevel == zed.cargoNix.resolverApiLevel;
+            zed.drvPath'
+
       # Stream public builds. The root-name filter alone does not protect
       # private dependencies; the build step wraps this hook with a closure check.
       - name: Configure Cachix streaming uploads
@@ -192,8 +218,8 @@ jobs:
             --option post-build-hook '' --no-link --print-out-paths)
           guard="$guard_package/bin/cachix-safe-hook"
 
-          # Use the installed Determinate evaluator, not nix-eval-jobs' separately
-          # linked Nix. Nix itself skips cached builds; Cachix still streams.
+          # Use the locked Determinate evaluator with cargo-nix-plugin loaded.
+          # Nix itself skips cached builds; Cachix still streams.
           nix build --no-link --print-build-logs --option post-build-hook "$guard" \
             ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
 
