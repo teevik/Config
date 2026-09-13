@@ -19,20 +19,25 @@ let
     crane = import ./crane.nix upstream.inputs.crane;
   };
 in
-zed.packages.${system}.default.overrideAttrs (oldAttrs: {
-  # Keep the stable channel used by the existing installation.
-  preBuild = (oldAttrs.preBuild or "") + ''
-    echo stable > crates/zed/RELEASE_CHANNEL
-  '';
+zed.packages.${system}.default.overrideAttrs (
+  finalAttrs: oldAttrs: {
+    # Keep the stable channel used by the existing installation.
+    preBuild = (oldAttrs.preBuild or "") + ''
+      echo stable > crates/zed/RELEASE_CHANNEL
+    '';
 
-  # Use nixpkgs' WebRTC until the upstream build is fixed:
-  # https://github.com/zed-industries/zed/issues/54225
-  env = (oldAttrs.env or { }) // {
-    LK_CUSTOM_WEBRTC = pkgs.livekit-libwebrtc;
-  };
-  cargoArtifacts = oldAttrs.cargoArtifacts.overrideAttrs (oldArtifacts: {
-    env = (oldArtifacts.env or { }) // {
+    # Use nixpkgs' WebRTC until the upstream build is fixed:
+    # https://github.com/zed-industries/zed/issues/54225
+    env = (oldAttrs.env or { }) // {
       LK_CUSTOM_WEBRTC = pkgs.livekit-libwebrtc;
     };
-  });
-})
+    cargoArtifacts = oldAttrs.cargoArtifacts.overrideAttrs (oldArtifacts: {
+      env = (oldArtifacts.env or { }) // {
+        LK_CUSTOM_WEBRTC = pkgs.livekit-libwebrtc;
+      };
+    });
+    passthru = (oldAttrs.passthru or { }) // {
+      inherit (finalAttrs) cargoArtifacts;
+    };
+  }
+)

@@ -18,6 +18,23 @@ crane
     pkgs:
     (crane.mkLib pkgs).overrideScope (
       _final: prev: {
+        buildDepsOnly =
+          args:
+          prev.buildDepsOnly (
+            args
+            // {
+              # The archive is identified by Cargo inputs, not Zed's version.
+              version = "0";
+              # Workspace code/build scripts are stubbed in this derivation.
+              # Application metadata and font paths belong to the real build.
+              env = builtins.removeAttrs (args.env or { }) [
+                "ZED_COMMIT_SHA"
+                "RELEASE_VERSION"
+                "FONTCONFIG_FILE"
+              ];
+            }
+          );
+
         filters = prev.filters // {
           # Keep upstream's removal rules, changing only prefix matching.
           cargoTomlConservative = import (crane.outPath + "/lib/filters/cargoTomlConservative.nix") {
