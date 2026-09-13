@@ -1,5 +1,5 @@
 # nix eval --impure --json --expr 'import ./tests/zed-dependency-cache.nix {}'
-# Application revision changes must not invalidate third-party compilation.
+# Crane fallback: revision changes must not invalidate third-party compilation.
 {
   flakeRef ? "git+file://${toString ../.}?submodules=1",
   system ? builtins.currentSystem,
@@ -9,7 +9,7 @@ let
   pkgs = import flake.inputs.nixpkgs { inherit system; };
   build =
     zed:
-    import ../packages/zed {
+    import ../packages/zed/upstream.nix {
       inherit pkgs system;
       inputs = flake.inputs // {
         inherit zed;
