@@ -1,6 +1,4 @@
 {
-  flake,
-  hostName,
   inputs,
   perSystem,
   pkgs,
@@ -48,29 +46,16 @@ let
     name = "hyprland-idle-lock";
     configFile = hyprlockConfig;
   };
-  hypridleConfig = pkgs.writeText "hypridle.conf" (
-    lib.replaceStrings
-      [
-        "@brightnessctl@"
-        "@hyprctl@"
-        "@lock-screen@"
-        "@loginctl@"
-      ]
-      [
-        "${lib.getExe pkgs.brightnessctl}"
-        "${lib.getExe' hyprlandPackage "hyprctl"}"
-        "${lib.getExe idleLockScreen}"
-        "${pkgs.systemd}/bin/loginctl"
-      ]
-      (builtins.readFile "${flake}/hosts/${hostName}/hypridle.conf")
-  );
   splitMonitorWorkspacesLua = pkgs.runCommand "split-monitor-workspaces-lua" { } ''
     mkdir -p $out/share/hyprland/split-monitor-workspaces
     cp ${inputs.split-monitor-workspaces}/lua/*.lua $out/share/hyprland/split-monitor-workspaces/
   '';
 in
 {
-  imports = [ inputs.hyprland.nixosModules.default ];
+  imports = [
+    inputs.hyprland.nixosModules.default
+    ./hypridle.nix
+  ];
 
   programs.hyprland = {
     enable = true;
@@ -80,6 +65,8 @@ in
   };
 
   programs.uwsm.enable = true;
+
+  services.hypridle.enable = true;
 
   environment = {
     systemPackages = [
@@ -120,17 +107,13 @@ in
   '';
 
   systemd.user.services = {
-    # Hypridle - screen dimming, locking, and DPMS
-    hypridle = {
-      description = "Hyprland idle daemon";
-      partOf = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig = {
-        ExecStart = "${lib.getExe pkgs.hypridle} -c ${hypridleConfig}";
-        Restart = "on-failure";
-      };
-    };
+    # Commands available to each host's Hypridle settings. The NixOS module
+    # already adds Hyprland, Hyprlock, and procps to the service's PATH.
+    hypridle.path = [
+      pkgs.brightnessctl
+      pkgs.systemd
+      idleLockScreen
+    ];
 
     # Cliphist - clipboard history for text and images
     cliphist = {

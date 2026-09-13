@@ -57,6 +57,32 @@
   };
 
   services = {
+    hypridle.settings = {
+      general = {
+        # The wrapper makes repeated lock requests idempotent.
+        lock_cmd = "hyprland-idle-lock";
+        before_sleep_cmd = "loginctl lock-session";
+        after_sleep_cmd = "hyprctl dispatch dpms on";
+      };
+      # No suspend listener: background jobs keep running while locked.
+      listener = [
+        {
+          timeout = 300;
+          on-timeout = "brightnessctl -s set 50%-";
+          on-resume = "brightnessctl -r";
+        }
+        {
+          timeout = 600;
+          on-timeout = "loginctl lock-session";
+        }
+        {
+          timeout = 620;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
+        }
+      ];
+    };
+
     blueman.enable = true;
     resolved.enable = true;
 

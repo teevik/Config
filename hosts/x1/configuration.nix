@@ -22,7 +22,23 @@
 
   # Enable bluetooth
   hardware.bluetooth.enable = true;
-  services.blueman.enable = true;
+  services = {
+    blueman.enable = true;
+
+    hypridle.settings = {
+      general = {
+        before_sleep_cmd = "hyprctl dispatch dpms off";
+        after_sleep_cmd = "hyprctl dispatch dpms on";
+      };
+      listener = [
+        {
+          timeout = 600;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
+        }
+      ];
+    };
+  };
 
   system.stateVersion = "24.11";
 }
