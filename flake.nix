@@ -80,7 +80,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zed.url = "github:teevik/zed-cached/stable";
+    zed.url = "github:zed-industries/zed";
 
     # opencode = {
     #   url = "github:sst/opencode";
@@ -124,6 +124,8 @@
       nixpkgs.config = {
         allowUnfree = true;
         permittedInsecurePackages = [
+          # Temporary: solidtime-desktop's usocket dependency fails on Electron 42.
+          "electron-41.10.6"
           "qtwebengine-5.15.19"
         ];
       };

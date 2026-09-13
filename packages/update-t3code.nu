@@ -5,6 +5,7 @@ def main [--no-build] {
         --version-regex '^v([0-9]+\.[0-9]+\.[0-9]+-nightly\.[0-9]{8}\.[0-9]+)$'
         --use-github-releases
         --subpackage resourceMonitor
+        --subpackage licenseNotices
         t3code-nightly)
 
     if not $no_build {

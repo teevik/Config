@@ -73,7 +73,8 @@ def main [] {
         let integrity = (^npm view $"@opencode-ai/($platform)@($version)" dist.integrity | str trim)
         $hashes | insert $platform $integrity
     })
-    let release = (http get --max-time 60sec https://api.github.com/repos/anomalyco/opencode-beta/releases/latest)
+    # npm and GitHub can publish at different times; use the CLI's exact release.
+    let release = (http get --max-time 60sec $"https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v($version)")
     let sources = {
         cli: (open --raw ($env.FILE_PWD | path join opencode.nix))
         desktop: (open --raw ($env.FILE_PWD | path join opencode-desktop.nix))

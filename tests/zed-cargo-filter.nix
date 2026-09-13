@@ -6,7 +6,7 @@
 }:
 let
   flake = builtins.getFlake flakeRef;
-  zed = flake.inputs.zed.inputs.zed;
+  zed = flake.inputs.zed;
   pkgs = import zed.inputs.nixpkgs { inherit system; };
   original = zed.inputs.crane.mkLib pkgs;
   optimized = (import ../packages/zed/crane.nix zed.inputs.crane).mkLib pkgs;

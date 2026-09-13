@@ -65,7 +65,7 @@ new file mode 100644
 index 0000000..a1d0adb
 --- /dev/null
 +++ b/crates/nh-nixos/src/source.rs
-@@ -0,0 +1,147 @@
+@@ -0,0 +1,157 @@
 +use std::{
 +  path::Path,
 +  process::{Command, Stdio},
@@ -121,12 +121,18 @@ index 0000000..a1d0adb
 +
 +#[cfg(all(test, unix))]
 +mod tests {
-+  use std::{fs, os::unix::fs::PermissionsExt, path::PathBuf};
++  use std::{fs, os::unix::fs::PermissionsExt, path::PathBuf, sync::Mutex};
 +
 +  use color_eyre::eyre::{Result, ensure};
 +  use nh_installable::Installable;
 +
 +  use super::prepare;
++
++  // A concurrent spawn can inherit another test's writable script descriptor
++  // until exec, causing ETXTBSY even after fs::write has closed its copy.
++  // Serialize script creation and execution, including failed spawn attempts.
++  // https://github.com/rust-lang/rust/issues/114554
++  static SOURCE_COMMAND_LOCK: Mutex<()> = Mutex::new(());
 +
 +  fn flake(reference: &str) -> Installable {
 +    Installable::Flake {
@@ -145,6 +151,7 @@ index 0000000..a1d0adb
 +
 +  #[test]
 +  fn passes_one_literal_argument_and_preserves_attributes() -> Result<()> {
++    let _guard = SOURCE_COMMAND_LOCK.lock().unwrap();
 +    let reference = "path:/a b/$(exit 99);'\"";
 +    let (_directory, program) =
 +      helper("test \"$#\" -eq 1 || exit 2\nprintf '%s\\n' \"$1\"")?;
@@ -160,6 +167,7 @@ index 0000000..a1d0adb
 +
 +  #[test]
 +  fn substitutes_reference_from_stdout() -> Result<()> {
++    let _guard = SOURCE_COMMAND_LOCK.lock().unwrap();
 +    let (_directory, program) =
 +      helper("printf 'path:/nix/store/prepared-source\\n'")?;
 +    let prepared = prepare(flake("/working/tree"), Some(&program))?;
@@ -174,6 +182,7 @@ index 0000000..a1d0adb
 +
 +  #[test]
 +  fn rejects_failures_and_invalid_output() -> Result<()> {
++    let _guard = SOURCE_COMMAND_LOCK.lock().unwrap();
 +    for body in [
 +      "printf 'path:/valid\\n'; exit 1",
 +      "printf ''",
@@ -191,6 +200,7 @@ index 0000000..a1d0adb
 +
 +  #[test]
 +  fn missing_program_fails_for_flakes_only() -> Result<()> {
++    let _guard = SOURCE_COMMAND_LOCK.lock().unwrap();
 +    let directory = tempfile::tempdir()?;
 +    let missing = directory.path().join("missing");
 +    ensure!(prepare(flake("/working/tree"), Some(&missing)).is_err());

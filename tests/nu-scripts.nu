@@ -50,7 +50,7 @@ def main [source: path, probe: path] {
             --file ($source | path join packages/update-targets.nix)
             --version unstable
             --version-regex '^v([0-9]+\.[0-9]+\.[0-9]+-nightly\.[0-9]{8}\.[0-9]+)$'
-            --use-github-releases --subpackage resourceMonitor t3code-nightly
+            --use-github-releases --subpackage resourceMonitor --subpackage licenseNotices t3code-nightly
         ]
         '' | save --force $env.MOCK_LOG
         assert-success (^$nu.current-exe --no-config-file $t3code | complete)

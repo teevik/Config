@@ -1,7 +1,11 @@
-{ inputs, system, ... }:
+{
+  inputs,
+  pkgs,
+  system,
+  ...
+}:
 let
-  # Preserve both flakes' locked sources and dependency sets, including
-  # Zed's own nixpkgs, so the upstream binary cache remains usable.
+  # Apply the local Crane optimizations to Zed's locked build inputs.
   withInputs =
     flake: overrides:
     let
@@ -10,11 +14,25 @@ let
       result = flake // outputs // { inherit inputs outputs; };
     in
     result;
-  upstream = inputs.zed.inputs.zed;
+  upstream = inputs.zed;
   zed = withInputs inputs.zed {
-    zed = withInputs upstream {
-      crane = import ./crane.nix upstream.inputs.crane;
-    };
+    crane = import ./crane.nix upstream.inputs.crane;
   };
 in
-zed.packages.${system}.default
+zed.packages.${system}.default.overrideAttrs (oldAttrs: {
+  # Keep the stable channel used by the existing installation.
+  preBuild = (oldAttrs.preBuild or "") + ''
+    echo stable > crates/zed/RELEASE_CHANNEL
+  '';
+
+  # Use nixpkgs' WebRTC until the upstream build is fixed:
+  # https://github.com/zed-industries/zed/issues/54225
+  env = (oldAttrs.env or { }) // {
+    LK_CUSTOM_WEBRTC = pkgs.livekit-libwebrtc;
+  };
+  cargoArtifacts = oldAttrs.cargoArtifacts.overrideAttrs (oldArtifacts: {
+    env = (oldArtifacts.env or { }) // {
+      LK_CUSTOM_WEBRTC = pkgs.livekit-libwebrtc;
+    };
+  });
+})

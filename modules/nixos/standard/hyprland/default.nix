@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   perSystem,
   pkgs,
@@ -60,7 +61,25 @@ let
         "${lib.getExe idleLockScreen}"
         "${pkgs.systemd}/bin/loginctl"
       ]
-      (builtins.readFile ./hypridle.conf)
+      (
+        # Only the Zenbook needs automatic locking; home machines just turn
+        # their displays off after ten minutes and back on when activity resumes.
+        if config.networking.hostName == "zenbook" then
+          builtins.readFile ./hypridle.conf
+        else
+          ''
+            general {
+                before_sleep_cmd = @hyprctl@ dispatch dpms off
+                after_sleep_cmd = @hyprctl@ dispatch dpms on
+            }
+
+            listener {
+                timeout = 600
+                on-timeout = @hyprctl@ dispatch dpms off
+                on-resume = @hyprctl@ dispatch dpms on
+            }
+          ''
+      )
   );
   splitMonitorWorkspacesLua = pkgs.runCommand "split-monitor-workspaces-lua" { } ''
     mkdir -p $out/share/hyprland/split-monitor-workspaces

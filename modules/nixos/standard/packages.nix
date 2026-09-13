@@ -54,7 +54,7 @@
       oxfmt
       oxlint
       pnpm
-      typescript-go
+      typescript
       vtsls
       yarn
 
