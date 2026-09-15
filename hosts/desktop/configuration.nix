@@ -1,6 +1,9 @@
 {
+  config,
   flake,
   inputs,
+  lib,
+  perSystem,
   ...
 }:
 {
@@ -18,6 +21,18 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "desktop";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme1n1" ]; };
+
+  # Four evaluator threads slightly beat all 16 SMT threads on the 9800X3D,
+  # while using less CPU time. Build concurrency is benchmarked separately.
+  nix.settings.eval-cores = 4;
+
+  # Reuse C/C++ compilation across Hyprland rebuilds using the persistent
+  # cache exposed by the standard module. Keep upstream's compiler and flags.
+  programs.hyprland.package = lib.mkForce (
+    perSystem.self.hyprland-cached.override {
+      ccacheDir = config.programs.ccache.cacheDir;
+    }
+  );
 
   services.hypridle.settings = {
     general = {
