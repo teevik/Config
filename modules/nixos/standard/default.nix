@@ -26,7 +26,11 @@
     extraOptions = ''
       !include ${config.sops.secrets.nix-access-tokens-github.path}
     '';
+    settings.extra-sandbox-paths = [ config.programs.ccache.cacheDir ];
   };
+
+  # Persistent cache for project derivations that opt into ccache.
+  programs.ccache.enable = true;
 
   # Boot
   boot = {

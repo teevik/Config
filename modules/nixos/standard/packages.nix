@@ -31,6 +31,7 @@
   environment.systemPackages =
     (with pkgs; [
       # Dev tools - C++
+      ccache
       clang-tools
 
       # Dev tools - Gleam
