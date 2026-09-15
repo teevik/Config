@@ -23,4 +23,7 @@ let
     else
       throw "unknown benchmark engine: ${engine}";
 in
-flake.nixosConfigurations.${host}.config.system.build.toplevel.drvPath
+{
+  # Selecting an attribute makes `nix eval --file` apply --argstr arguments.
+  drvPath = flake.nixosConfigurations.${host}.config.system.build.toplevel.drvPath;
+}

@@ -23,10 +23,13 @@ let
     self.opencode = opencode;
   };
   opencode = import ./opencode.nix { inherit pkgs; };
+  targets = {
+    inherit opencode;
+    opencode-desktop = import ./opencode-desktop.nix { inherit perSystem pkgs; };
+    omp = perSystem.llm-agents.omp;
+    t3code-nightly = import ./t3code-nightly.nix { inherit perSystem pkgs; };
+  };
 in
-{
-  inherit opencode;
-  opencode-desktop = import ./opencode-desktop.nix { inherit perSystem pkgs; };
-  omp = perSystem.llm-agents.omp;
-  t3code-nightly = import ./t3code-nightly.nix { inherit perSystem pkgs; };
-}
+builtins.mapAttrs (name: _: targets.${name}) (
+  builtins.fromJSON (builtins.readFile ./update-packages.json)
+)

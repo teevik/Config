@@ -16,6 +16,7 @@ pkgs.runCommandLocal "config-nu"
       --prefix PATH : ${
         pkgs.lib.makeBinPath [
           pkgs.coreutils
+          pkgs.curl
           pkgs.nodejs
         ]
       }

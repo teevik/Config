@@ -19,9 +19,8 @@ def desktop-hash [release: record, arch: string] {
     'sha256-' + ($digest | str replace 'sha256:' '' | decode hex | encode base64)
 }
 
-# Pure rendering is shared with the offline regression tests. Validate both
-# files and every release field before writing either package definition.
-export def prepare-update [sources: record, version: string, integrities: record, release: record] {
+# Validate both files and every release field before writing either definition.
+def prepare-update [sources: record, version: string, integrities: record, release: record] {
     if $version !~ '^[0-9A-Za-z.+-]+$' {
         error make {msg: 'Invalid OpenCode version'}
     }
@@ -48,7 +47,7 @@ export def prepare-update [sources: record, version: string, integrities: record
     {cli: $cli, desktop: $desktop}
 }
 
-export def write-update [directory: path, sources: record] {
+def write-update [directory: path, sources: record] {
     let staged = (mktemp --directory --tmpdir-path $directory .opencode-update.XXXXXX)
     let targets = {cli: opencode.nix, desktop: opencode-desktop.nix}
     try {
@@ -74,7 +73,8 @@ def main [] {
         $hashes | insert $platform $integrity
     })
     # npm and GitHub can publish at different times; use the CLI's exact release.
-    let release = (http get --max-time 60sec $"https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v($version)")
+    let release = (^curl --fail --silent --show-error --max-time 60
+        $"https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v($version)" | from json)
     let sources = {
         cli: (open --raw ($env.FILE_PWD | path join opencode.nix))
         desktop: (open --raw ($env.FILE_PWD | path join opencode-desktop.nix))

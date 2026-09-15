@@ -58,19 +58,14 @@ jobs:
 
       - name: Update flake inputs and packages
         run: |
-          nix flake update
-          nix shell nixpkgs#just .#nix-update -c just update
+          nix shell nixpkgs#just .#nix-update -c just update --export "$RUNNER_TEMP/nightly-update"
           echo "nixpkgs rev: $(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)"
 
       - name: Upload nightly update
         uses: actions/upload-artifact@v4
         with:
           name: nightly-update
-          path: |
-            flake.lock
-            packages/opencode.nix
-            packages/opencode-desktop.nix
-            packages/t3code-nightly.nix
+          path: ${{ runner.temp }}/nightly-update
           if-no-files-found: error
           retention-days: 1
 
@@ -96,7 +91,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nightly-update
-          path: .
+          path: ${{ runner.temp }}/nightly-update
+
+      - name: Install the validated update
+        run: cp -a "$RUNNER_TEMP/nightly-update/sources/." .
 
       - name: Log shared nixpkgs revision
         run: |
@@ -242,10 +240,12 @@ jobs:
         id: input-changes
         run: |
           git show HEAD:flake.lock > "$RUNNER_TEMP/flake.lock.before"
-          cp "$RUNNER_TEMP/nightly-update/flake.lock" flake.lock
-          cp "$RUNNER_TEMP/nightly-update/packages/opencode.nix" packages/opencode.nix
-          cp "$RUNNER_TEMP/nightly-update/packages/opencode-desktop.nix" packages/opencode-desktop.nix
-          cp "$RUNNER_TEMP/nightly-update/packages/t3code-nightly.nix" packages/t3code-nightly.nix
+          cp -a "$RUNNER_TEMP/nightly-update/sources/." .
+          {
+            echo 'files<<UPDATE_FILES'
+            cat "$RUNNER_TEMP/nightly-update/files.txt"
+            echo 'UPDATE_FILES'
+          } >> "$GITHUB_OUTPUT"
 
           rows="$(
             jq -r --slurpfile old "$RUNNER_TEMP/flake.lock.before" '
@@ -279,11 +279,7 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          add-paths: |
-            flake.lock
-            packages/opencode.nix
-            packages/opencode-desktop.nix
-            packages/t3code-nightly.nix
+          add-paths: ${{ steps.input-changes.outputs.files }}
           commit-message: "chore: update flake inputs and packages"
           branch: nightly/flake-update
           base: main

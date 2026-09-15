@@ -34,10 +34,13 @@ pkgs.runCommand "nu-scripts-check"
       "nix"
       "nix-update"
       "npm"
+      "curl"
     ];
   }
   ''
     ${pkgs.lib.getExe pkgs.nushell} --no-config-file \
       ${source}/tests/nu-scripts.nu ${source} ${pkgs.lib.getExe probe}
+    ${pkgs.lib.getExe pkgs.nushell} --no-config-file \
+      ${source}/tests/package-update.nu ${source}
     touch "$out"
   ''

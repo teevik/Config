@@ -55,14 +55,14 @@ setup:
     mkdir -p ~/.pi/agent
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
-# Refresh package sources, then evaluate/build the validation targets together.
-update: update-sources
-    nix build --no-link --print-build-logs --file packages/update-targets.nix \
-      opencode opencode-desktop omp t3code-nightly
+# Refresh all flake inputs and package sources, then validate the packages.
+[positional-arguments]
+update *args:
+    @just nu packages/update.nu "$@"
 
 # Quick source-only update; use `just update` to also validate the builds.
 update-sources:
-    @just nu packages/update.nu
+    @just nu packages/update.nu --no-build
 
 # Run a repository script with pinned Nu/tools and no personal shell config.
 [positional-arguments]
@@ -104,7 +104,15 @@ script-check:
 # Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
 benchmark-eval host="zenbook" runs="5":
     hyperfine --warmup 1 --runs {{runs}} --parameter-list engine blueprint,native \
-      'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{host}}'
+      'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{host}} drvPath'
+
+# Compare evaluator threads against the same source snapshot used by nh.
+benchmark-eval-cores host=`hostname` runs="5":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    flake_source="$(nix eval --impure --raw --file tests/evaluation/source-snapshot.nix)"
+    hyperfine --warmup 1 --runs {{runs}} --parameter-list cores 1,2,4,8,16 \
+      "nix eval --option eval-cache false --option eval-cores {cores} --raw 'path:$flake_source#nixosConfigurations.{{host}}.config.system.build.toplevel.drvPath'"
 
 # Snapshot tracked Nix sources, preserving cache hits across unrelated dotfile edits.
 # nh prepares this automatically; this recipe is useful for manual cache lookups.
