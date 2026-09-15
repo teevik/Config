@@ -9,7 +9,11 @@ def update-command [tool: string, args: list<string>] {
     if $failure == $tool and $tool != 'nix-update' { exit 17 }
     match $tool {
         'nix' => {
-            if $args == [flake update] {
+            if $args.0 == 'eval' {
+                # Exercise the native fallback here; the parallel path is
+                # checked against real Nix in tests/update-inputs.py.
+                print '[]'
+            } else if $args == [flake update] {
                 if $failure == 'flake' { exit 17 }
                 {fixture: updated} | to json | save --force flake.lock
             } else if $args.0 == 'build' {
@@ -30,6 +34,7 @@ def update-command [tool: string, args: list<string>] {
             if $args.2 == 'version' {
                 print '1.2.3-beta-fixture'
             } else {
+                if $failure == 'integrity' and ($args.1 | str contains arm64) { exit 17 }
                 if $release_mode == 'invalid-integrity' { print invalid; return }
                 let arch = if ($args.1 | str contains x64) { 'x64' } else { 'arm64' }
                 print ('sha256-' + ($arch | hash sha256 --binary | encode base64))

@@ -20,6 +20,7 @@ def export-update [root: path, destination: path, files: list<string>] {
 # Failures stop the workflow and retain completed edits for inspection/reruns.
 def main [
     --no-build # Refresh sources without validation builds.
+    --skip-inputs # Reuse flake.lock after an input update already completed.
     --export: path # Write validated files to a new directory for CI handoff.
 ] {
     let root = ($env.FILE_PWD | path dirname)
@@ -32,8 +33,10 @@ def main [
     let catalog = (open ($env.FILE_PWD | path join update-packages.json))
     cd $root
     try {
-        print 'Updating all flake inputs'
-        ^nix flake update
+        if not $skip_inputs {
+            print 'Updating all flake inputs'
+            ^$nu.current-exe --no-config-file packages/update-inputs.nu
+        }
         print 'Updating OpenCode CLI and desktop'
         ^$nu.current-exe --no-config-file packages/update-opencode.nu
         print 'Updating T3 Code nightly'

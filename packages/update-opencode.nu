@@ -68,13 +68,27 @@ def write-update [directory: path, sources: record] {
 
 def main [] {
     let version = (^npm view '@opencode-ai/cli@beta' version | str trim)
-    let integrities = ([cli-linux-x64-baseline cli-linux-arm64] | reduce --fold {} {|platform hashes|
-        let integrity = (^npm view $"@opencode-ai/($platform)@($version)" dist.integrity | str trim)
-        $hashes | insert $platform $integrity
-    })
     # npm and GitHub can publish at different times; use the CLI's exact release.
-    let release = (^curl --fail --silent --show-error --max-time 60
-        $"https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v($version)" | from json)
+    # Once its version is known, these three metadata requests are independent.
+    let responses = ([cli-linux-x64-baseline cli-linux-arm64 desktop] | par-each --threads 3 --keep-order {|platform|
+        let response = if $platform == 'desktop' {
+            (^curl --fail --silent --show-error --max-time 60
+                $"https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v($version)" | complete)
+        } else {
+            ^npm view $"@opencode-ai/($platform)@($version)" dist.integrity | complete
+        }
+        {platform: $platform, response: $response}
+    })
+    # Check every exit status before parsing or writing any source file.
+    for result in $responses {
+        if $result.response.exit_code != 0 {
+            error make {msg: $"Failed to fetch ($result.platform): ($result.response.stderr)"}
+        }
+    }
+    let integrities = ($responses | where platform != desktop | reduce --fold {} {|result hashes|
+        $hashes | insert $result.platform ($result.response.stdout | str trim)
+    })
+    let release = ($responses | where platform == desktop | first | get response.stdout | from json)
     let sources = {
         cli: (open --raw ($env.FILE_PWD | path join opencode.nix))
         desktop: (open --raw ($env.FILE_PWD | path join opencode-desktop.nix))

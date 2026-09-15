@@ -70,8 +70,13 @@ nu +args:
     @nix run --impure --expr 'import ./packages/nu-scripts {}' . -- "$@"
 
 # Pass input names for a targeted update, or omit them to update all inputs.
-update-inputs *inputs:
-    nix flake update {{inputs}}
+[positional-arguments]
+update-inputs *args:
+    @just nu packages/update-inputs.nu "$@"
+
+# Compare parallel updates with native Nix using offline Git fixtures.
+update-inputs-check:
+    python3 tests/update-inputs.py
 
 # Fetch the locked input graph ahead of offline work; does not update pins.
 prefetch-inputs:

@@ -11,6 +11,8 @@ def contents [root: path] {
 
 def calls [] { open --raw $env.MOCK_LOG | lines | each { from json } }
 
+def nix-actions [] { calls | where {|call| $call.tool == 'nix' and $call.args.0 != 'eval' } | get args }
+
 def run-update [checkout: path, args: list<string>, failure: string = '', release: string = 'valid'] {
     '' | save --force $env.MOCK_LOG
     with-env {MOCK_UPDATE_WORKFLOW: '1', MOCK_FAILURE: $failure, MOCK_RELEASE: $release} {
@@ -26,6 +28,7 @@ def main [source: path] {
         mkdir $baseline
         cp --recursive ($source | path join packages) $baseline
         ^chmod -R u+w $baseline
+        '{ outputs = _: {}; }' | save ($baseline | path join flake.nix)
         {fixture: 'preexisting lock edit'} | to json | save ($baseline | path join flake.lock)
         "\n# preexisting user edit\n" | save --append ($baseline | path join packages/t3code-nightly.nix)
         'unrelated user file' | save ($baseline | path join unrelated.txt)
@@ -36,7 +39,7 @@ def main [source: path] {
         let exported = ($scratch | path join 'validated update')
         cp --recursive $baseline $checkout
         assert-success (run-update $checkout [--export $exported])
-        assert ((calls | where tool == nix | get args) == [
+        assert ((nix-actions) == [
             [flake update]
             [build --no-link --print-build-logs --file packages/update-targets.nix opencode opencode-desktop omp t3code-nightly]
         ])
@@ -68,11 +71,19 @@ def main [source: path] {
         let quick = ($scratch | path join 'source only')
         cp --recursive $baseline $quick
         assert-success (run-update $quick [--no-build])
-        assert equal (calls | where tool == nix | get args) [[flake update]]
+        assert equal (nix-actions) [[flake update]]
         assert equal (contents $quick) $after
         print 'PASS: source-only updates refresh all inputs and skip validation builds'
 
-        for failure in [flake npm curl nix-update build] {
+        let skipped = ($scratch | path join 'inputs already refreshed')
+        cp --recursive $baseline $skipped
+        assert-success (run-update $skipped [--skip-inputs --no-build])
+        assert equal (calls | where tool == nix | length) 0
+        assert equal (open --raw ($skipped | path join flake.lock)) $before.0.content
+        assert equal (contents $skipped | skip 1) ($after | skip 1)
+        print 'PASS: --skip-inputs keeps the existing lock and still refreshes package sources'
+
+        for failure in [flake npm curl integrity nix-update build] {
             let work = ($scratch | path join $"failed-($failure)")
             let output = ($scratch | path join $"export-($failure)")
             cp --recursive $baseline $work
@@ -87,7 +98,7 @@ def main [source: path] {
             } else {
                 assert equal (open --raw ($work | path join flake.lock) | from json).fixture updated
             }
-            if $failure in [flake npm curl] {
+            if $failure in [flake npm curl integrity] {
                 assert equal (open --raw ($work | path join packages/opencode.nix)) $before.2.content
                 assert equal (calls | where tool == nix-update | length) 0
             } else {
