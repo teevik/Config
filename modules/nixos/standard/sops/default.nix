@@ -9,6 +9,16 @@
     ];
 
     sops = {
+      # Temporary compatibility until sops-nix stops requesting the removed Go 1.25 builder.
+      package =
+        (pkgs.callPackage inputs.sops-nix {
+          pkgs = pkgs.extend (
+            _: prev: {
+              buildGo125Module = prev.buildGoModule;
+            }
+          );
+        }).sops-install-secrets;
+
       defaultSopsFile = ./secrets.yaml;
       age.keyFile = "/home/teevik/.config/sops/age/keys.txt";
 
