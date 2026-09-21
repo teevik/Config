@@ -30,13 +30,13 @@ let
     pkgs.lib.genAttrs electronArgs (_: electron)
   );
 
-  version = "0.0.43-nightly.20260917.1851";
+  version = "0.0.43-nightly.20260921.2044";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-ppRNoWq25SRe96VU66R1bh/4r/uY8scrUqFwF1lQ6JA=";
+    hash = "sha256-2npWKo4N6mDHjHc33eA1cjwBcKVCs9NcebTCuSmSLDU=";
   };
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
@@ -78,7 +78,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-/eu7Y1TTvVRp/7bHzXKkWMKwdvZR4IFjGYOe4Q6W+DU=";
+    hash = "sha256-H3AmAQzzyAHMt/IazLb1Ci5vM6aOXW905meJcOCKhEQ=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
@@ -90,6 +90,9 @@ let
       ;
 
     postPatch = (oldAttrs.postPatch or "") + ''
+      # Upstream seeds this cache with SPDX symlinks into the Nix store.
+      # Replace it with the nightly cache instead of copying over those links.
+      rm -rf .generated/third-party-licenses
       mkdir -p .generated/third-party-licenses
       cp -r ${licenseNotices}/. .generated/third-party-licenses/
     '';
