@@ -1,0 +1,209 @@
+name: Build and scan NixOS
+
+on:
+  workflow_call:
+    inputs:
+      host:
+        required: true
+        type: string
+      update-artifact:
+        description: Optional validated nightly update to overlay on the checkout
+        default: ""
+        type: string
+      publish-cache:
+        default: false
+        type: boolean
+    secrets:
+      MARBLE_SHELL_DEPLOY_KEY:
+        required: true
+      ASTAL_DEPLOY_KEY:
+        required: true
+      CACHIX_AUTH_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and scan ${{ inputs.host }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out Config and its submodules
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+
+      - name: Download nightly update
+        if: inputs.update-artifact != ''
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.update-artifact }}
+          path: ${{ runner.temp }}/nightly-update
+
+      - name: Install the validated update
+        if: inputs.update-artifact != ''
+        run: cp -a "$RUNNER_TEMP/nightly-update/sources/." .
+
+      - name: Log shared nixpkgs revision
+        run: |
+          echo "nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
+
+      # GitHub deploy keys belong to one repository, so each private flake
+      # input needs its own key. The key comments let ssh-agent route each
+      # repository fetch to the correct key.
+      - name: Configure SSH for private flake inputs
+        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
+        with:
+          ssh-private-key: |
+            ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+            ${{ secrets.ASTAL_DEPLOY_KEY }}
+
+      - name: Trust GitHub's SSH host key
+        run: |
+          mkdir -p ~/.ssh
+          install -m 600 .github/security/github-known-hosts ~/.ssh/known_hosts
+
+      - name: Free runner disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h /
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/local/share/boost \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /opt/az \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          echo "Disk space after cleanup:"
+          df -h /
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@021c8a1bd3570eb21f5c20a054812b0c4d9ca614 # v3.22.3
+        with:
+          extra-conf: |
+            extra-experimental-features = parallel-eval
+            eval-cores = 0
+            lazy-trees = true
+            accept-flake-config = true
+            connect-timeout = 5
+            fallback = true
+            substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems https://cache.numtide.com https://nyx-cache.chaotic.cx
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
+
+      - name: Load cargo-nix-plugin with its matching Nix
+        run: |
+          # Bootstrap without a plugin; use the downloaded nightly lock for
+          # both the plugin and its exact Nix ABI. Do this before Cachix installs
+          # its hook so all later nix-store invocations use the matching Nix.
+          nix_package=$(nix build .#cargo-nix-plugin.nix \
+            --option plugin-files '' --no-link --print-out-paths)
+          plugin_package=$(nix build .#cargo-nix-plugin \
+            --option plugin-files '' --no-link --print-out-paths)
+          echo "$nix_package/bin" >> "$GITHUB_PATH"
+          {
+            echo 'NIX_CONFIG<<CARGO_NIX_CONFIG'
+            printf '%s\n' "${NIX_CONFIG:-}"
+            echo "plugin-files = $plugin_package/lib/nix/plugins"
+            echo 'CARGO_NIX_CONFIG'
+          } >> "$GITHUB_ENV"
+
+      - name: Verify Zed's Cargo resolver
+        run: |
+          # Fail before the full host evaluation if loading or API matching
+          # breaks, and exercise the real Zed graph with this evaluator.
+          nix eval --raw .#zed --apply 'zed:
+            assert builtins ? resolveCargoWorkspace;
+            assert zed.cargoNix.apiLevel == zed.cargoNix.resolverApiLevel;
+            zed.drvPath'
+
+      # Stream public builds. The root-name filter alone does not protect
+      # private dependencies; the build step wraps this hook with a closure check.
+      - name: Configure Cachix streaming uploads
+        if: inputs.publish-cache
+        uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: teevik
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          useDaemon: true
+          pushFilter: (marble|astal)
+
+      - name: Build ${{ inputs.host }}
+        env:
+          HOST: ${{ inputs.host }}
+          PUBLISH_CACHE: ${{ inputs.publish-cache }}
+        run: |
+          disk_samples="$RUNNER_TEMP/disk-usage.log"
+          while true; do
+            df -B1 --output=used,avail / | tail -n 1 >> "$disk_samples"
+            sleep 30
+          done &
+          disk_monitor_pid=$!
+
+          report_disk_high_water_mark() {
+            kill "$disk_monitor_pid" 2>/dev/null || true
+            wait "$disk_monitor_pid" 2>/dev/null || true
+            awk '
+              NR == 1 || $1 > max_used { max_used = $1 }
+              NR == 1 || $2 < min_free { min_free = $2 }
+              END {
+                printf "Disk high-water mark: %.1f GiB used; minimum free: %.1f GiB\n", max_used / 2^30, min_free / 2^30
+              }
+            ' "$disk_samples"
+            df -h /
+          }
+          trap report_disk_high_water_mark EXIT
+
+          build_options=(--option post-build-hook "")
+          if [[ "$PUBLISH_CACHE" == true ]]; then
+            # Fail closed if cachix-action fell back to its unfiltered store scan.
+            test -n "${CACHIX_DAEMON_DIR:-}"
+            original_hook=$(nix config show --json | jq -er '."post-build-hook".value')
+            test "$original_hook" = "$CACHIX_DAEMON_DIR/post-build-hook.sh"
+            test -x "$original_hook"
+            # Bootstrap the pinned Nu hook without invoking the unguarded uploader.
+            guard_package=$(nix build --file tests/cachix-hook.nix \
+              --argstr originalHook "$original_hook" \
+              --argstr nixStoreBin "$(command -v nix-store)" \
+              --option post-build-hook '' --no-link --print-out-paths)
+            guard="$guard_package/bin/cachix-safe-hook"
+            build_options=(--option post-build-hook "$guard")
+          fi
+
+          # Use the locked Determinate evaluator with cargo-nix-plugin loaded.
+          # Nix itself skips cached builds; Cachix still streams.
+          nix build --no-link --print-build-logs "${build_options[@]}" \
+            ".#nixosConfigurations.${HOST}.config.system.build.toplevel"
+
+      - name: Build pinned security tools
+        id: tools
+        run: |
+          package=$(nix build --file packages/security/default.nix \
+            --option post-build-hook '' --no-link --print-out-paths)
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+
+      - name: Inventory and scan ${{ inputs.host }}
+        id: scan
+        env:
+          HOST: ${{ inputs.host }}
+          SCAN_SCOPE: ${{ inputs.update-artifact != '' && 'candidate' || 'committed' }}
+          SCANNER: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
+        run: |
+          "$SCANNER" ".#nixosConfigurations.${HOST}.config.system.build.toplevel" \
+            --scope "$SCAN_SCOPE" --output "$RUNNER_TEMP/security-report"
+
+      - name: Retain encrypted security report
+        if: ${{ !cancelled() && steps.scan.outcome != 'skipped' && steps.scan.outcome != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: security-${{ inputs.host }}
+          path: |
+            ${{ runner.temp }}/security-report/report.tar.gz.age
+            ${{ runner.temp }}/security-report/summary.json
+            ${{ runner.temp }}/security-report/summary.md
+          if-no-files-found: error
+          retention-days: 30

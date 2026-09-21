@@ -1,0 +1,28 @@
+name: Nix security
+
+on:
+  schedule:
+    - cron: "43 5 * * 1"
+      timezone: Europe/Oslo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nix-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    name: Scan committed ${{ matrix.host }}
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [desktop, zenbook]
+    uses: ./.github/workflows/nix-build.yml
+    with:
+      host: ${{ matrix.host }}
+    secrets:
+      MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+      ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}

@@ -106,6 +106,18 @@ lint-check:
 script-check:
     nix build --file checks/nu-scripts.nix --no-link --print-build-logs
 
+# Scan the running generation; detailed reports use the existing age recipient.
+security-scan output="/tmp/nix-security-report":
+    nix run --impure --expr 'import ./packages/security {}' . -- /run/current-system --scope deployed --output {{quote(output)}}
+
+# Rescan a previously decrypted CycloneDX inventory with current advisories.
+security-rescan sbom output="/tmp/nix-security-rescan":
+    nix run --impure --expr 'import ./packages/security {}' . -- {{quote(sbom)}} --sbom --scope inventory --output {{quote(output)}}
+
+# Verify security report privacy, failure handling, and Actions definitions.
+security-check:
+    nix build --file checks/security.nix --no-link --print-build-logs
+
 # Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
 benchmark-eval host="zenbook" runs="5":
     hyperfine --warmup 1 --runs {{runs}} --parameter-list engine blueprint,native \
