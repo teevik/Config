@@ -75,6 +75,9 @@ jobs:
       fail-fast: false
       matrix:
         host: [desktop, zenbook]
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/nix-build.yml
     with:
       host: ${{ matrix.host }}
@@ -83,7 +86,8 @@ jobs:
     secrets:
       MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
       ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}
-      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+      NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
 
   pull-request:
     name: Open nightly update pull request
@@ -128,7 +132,7 @@ jobs:
 
           {
             echo 'body<<EOF'
-            echo 'Automated flake input and package update. Desktop and zenbook were built and scanned using these exact files. Eligible public outputs were pushed to Cachix.'
+            echo 'Automated flake input and package update. Desktop and zenbook were built and scanned using these exact files. Complete system closures were retained and verified in the private homelab cache.'
             echo
             echo 'Security scans are informational; see the per-host job summaries and encrypted security artifacts.'
             echo 'Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'

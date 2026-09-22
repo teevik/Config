@@ -18,11 +18,14 @@ on:
         required: true
       ASTAL_DEPLOY_KEY:
         required: true
-      CACHIX_AUTH_TOKEN:
+      NIX_CACHE_SSH_KEY:
+        required: false
+      NIX_CACHE_SIGNING_KEY:
         required: false
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   build:
@@ -82,6 +85,23 @@ jobs:
           echo "Disk space after cleanup:"
           df -h /
 
+      - name: Check private cache access configuration
+        env:
+          CACHE_CLIENT_ID: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
+          CACHE_AUDIENCE: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
+          CACHE_POLICY_READY: ${{ vars.NIX_CACHE_POLICY_READY }}
+        run: |
+          test -n "$CACHE_CLIENT_ID" && test -n "$CACHE_AUDIENCE"
+          test "$CACHE_POLICY_READY" = true
+
+      - name: Connect to the private cache
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8 # v4
+        with:
+          oauth-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
+          audience: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
+          tags: tag:config-cache-ci
+          ping: homelab.tail84b6c.ts.net
+
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3.22.5
         with:
@@ -92,14 +112,14 @@ jobs:
             accept-flake-config = true
             connect-timeout = 5
             fallback = true
-            substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems https://cache.numtide.com https://nyx-cache.chaotic.cx
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
+            substituters = http://homelab.tail84b6c.ts.net:8501 https://cache.nixos.org
+            trusted-public-keys = homelab-cache-1:e0A0wubKr+XqKPA/MeUY5ixaG+1HvBBImTkPzrNJT4s= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
       - name: Load cargo-nix-plugin with its matching Nix
         run: |
           # Bootstrap without a plugin; use the downloaded nightly lock for
-          # both the plugin and its exact Nix ABI. Do this before Cachix installs
-          # its hook so all later nix-store invocations use the matching Nix.
+          # both the plugin and its exact Nix ABI. The final closure upload
+          # includes outputs built before this evaluator is installed.
           nix_package=$(nix build .#cargo-nix-plugin.nix \
             --option plugin-files '' --no-link --print-out-paths)
           plugin_package=$(nix build .#cargo-nix-plugin \
@@ -121,21 +141,9 @@ jobs:
             assert zed.cargoNix.apiLevel == zed.cargoNix.resolverApiLevel;
             zed.drvPath'
 
-      # Stream public builds. The root-name filter alone does not protect
-      # private dependencies; the build step wraps this hook with a closure check.
-      - name: Configure Cachix streaming uploads
-        if: inputs.publish-cache
-        uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
-        with:
-          name: teevik
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          useDaemon: true
-          pushFilter: (marble|astal)
-
       - name: Build ${{ inputs.host }}
         env:
           HOST: ${{ inputs.host }}
-          PUBLISH_CACHE: ${{ inputs.publish-cache }}
         run: |
           disk_samples="$RUNNER_TEMP/disk-usage.log"
           while true; do
@@ -158,26 +166,21 @@ jobs:
           }
           trap report_disk_high_water_mark EXIT
 
-          build_options=(--option post-build-hook "")
-          if [[ "$PUBLISH_CACHE" == true ]]; then
-            # Fail closed if cachix-action fell back to its unfiltered store scan.
-            test -n "${CACHIX_DAEMON_DIR:-}"
-            original_hook=$(nix config show --json | jq -er '."post-build-hook".value')
-            test "$original_hook" = "$CACHIX_DAEMON_DIR/post-build-hook.sh"
-            test -x "$original_hook"
-            # Bootstrap the pinned Nu hook without invoking the unguarded uploader.
-            guard_package=$(nix build --file tests/cachix-hook.nix \
-              --argstr originalHook "$original_hook" \
-              --argstr nixStoreBin "$(command -v nix-store)" \
-              --option post-build-hook '' --no-link --print-out-paths)
-            guard="$guard_package/bin/cachix-safe-hook"
-            build_options=(--option post-build-hook "$guard")
-          fi
-
-          # Use the locked Determinate evaluator with cargo-nix-plugin loaded.
-          # Nix itself skips cached builds; Cachix still streams.
-          nix build --no-link --print-build-logs "${build_options[@]}" \
+          # Copy the complete finished closure after building. This includes
+          # bootstrap outputs, manuals, private packages and system wrappers.
+          nix build --out-link "$RUNNER_TEMP/nixos-system" --print-build-logs \
+            --option post-build-hook '' \
             ".#nixosConfigurations.${HOST}.config.system.build.toplevel"
+
+      - name: Retain and verify the complete private system closure
+        if: inputs.publish-cache
+        env:
+          HOST: ${{ inputs.host }}
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: |
+          python3 .github/cache/publish.py "$HOST" \
+            "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nixos-system"
 
       - name: Build pinned security tools
         id: tools

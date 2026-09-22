@@ -96,6 +96,7 @@ in
         # ncps passes through upstream signatures; clients remain the trust
         # boundary instead of trusting a proxy-generated signing key.
         trusted-public-keys = [
+          (lib.removeSuffix "\n" (builtins.readFile ./homelab-cache.pub))
           "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
           "desktop-1:VvIgYHAClUfjQjKWeNaCiQTRm9Q3fO0Q3v08KLTp0yo="
           "teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ="

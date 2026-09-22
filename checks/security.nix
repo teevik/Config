@@ -6,6 +6,8 @@ let
       ../.github
       ../packages/security
       ../tests/security.py
+      ../tests/cache-upload.py
+      ../modules/nixos/minimal/homelab-cache.pub
     ];
   };
 in
@@ -21,6 +23,7 @@ pkgs.runCommand "security-check"
   ''
     cd ${source}
     python3 tests/security.py
+    python3 tests/cache-upload.py
     actionlint -oneline .github/workflows/*.yml
     touch "$out"
   ''
