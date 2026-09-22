@@ -1,0 +1,53 @@
+name: Configure shared Nix builds
+description: Reuse private build outputs and offload missing derivations to nixbuild.net
+inputs:
+  token:
+    description: nixbuild.net token with build and store read/write permissions
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Configure nixbuild.net
+      uses: nixbuild/nixbuild-action@ccd11ee76c26c018e8470835dc2e286a5a024a14 # v27
+      with:
+        nixbuild_token: ${{ inputs.token }}
+        generate_summary_for: job
+        settings: |
+          max-cpu = 8
+          keep-builds-running = false
+
+    - name: Configure SSH for the Nix daemon
+      shell: bash
+      run: |
+        # Determinate Nix uses a root daemon, which does not inherit the
+        # runner's NIX_SSHOPTS. Give it the same scoped token and host-key pin.
+        # This action is used only on disposable GitHub-hosted Ubuntu VMs.
+        umask 077
+        ssh_config="${NIX_SSHOPTS#-F}"
+        test "$ssh_config" != "$NIX_SSHOPTS"
+        root_config="$RUNNER_TEMP/nixbuild-root-ssh-config"
+        {
+          cat "$ssh_config"
+          printf '\nHost *\n'
+          if sudo test -f /root/.ssh/config; then
+            sudo cat /root/.ssh/config
+          fi
+        } > "$root_config"
+        sudo install -d -m 700 /root/.ssh
+        sudo install -m 600 "$root_config" /root/.ssh/config
+        rm "$root_config"
+        nix_executable="$(command -v nix)"
+        sudo env -u NIX_SSHOPTS "$nix_executable" store info --store ssh-ng://nixbuild
+
+    - name: Bound remote build concurrency
+      shell: bash
+      run: |
+        # The upstream action defaults to 200 concurrent derivations. Eight
+        # per job is enough to parallelize crate builds during the trial.
+        # Preserve its private substituter, signing key and SSH configuration.
+        {
+          echo 'NIX_CONFIG<<NIXBUILD_CONFIG'
+          printf '%s\n' "$NIX_CONFIG"
+          echo 'builders = nixbuild x86_64-linux - 8 1 big-parallel,benchmark,kvm,nixos-test'
+          echo 'NIXBUILD_CONFIG'
+        } >> "$GITHUB_ENV"

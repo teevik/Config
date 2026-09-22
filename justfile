@@ -119,6 +119,15 @@ security-rescan sbom output="/tmp/nix-security-rescan":
 security-check:
     nix build --file checks/security.nix --no-link --print-build-logs
 
+# Inventory existing outputs and build intermediates; add --upload to seed nixbuild.net.
+[positional-arguments]
+cache-warm +args:
+    python3 .github/cache/warm.py "$@"
+
+# Exercise cache inventory and copying against real local Nix outputs.
+cache-warm-check:
+    python3 tests/cache-warm.py
+
 # Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
 benchmark-eval host="zenbook" runs="5":
     hyperfine --warmup 1 --runs {{ runs }} --parameter-list engine blueprint,native \
