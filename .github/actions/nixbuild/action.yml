@@ -20,14 +20,15 @@ runs:
       shell: bash
       run: |
         # Determinate Nix uses a root daemon, which does not inherit the
-        # runner's NIX_SSHOPTS. Give it the same scoped token and host-key pin.
+        # runner's NIX_SSHOPTS or NIXBUILDNET_TOKEN. Persist authentication
+        # in its SSH config, retaining the upstream settings and host-key pin.
         # This action is used only on disposable GitHub-hosted Ubuntu VMs.
         umask 077
         ssh_config="${NIX_SSHOPTS#-F}"
         test "$ssh_config" != "$NIX_SSHOPTS"
         root_config="$RUNNER_TEMP/nixbuild-root-ssh-config"
         {
-          cat "$ssh_config"
+          bash "$GITHUB_ACTION_PATH/daemon-ssh.sh" "$ssh_config"
           printf '\nHost *\n'
           if sudo test -f /root/.ssh/config; then
             sudo cat /root/.ssh/config

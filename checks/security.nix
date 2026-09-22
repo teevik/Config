@@ -7,6 +7,7 @@ let
       ../packages/security
       ../tests/security.py
       ../tests/cache-upload.py
+      ../tests/nixbuild-ssh.py
       ../modules/nixos/minimal/homelab-cache.pub
     ];
   };
@@ -18,12 +19,15 @@ pkgs.runCommand "security-check"
       pkgs.age
       pkgs.actionlint
       pkgs.shellcheck
+      pkgs.openssh
     ];
   }
   ''
     cd ${source}
     python3 tests/security.py
     python3 tests/cache-upload.py
+    python3 tests/nixbuild-ssh.py
+    shellcheck .github/actions/nixbuild/daemon-ssh.sh
     actionlint -oneline .github/workflows/*.yml
     touch "$out"
   ''
