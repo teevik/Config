@@ -1,7 +1,8 @@
 install TARGET-IP HOST:
     # Run disko and install nixos
     nix run github:numtide/nixos-anywhere -- \
-      --build-on remote \
+      --build-on local \
+      --no-substitute-on-destination \
       --phases kexec,disko,install \
       --generate-hardware-config nixos-generate-config ./hosts/{{ HOST }}/hardware.nix \
       --flake '.#{{ HOST }}' \
@@ -92,7 +93,7 @@ eval-diagnostics host="zenbook":
     nix eval --option eval-cache false --option warn-dirty false \
       --option trace-import-from-derivation true \
       --option warn-large-path-threshold 100M \
-      --raw '.#nixosConfigurations.{{host}}.config.system.build.toplevel.drvPath'
+      --raw '.#nixosConfigurations.{{ host }}.config.system.build.toplevel.drvPath'
 
 # Read-only Nix linting and Nu syntax checking; uses the pinned nixpkgs input.
 lint:
@@ -108,11 +109,11 @@ script-check:
 
 # Scan the running generation; detailed reports use the existing age recipient.
 security-scan output="/tmp/nix-security-report":
-    nix run --impure --expr 'import ./packages/security {}' . -- /run/current-system --scope deployed --output {{quote(output)}}
+    nix run --impure --expr 'import ./packages/security {}' . -- /run/current-system --scope deployed --output {{ quote(output) }}
 
 # Rescan a previously decrypted CycloneDX inventory with current advisories.
 security-rescan sbom output="/tmp/nix-security-rescan":
-    nix run --impure --expr 'import ./packages/security {}' . -- {{quote(sbom)}} --sbom --scope inventory --output {{quote(output)}}
+    nix run --impure --expr 'import ./packages/security {}' . -- {{ quote(sbom) }} --sbom --scope inventory --output {{ quote(output) }}
 
 # Verify security report privacy, failure handling, and Actions definitions.
 security-check:
@@ -120,16 +121,16 @@ security-check:
 
 # Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
 benchmark-eval host="zenbook" runs="5":
-    hyperfine --warmup 1 --runs {{runs}} --parameter-list engine blueprint,native \
-      'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{host}} drvPath'
+    hyperfine --warmup 1 --runs {{ runs }} --parameter-list engine blueprint,native \
+      'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{ host }} drvPath'
 
 # Compare evaluator threads against the same source snapshot used by nh.
 benchmark-eval-cores host=`hostname` runs="5":
     #!/usr/bin/env bash
     set -euo pipefail
     flake_source="$(nix eval --impure --raw --file tests/evaluation/source-snapshot.nix)"
-    hyperfine --warmup 1 --runs {{runs}} --parameter-list cores 1,2,4,8,16 \
-      "nix eval --option eval-cache false --option eval-cores {cores} --raw 'path:$flake_source#nixosConfigurations.{{host}}.config.system.build.toplevel.drvPath'"
+    hyperfine --warmup 1 --runs {{ runs }} --parameter-list cores 1,2,4,8,16 \
+      "nix eval --option eval-cache false --option eval-cores {cores} --raw 'path:$flake_source#nixosConfigurations.{{ host }}.config.system.build.toplevel.drvPath'"
 
 # Snapshot tracked Nix sources, preserving cache hits across unrelated dotfile edits.
 # nh prepares this automatically; this recipe is useful for manual cache lookups.
@@ -138,8 +139,8 @@ flake-source:
 
 # Compare a derivation lookup with and without Nix's evaluation cache; no builds.
 benchmark-eval-cache host="zenbook" runs="5":
-    hyperfine --warmup 1 --runs {{runs}} --parameter-list cache false,true \
-      'nix path-info --derivation --option eval-cache {cache} .#nixosConfigurations.{{host}}.config.system.build.toplevel'
+    hyperfine --warmup 1 --runs {{ runs }} --parameter-list cache false,true \
+      'nix path-info --derivation --option eval-cache {cache} .#nixosConfigurations.{{ host }}.config.system.build.toplevel'
 
 # Build and activate local Marble and Astal working trees without publishing them
 marble-dev-switch:
