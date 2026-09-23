@@ -30,13 +30,13 @@ let
     pkgs.lib.genAttrs electronArgs (_: electron)
   );
 
-  version = "0.0.43-nightly.20260922.2083";
+  version = "0.0.43-nightly.20260923.2135";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-PuMg+xEBEMlKBelZ/LfnJRU82MJtEbh+ZZEJ+B1KDvA=";
+    hash = "sha256-3/k9WpW/64axtejuRMiLvQR2mttpousslGtlkzQNxuE=";
   };
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
@@ -78,7 +78,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-H3AmAQzzyAHMt/IazLb1Ci5vM6aOXW905meJcOCKhEQ=";
+    hash = "sha256-mZZYTPAPqlpU4Eu4EnfBdzXk5WSIOvdXE/YqBhJBcZc=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {

@@ -27,4 +27,3 @@ jobs:
     secrets:
       MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
       ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}
-      NIXBUILD_TOKEN: ${{ secrets.NIXBUILD_TOKEN }}
