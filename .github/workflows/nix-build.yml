@@ -1,11 +1,15 @@
-name: Build and scan NixOS
+name: Prepare or build NixOS
 
 on:
   workflow_call:
     inputs:
       host:
-        required: true
+        default: ""
         type: string
+      prepare-update:
+        description: Update packages and publish the shared bootstrap before host builds
+        default: false
+        type: boolean
       update-artifact:
         description: Optional validated nightly update to overlay on the checkout
         default: ""
@@ -29,7 +33,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and scan ${{ inputs.host }}
+    name: ${{ inputs.prepare-update && 'Update and bootstrap' || format('Build and scan {0}', inputs.host) }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -115,15 +119,59 @@ jobs:
             substituters = http://homelab.tail84b6c.ts.net:8501 https://cache.nixos.org
             trusted-public-keys = homelab-cache-1:e0A0wubKr+XqKPA/MeUY5ixaG+1HvBBImTkPzrNJT4s= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
-      - name: Load cargo-nix-plugin with its matching Nix
+      - name: Update flake inputs and packages
+        if: inputs.prepare-update
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
-          # Bootstrap without a plugin; use the downloaded nightly lock for
-          # both the plugin and its exact Nix ABI. The final closure upload
-          # includes outputs built before this evaluator is installed.
-          nix_package=$(nix build .#cargo-nix-plugin.nix \
-            --option plugin-files '' --no-link --print-out-paths)
-          plugin_package=$(nix build .#cargo-nix-plugin \
-            --option plugin-files '' --no-link --print-out-paths)
+          # Resolve just from the same locked nixpkgs as this checkout.
+          nixpkgs_rev=$(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)
+          python3 .github/cache/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
+            nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" .#nix-update \
+            -c just update --export "$RUNNER_TEMP/nightly-update"
+          echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
+
+      - name: Build and retain the shared bootstrap
+        if: inputs.prepare-update
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: |
+          python3 .github/cache/build.py bootstrap "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
+            bash .github/cache/bootstrap.sh "$RUNNER_TEMP/nightly-update/bootstrap-paths"
+          # Publish the requested outputs even when they came from another cache.
+          python3 .github/cache/publish.py --dependencies bootstrap \
+            "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nightly-update/bootstrap-paths"
+
+      - name: Upload nightly update and bootstrap paths
+        if: inputs.prepare-update
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nightly-update
+          path: ${{ runner.temp }}/nightly-update
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Load cargo-nix-plugin with its matching Nix
+        if: ${{ !inputs.prepare-update }}
+        env:
+          UPDATE_ARTIFACT: ${{ inputs.update-artifact }}
+        run: |
+          if [[ -n "$UPDATE_ARTIFACT" ]]; then
+            # The preparation job publishes both exact outputs before either
+            # host starts. Copying paths cannot silently recompile a bootstrap.
+            mapfile -t bootstrap < "$RUNNER_TEMP/nightly-update/bootstrap-paths"
+            test "${#bootstrap[@]}" -eq 2
+            nix copy --from http://homelab.tail84b6c.ts.net:8501 "${bootstrap[@]}"
+            nix_package="${bootstrap[0]}"
+            plugin_package="${bootstrap[1]}"
+          else
+            bash .github/cache/bootstrap.sh "$RUNNER_TEMP/bootstrap-paths"
+            mapfile -t bootstrap < "$RUNNER_TEMP/bootstrap-paths"
+            nix_package="${bootstrap[0]}"
+            plugin_package="${bootstrap[1]}"
+          fi
           echo "$nix_package/bin" >> "$GITHUB_PATH"
           {
             echo 'NIX_CONFIG<<CARGO_NIX_CONFIG'
@@ -133,6 +181,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Verify Zed's Cargo resolver
+        if: ${{ !inputs.prepare-update }}
         run: |
           # Fail before the full host evaluation if loading or API matching
           # breaks, and exercise the real Zed graph with this evaluator.
@@ -142,8 +191,12 @@ jobs:
             zed.drvPath'
 
       - name: Build ${{ inputs.host }}
+        if: ${{ !inputs.prepare-update }}
         env:
           HOST: ${{ inputs.host }}
+          PUBLISH_CACHE: ${{ inputs.publish-cache }}
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
           disk_samples="$RUNNER_TEMP/disk-usage.log"
           while true; do
@@ -166,14 +219,16 @@ jobs:
           }
           trap report_disk_high_water_mark EXIT
 
-          # Copy the complete finished closure after building. This includes
-          # bootstrap outputs, manuals, private packages and system wrappers.
-          nix build --out-link "$RUNNER_TEMP/nixos-system" --print-build-logs \
-            --option post-build-hook '' \
-            ".#nixosConfigurations.${HOST}.config.system.build.toplevel"
+          build=(nix build --out-link "$RUNNER_TEMP/nixos-system" --print-build-logs
+            ".#nixosConfigurations.${HOST}.config.system.build.toplevel")
+          if [[ "$PUBLISH_CACHE" == true ]]; then
+            python3 .github/cache/build.py "$HOST" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
+          else
+            "${build[@]}"
+          fi
 
       - name: Retain and verify the complete private system closure
-        if: inputs.publish-cache
+        if: ${{ inputs.publish-cache && !inputs.prepare-update }}
         env:
           HOST: ${{ inputs.host }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
@@ -183,13 +238,25 @@ jobs:
             "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nixos-system"
 
       - name: Build pinned security tools
+        if: ${{ !inputs.prepare-update }}
         id: tools
+        env:
+          HOST: ${{ inputs.host }}
+          PUBLISH_CACHE: ${{ inputs.publish-cache }}
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
-          package=$(nix build --file packages/security/default.nix \
-            --option post-build-hook '' --no-link --print-out-paths)
+          build=(nix build --file packages/security/default.nix --out-link "$RUNNER_TEMP/security-tools")
+          if [[ "$PUBLISH_CACHE" == true ]]; then
+            python3 .github/cache/build.py "$HOST" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
+          else
+            "${build[@]}"
+          fi
+          package=$(readlink -f "$RUNNER_TEMP/security-tools")
           echo "package=$package" >> "$GITHUB_OUTPUT"
 
       - name: Inventory and scan ${{ inputs.host }}
+        if: ${{ !inputs.prepare-update }}
         id: scan
         env:
           HOST: ${{ inputs.host }}

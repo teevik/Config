@@ -1,6 +1,7 @@
 """Sign, copy, retain and verify an entire NixOS runtime closure privately."""
 
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -19,8 +20,8 @@ CACHE = f"http://{HOST}:8501"
 DESTINATION = f"nix-cache@{HOST}"
 
 
-def run(*args, env=None):
-    return subprocess.check_output(args, text=True, env=env).strip()
+def run(*args, env=None, input=None):
+    return subprocess.check_output(args, text=True, env=env, input=input).strip()
 
 
 def closure_info(path):
@@ -64,18 +65,16 @@ def check_cached_response(path):
             raise ValueError("Cached archive is unavailable")
 
 
-def publish(host, generation, path):
-    if host not in {"desktop", "zenbook"}:
-        raise ValueError("Unsupported host")
-    path = str(Path(path).resolve())
-    info = closure_info(path)
-    nar_bytes = sum(item["narSize"] for item in info.values())
+@contextmanager
+def credentials():
     with tempfile.TemporaryDirectory(prefix="nix-cache-credentials-") as temporary:
         work = Path(temporary)
         identity = work / "ssh-key"
         signing_key = work / "signing-key"
         for file, variable in [(identity, "NIX_CACHE_SSH_KEY"), (signing_key, "NIX_CACHE_SIGNING_KEY")]:
             value = os.environ.get(variable, "")
+            if not value and os.environ.get(variable + "_FILE"):
+                value = Path(os.environ[variable + "_FILE"]).read_text()
             if not value.strip():
                 raise ValueError(f"Missing {variable}")
             file.write_text(value.rstrip() + "\n")
@@ -86,11 +85,24 @@ def publish(host, generation, path):
             "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
             "-o", f"UserKnownHostsFile={Path(__file__).with_name('known_hosts')}",
             "-o", "ConnectTimeout=15",
+            "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=3",
         ]
         env = dict(os.environ, NIX_SSHOPTS=shlex.join(ssh_options))
         # Do not pass GitHub's secret environment variables to child processes.
         env.pop("NIX_CACHE_SSH_KEY", None)
         env.pop("NIX_CACHE_SIGNING_KEY", None)
+        env.pop("NIX_CACHE_SSH_KEY_FILE", None)
+        env.pop("NIX_CACHE_SIGNING_KEY_FILE", None)
+        yield env, ssh_options, signing_key
+
+
+def publish(host, generation, path):
+    if host not in {"desktop", "zenbook"}:
+        raise ValueError("Unsupported host")
+    path = str(Path(path).resolve())
+    info = closure_info(path)
+    nar_bytes = sum(item["narSize"] for item in info.values())
+    with credentials() as (env, ssh_options, signing_key):
         run("ssh", *ssh_options, DESTINATION, f"cache-preflight {nar_bytes}", env=env)
         subprocess.run(["nix", "store", "sign", "--recursive", "--key-file", str(signing_key), path],
                        check=True, env=env)
@@ -103,6 +115,7 @@ def publish(host, generation, path):
         public_key = Path(__file__).resolve().parents[2] / "modules/nixos/minimal/homelab-cache.pub"
         subprocess.run([
             "nix", "store", "verify", "--store", CACHE, "--recursive", "--no-contents",
+            "--option", "narinfo-cache-negative-ttl", "0",
             "--sigs-needed", "1", "--option", "extra-trusted-public-keys", public_key.read_text().strip(), path,
         ], check=True, env=env)
         with ThreadPoolExecutor(max_workers=8) as pool:
@@ -112,7 +125,45 @@ def publish(host, generation, path):
             print("::warning::Homelab retained closures exceed the 500 GiB operating budget")
 
 
+def publish_dependencies(group, generation, paths):
+    paths = sorted(set(paths))
+    if not paths:
+        return
+    if group not in {"bootstrap", "updater", "desktop", "zenbook", "seed"}:
+        raise ValueError("Unsupported dependency group")
+    manifest = "".join(path + "\n" for path in paths)
+    with credentials() as (env, ssh_options, signing_key):
+        info = json.loads(run("nix", "path-info", "--recursive", "--json", "--stdin",
+                              input=manifest, env=env))
+        if isinstance(info, list):
+            info = {entry["path"]: entry for entry in info}
+        if not info or any(value is None for value in info.values()):
+            raise ValueError("Dependency closure is incomplete")
+        nar_bytes = sum(item["narSize"] for item in info.values())
+        run("ssh", *ssh_options, DESTINATION, f"cache-preflight {nar_bytes}", env=env)
+        subprocess.run(["nix", "store", "sign", "--recursive", "--key-file", str(signing_key), "--stdin"],
+                       input=manifest, text=True, check=True, env=env)
+        subprocess.run(["nix", "copy", "--to", f"ssh://{DESTINATION}",
+                        "--substitute-on-destination", "--stdin"],
+                       input=manifest, text=True, check=True, env=env)
+        receipt = json.loads(run("ssh", *ssh_options, DESTINATION,
+                                 shlex.join(["cache-retain", group, generation]),
+                                 input=json.dumps(paths), env=env))
+        if receipt.get("closureDigest") != closure_digest(info) or receipt.get("closurePaths") != len(info):
+            raise ValueError("Retained dependencies differ from the uploaded closure")
+        public_key = Path(__file__).resolve().parents[2] / "modules/nixos/minimal/homelab-cache.pub"
+        subprocess.run(["nix", "store", "verify", "--store", CACHE, "--recursive", "--no-contents",
+                        "--option", "narinfo-cache-negative-ttl", "0",
+                        "--sigs-needed", "1", "--option", "extra-trusted-public-keys",
+                        public_key.read_text().strip(), "--stdin"],
+                       input=manifest, text=True, check=True, env=env)
+        print(f"Retained {group} dependencies: {len(info)} paths, {nar_bytes / 1024**3:.1f} GiB", flush=True)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        raise SystemExit("Usage: publish.py HOST GENERATION SYSTEM_PATH")
-    publish(*sys.argv[1:])
+    if len(sys.argv) == 5 and sys.argv[1] == "--dependencies":
+        publish_dependencies(sys.argv[2], sys.argv[3], Path(sys.argv[4]).read_text().splitlines())
+    elif len(sys.argv) == 4:
+        publish(*sys.argv[1:])
+    else:
+        raise SystemExit("Usage: publish.py HOST GENERATION SYSTEM_PATH | --dependencies GROUP GENERATION PATHS_FILE")

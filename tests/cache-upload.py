@@ -7,6 +7,10 @@ import json
 import os
 from pathlib import Path
 import threading
+import tempfile
+import sys
+import subprocess
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -15,6 +19,10 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("upload", ROOT / ".github/cache/publish.py")
 upload = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(upload)
+sys.path.insert(0, str(ROOT / ".github/cache"))
+import build as cache_build
+import record as cache_record
+import seed as cache_seed
 SYSTEM = "/nix/store/" + "0" * 32 + "-nixos-system-desktop-test"
 MANUAL = "/nix/store/" + "1" * 32 + "-nix-man"
 PRIVATE = "/nix/store/" + "2" * 32 + "-marble"
@@ -90,6 +98,81 @@ class UploadTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 upload.publish("desktop", "123-1", SYSTEM)
         verify.assert_not_called()
+
+    def test_dependency_manifest_is_rooted_and_verified_without_exposing_credentials(self):
+        info = {path: {"narSize": 100} for path in [MANUAL, PRIVATE]}
+        receipt = {"closureDigest": upload.closure_digest(info), "closurePaths": 2}
+        requests = []
+
+        def run(*args, env=None, input=None):
+            self.assertNotIn("NIX_CACHE_SSH_KEY", env)
+            requests.append((args, input))
+            return json.dumps(info if args[:2] == ("nix", "path-info") else receipt)
+
+        with patch.object(upload, "run", side_effect=run), \
+             patch.object(upload.subprocess, "run") as execute, \
+             patch.dict(os.environ, NIX_CACHE_SSH_KEY="test-key", NIX_CACHE_SIGNING_KEY="test-key"):
+            upload.publish_dependencies("bootstrap", "123-1", [MANUAL, PRIVATE, MANUAL])
+        self.assertEqual(json.loads(requests[-1][1]), sorted(info))
+        self.assertIn("cache-retain bootstrap 123-1", requests[-1][0])
+        self.assertEqual(execute.call_count, 3)
+        self.assertIn("--sigs-needed", execute.call_args.args[0])
+
+    def test_failed_upload_retries_completed_outputs_when_build_finishes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            roots = Path(temporary)
+            cache_record.record(roots, [MANUAL, PRIVATE])
+            stop, errors = threading.Event(), []
+            calls = []
+
+            def publish(group, generation, paths):
+                calls.append(paths)
+                if len(calls) == 1:
+                    stop.set()  # The compilation has failed/ended during upload.
+                    raise ValueError("temporary cache outage")
+
+            with patch.object(cache_build, "publish_dependencies", side_effect=publish):
+                cache_build.upload_loop(roots, "desktop", "123-1", stop, errors, interval=0)
+            self.assertEqual(calls, [sorted([MANUAL, PRIVATE])] * 2)
+            self.assertEqual(errors, [])
+
+    def test_failed_build_still_publishes_outputs_and_returns_original_failure(self):
+        real_run = subprocess.run
+        child = '''
+import os, subprocess, sys
+assert "NIX_CACHE_SSH_KEY" not in os.environ
+assert "NIX_CACHE_SIGNING_KEY" not in os.environ
+hook = os.environ["NIX_CONFIG"].split("post-build-hook = ", 1)[1].strip()
+subprocess.run([hook], check=True, env=dict(os.environ, OUT_PATHS=sys.argv[1]))
+sys.exit(7)
+'''
+
+        def execute(args, **kwargs):
+            if args[:2] == ["sudo", "install"]:
+                Path(args[-1]).mkdir()
+                return SimpleNamespace(returncode=0)
+            if args[:2] == ["sudo", "rmdir"]:
+                Path(args[-1]).rmdir()
+                return SimpleNamespace(returncode=0)
+            return real_run(args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as temporary, \
+             patch.object(cache_build, "GCROOTS", Path(temporary)), \
+             patch.object(cache_build.subprocess, "run", side_effect=execute), \
+             patch.object(cache_build, "publish_dependencies") as publish, \
+             patch.dict(os.environ, NIX_CACHE_SSH_KEY="private", NIX_CACHE_SIGNING_KEY="private"):
+            result = cache_build.run("desktop", "123-1", [sys.executable, "-c", child, MANUAL + " " + PRIVATE])
+            self.assertEqual(result, 7)
+            publish.assert_called_once_with("desktop", "123-1", sorted([MANUAL, PRIVATE]))
+            self.assertEqual(list(Path(temporary).iterdir()), [])
+
+    def test_seeding_queries_existing_outputs_without_realising_them(self):
+        with patch.object(cache_seed.subprocess, "check_output", return_value=f"{MANUAL}\n{PRIVATE}.drv\n{PRIVATE}\n") as query, \
+             patch.object(cache_seed.Path, "exists", side_effect=lambda: True):
+            outputs = cache_seed.existing_outputs([SYSTEM + ".drv"])
+        self.assertEqual(outputs, sorted([MANUAL, PRIVATE]))
+        self.assertIn("--include-outputs", query.call_args.args[0])
+        self.assertNotIn("--realise", query.call_args.args[0])
 
 
 if __name__ == "__main__":

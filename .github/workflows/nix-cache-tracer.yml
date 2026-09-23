@@ -17,56 +17,21 @@ permissions:
 
 jobs:
   update-lock:
-    name: Update flake lock
-    runs-on: ubuntu-latest
+    name: Update flake lock and bootstrap
     permissions:
       contents: read
-    steps:
-      - name: Check out Config and its submodules
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: recursive
-
-      # GitHub deploy keys belong to one repository, so each private flake
-      # input needs its own key. The key comments let ssh-agent route each
-      # repository fetch to the correct key.
-      - name: Configure SSH for private flake inputs
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
-            ${{ secrets.ASTAL_DEPLOY_KEY }}
-
-      - name: Trust GitHub's SSH host key
-        run: |
-          mkdir -p ~/.ssh
-          install -m 600 .github/security/github-known-hosts ~/.ssh/known_hosts
-
-      - name: Install Nix
-        uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3.22.5
-        with:
-          extra-conf: |
-            extra-experimental-features = parallel-eval
-            eval-cores = 0
-            lazy-trees = true
-            accept-flake-config = true
-            connect-timeout = 5
-            fallback = true
-            substituters = https://cache.nixos.org https://teevik.cachix.org https://hyprland.cachix.org https://install.determinate.systems https://cache.numtide.com https://nyx-cache.chaotic.cx
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
-
-      - name: Update flake inputs and packages
-        run: |
-          nix shell nixpkgs#just .#nix-update -c just update --export "$RUNNER_TEMP/nightly-update"
-          echo "nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
-
-      - name: Upload nightly update
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: nightly-update
-          path: ${{ runner.temp }}/nightly-update
-          if-no-files-found: error
-          retention-days: 1
+      id-token: write
+    # Keep the update and bootstrap inside the reusable workflow matched by
+    # the existing Tailscale OIDC job_workflow_ref claim.
+    uses: ./.github/workflows/nix-build.yml
+    with:
+      prepare-update: true
+      publish-cache: true
+    secrets:
+      MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
+      ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}
+      NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+      NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
 
   build:
     name: Build ${{ matrix.host }}
