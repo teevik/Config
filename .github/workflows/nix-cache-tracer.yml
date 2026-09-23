@@ -28,8 +28,6 @@ jobs:
       prepare-update: true
       publish-cache: true
     secrets:
-      MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
-      ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}
       NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
       NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
 
@@ -49,8 +47,6 @@ jobs:
       update-artifact: nightly-update
       publish-cache: true
     secrets:
-      MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
-      ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}
       NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
       NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
 

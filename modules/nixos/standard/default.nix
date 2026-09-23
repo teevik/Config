@@ -11,7 +11,7 @@
     ./apps
     ./hyprland
     ./cachix.nix
-    ./marble.nix
+    ./noctalia.nix
     ./docker.nix
     ./fonts.nix
     ./packages.nix

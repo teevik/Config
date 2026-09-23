@@ -9,8 +9,6 @@
 let
   hyprlandPackage = perSystem.hyprland.hyprland;
   hyprlandModuleDir = ../../modules/nixos/standard/hyprland;
-  glycinGtk4LibraryPath = "${pkgs.libglycin-gtk4}/lib";
-  glycinGtk4TypelibPath = "${pkgs.libglycin-gtk4}/lib/girepository-1.0";
   hostPamModuleDir = "/usr/lib/x86_64-linux-gnu/security";
 
   nixElectronAppArmorProfile = pkgs.writeText "nix-electron-apparmor" ''
@@ -81,24 +79,14 @@ let
     }) uwsmUserUnits
   );
 
-  marbleWithGlycinGtk4 = pkgs.writeShellApplication {
-    name = "marble-with-glycin-gtk4";
-    text = ''
-      export GI_TYPELIB_PATH="${glycinGtk4TypelibPath}''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
-      export LD_LIBRARY_PATH="${glycinGtk4LibraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-      exec ${perSystem.marble.default}/bin/marble "$@"
-    '';
-  };
-
-  marbleService = pkgs.writeText "marble.service" ''
+  noctaliaService = pkgs.writeText "noctalia.service" ''
     [Unit]
-    Description=Marble Shell
+    Description=Noctalia Shell
     PartOf=graphical-session.target
     After=graphical-session.target
 
     [Service]
-    ExecStart=${marbleWithGlycinGtk4}/bin/marble-with-glycin-gtk4
-    ExecReload=${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID
+    ExecStart=${lib.getExe pkgs.noctalia}
     Restart=on-failure
     KillMode=mixed
 
@@ -205,7 +193,7 @@ let
 
   graphicalSessionUserServices = {
     "hypridle.service" = hypridleService;
-    "marble.service" = marbleService;
+    "noctalia.service" = noctaliaService;
     "swaybg.service" = swaybgService;
   };
 
@@ -352,8 +340,6 @@ in
 
     extraInit = ''
       export XDG_DATA_DIRS="/run/system-manager/sw/share:''${XDG_DATA_DIRS:-/usr/local/share:/usr/share:/var/lib/snapd/desktop}"
-      export GI_TYPELIB_PATH="${glycinGtk4TypelibPath}''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
-      export LD_LIBRARY_PATH="${glycinGtk4LibraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     '';
 
     pathsToLink = [
@@ -384,8 +370,7 @@ in
       hypridle
       hyprlock
       lockScreen
-      libglycin-gtk4
-      marbleWithGlycinGtk4
+      noctalia
       nwgDisplays
       perSystem.hyprland-scratchpad.default
       splitMonitorWorkspacesLua
@@ -400,6 +385,7 @@ in
       nerd-fonts.ubuntu
       nerd-fonts.fira-code
       source-sans
+      perSystem.self.google-sans-flex
     ];
   };
 }

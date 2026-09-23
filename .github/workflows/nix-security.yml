@@ -24,6 +24,3 @@ jobs:
     uses: ./.github/workflows/nix-build.yml
     with:
       host: ${{ matrix.host }}
-    secrets:
-      MARBLE_SHELL_DEPLOY_KEY: ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
-      ASTAL_DEPLOY_KEY: ${{ secrets.ASTAL_DEPLOY_KEY }}

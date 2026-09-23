@@ -36,16 +36,6 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    astal = {
-      # These private projects do not use revision counts for versioning.
-      url = "git+ssh://git@github.com/teevik/astal.git?ref=feat/niri&shallow=1";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    marble = {
-      url = "git+ssh://git@github.com/teevik/marble-shell.git?shallow=1";
-      inputs.astal.follows = "astal";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";

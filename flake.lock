@@ -1,30 +1,5 @@
 {
   "nodes": {
-    "ags": {
-      "inputs": {
-        "astal": [
-          "marble",
-          "astal"
-        ],
-        "nixpkgs": [
-          "marble",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775689345,
-        "narHash": "sha256-tM3s7CX+tgxlYW0Sk3nzVThg2MHn08foIuMxABupxIs=",
-        "owner": "aylur",
-        "repo": "ags",
-        "rev": "bbee2f18939f1ec7ff720e717cf305e73635628f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aylur",
-        "repo": "ags",
-        "type": "github"
-      }
-    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -56,28 +31,6 @@
         "owner": "hyprwm",
         "repo": "aquamarine",
         "type": "github"
-      }
-    },
-    "astal": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1786741913,
-        "narHash": "sha256-s8wbe1YD/KrZojvz+e6FHTe7qcZ2SHodUyBgyn6NGy8=",
-        "ref": "feat/niri",
-        "rev": "d22d0faded27469af32ddd29029cfbfbf91c745a",
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://git@github.com/teevik/astal.git"
-      },
-      "original": {
-        "ref": "feat/niri",
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://git@github.com/teevik/astal.git"
       }
     },
     "bdwgc": {
@@ -920,55 +873,6 @@
         "type": "github"
       }
     },
-    "marble": {
-      "inputs": {
-        "ags": "ags",
-        "astal": [
-          "astal"
-        ],
-        "marble": "marble_2",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1788628985,
-        "narHash": "sha256-t0D2SlXX5dNCEn/bfuNODoBNM4APT1uuFhzuiVamPIo=",
-        "ref": "refs/heads/main",
-        "rev": "9410e894a7b676bbc7694639a81cf096b3f744c3",
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://git@github.com/teevik/marble-shell.git"
-      },
-      "original": {
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://git@github.com/teevik/marble-shell.git"
-      }
-    },
-    "marble_2": {
-      "inputs": {
-        "astal": [
-          "marble",
-          "astal"
-        ],
-        "nixpkgs": [
-          "marble",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "path": "./kit",
-        "type": "path"
-      },
-      "original": {
-        "path": "./kit",
-        "type": "path"
-      },
-      "parent": [
-        "marble"
-      ]
-    },
     "neovim": {
       "inputs": {
         "flake-parts": "flake-parts_3",
@@ -1377,7 +1281,6 @@
     },
     "root": {
       "inputs": {
-        "astal": "astal",
         "blueprint": "blueprint",
         "cargo-nix-plugin": "cargo-nix-plugin",
         "determinate-nix": "determinate-nix",
@@ -1388,7 +1291,6 @@
         "hyprland-contrib": "hyprland-contrib",
         "hyprland-scratchpad": "hyprland-scratchpad",
         "llm-agents": "llm-agents",
-        "marble": "marble",
         "neovim": "neovim",
         "nix-index-database": "nix-index-database",
         "nix-system-graphics": "nix-system-graphics",

@@ -18,10 +18,6 @@ on:
         default: false
         type: boolean
     secrets:
-      MARBLE_SHELL_DEPLOY_KEY:
-        required: true
-      ASTAL_DEPLOY_KEY:
-        required: true
       NIX_CACHE_SSH_KEY:
         required: false
       NIX_CACHE_SIGNING_KEY:
@@ -56,21 +52,6 @@ jobs:
       - name: Log shared nixpkgs revision
         run: |
           echo "nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
-
-      # GitHub deploy keys belong to one repository, so each private flake
-      # input needs its own key. The key comments let ssh-agent route each
-      # repository fetch to the correct key.
-      - name: Configure SSH for private flake inputs
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.MARBLE_SHELL_DEPLOY_KEY }}
-            ${{ secrets.ASTAL_DEPLOY_KEY }}
-
-      - name: Trust GitHub's SSH host key
-        run: |
-          mkdir -p ~/.ssh
-          install -m 600 .github/security/github-known-hosts ~/.ssh/known_hosts
 
       - name: Free runner disk space
         run: |
@@ -162,7 +143,10 @@ jobs:
             # The preparation job publishes both exact outputs before either
             # host starts. Copying paths cannot silently recompile a bootstrap.
             mapfile -t bootstrap < "$RUNNER_TEMP/nightly-update/bootstrap-paths"
-            test "${#bootstrap[@]}" -eq 2
+            if [[ "${#bootstrap[@]}" -ne 2 ]]; then
+              echo "::error::Expected Nix runtime and plugin in bootstrap-paths; got ${#bootstrap[@]} paths"
+              exit 1
+            fi
             nix copy --from http://homelab.tail84b6c.ts.net:8501 "${bootstrap[@]}"
             nix_package="${bootstrap[0]}"
             plugin_package="${bootstrap[1]}"

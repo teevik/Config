@@ -156,7 +156,6 @@ in
       ngrok
       obs-studio
       obsidian
-      perSystem.marble.default
       perSystem.self.opencode-desktop
       rounded
       vesktop

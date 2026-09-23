@@ -1,0 +1,44 @@
+# Base settings live here; changes made in Noctalia's GUI live in
+# ~/.local/state/noctalia/settings.toml and take precedence.
+[shell]
+setup_wizard_enabled = false
+launch_apps_as_systemd_services = true
+clipboard_enabled = false # cliphist already records clipboard history
+polkit_agent = false # the session already runs the GNOME polkit agent
+
+[theme]
+mode = "dark"
+source = "builtin"
+builtin = "Catppuccin"
+
+# Wallpaper and locking are handled by swaybg and hyprlock/hypridle.
+[wallpaper]
+enabled = false
+
+[lockscreen]
+enabled = false
+
+[idle.behavior.lock]
+enabled = false
+
+[idle.behavior.screen-off]
+enabled = false
+
+[bar.main]
+position = "top"
+margin_ends = 8
+margin_edge = 8
+font_family = "Google Sans Flex"
+font_weight = 500
+font_scale = 1.1
+start = ["launcher", "workspaces"]
+center = ["clock"]
+end = ["media", "tray", "keyboard_layout", "notifications", "volume", "network", "bluetooth", "battery", "control-center", "session"]
+
+[widget.launcher.actions]
+left = "exec uwsm app -- tofi-drun --drun-launch=true"
+
+[widget.workspaces]
+style = "regular"
+show_all_outputs = false
+show_labels = false

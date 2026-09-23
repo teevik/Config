@@ -134,10 +134,18 @@ hl.window_rule({
   pin = true,
 })
 
-hl.layer_rule({ name = "blur-bar", match = { namespace = "^marble-bar$" }, blur = true })
-hl.layer_rule({ name = "blur-osd", match = { namespace = "osd" }, blur = true })
-hl.layer_rule({ name = "blur-notifications", match = { namespace = "notifications" }, blur = true })
-hl.layer_rule({ name = "blur-launcher", match = { namespace = "launcher" }, blur = true })
+hl.layer_rule({
+  name = "noctalia",
+  match = { namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd|window-switcher)$" },
+  no_anim = true,
+  blur = true,
+  ignore_alpha = 0.5,
+})
+hl.window_rule({
+  name = "noctalia-settings",
+  match = { class = "^dev\\.noctalia\\.Noctalia$" },
+  float = true,
+})
 
 local function exec(command)
   return hl.dsp.exec_cmd(command)
@@ -147,6 +155,7 @@ hl.bind("SUPER + SHIFT + Return", exec("uwsm app -- kitty"))
 hl.bind("SUPER + Return", exec("hyprland-scratchpad toggle-exec --name terminal --exec 'uwsm app -- kitty'"))
 
 hl.bind("SUPER + D", exec("uwsm app -- tofi-drun --drun-launch=true"))
+hl.bind("SUPER + comma", exec("noctalia msg settings-toggle"))
 hl.bind("SUPER + W", exec("uwsm app -- firefox"))
 hl.bind("SUPER + F", exec("uwsm app -- nautilus"))
 hl.bind("SUPER + E", exec("uwsm app -- zeditor"))

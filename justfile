@@ -142,11 +142,5 @@ benchmark-eval-cache host="zenbook" runs="5":
     hyperfine --warmup 1 --runs {{ runs }} --parameter-list cache false,true \
       'nix path-info --derivation --option eval-cache {cache} .#nixosConfigurations.{{ host }}.config.system.build.toplevel'
 
-# Build and activate local Marble and Astal working trees without publishing them
-marble-dev-switch:
-    nh os switch -- \
-      --override-input marble "path:${HOME}/Documents/Projects/marble-shell" \
-      --override-input astal "path:${HOME}/Documents/Projects/astal"
-
 build-iso:
     nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"
