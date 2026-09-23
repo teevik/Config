@@ -1181,6 +1181,38 @@
         "type": "github"
       }
     },
+    "noctalia-community-plugins": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790130450,
+        "narHash": "sha256-rbUgZaVKVIh40/UHcrnbYx71H9R8Ufmg3YziSJP79g4=",
+        "owner": "noctalia-dev",
+        "repo": "community-plugins",
+        "rev": "fea93782dbcb906ce37aee87628e37bc0bac4071",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "repo": "community-plugins",
+        "type": "github"
+      }
+    },
+    "noctalia-official-plugins": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790080799,
+        "narHash": "sha256-D3KIaKkicssbVM8lLXBNTKhsXArXBr55NVZJ+a5Inc8=",
+        "owner": "noctalia-dev",
+        "repo": "official-plugins",
+        "rev": "f36c62aae9bb5d7aa463730139aa19c569a355f3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "repo": "official-plugins",
+        "type": "github"
+      }
+    },
     "openconnect-sso": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -1297,6 +1329,8 @@
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_5",
+        "noctalia-community-plugins": "noctalia-community-plugins",
+        "noctalia-official-plugins": "noctalia-official-plugins",
         "openconnect-sso": "openconnect-sso",
         "sops-nix": "sops-nix",
         "split-monitor-workspaces": "split-monitor-workspaces",

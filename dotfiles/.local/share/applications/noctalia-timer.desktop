@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Timer (Noctalia)
+Comment=Open Noctalia's countdown timer
+Exec=noctalia msg panel-open noctalia/timer:panel
+TryExec=noctalia
+Icon=preferences-system-time
+Terminal=false
+StartupNotify=false
+Categories=Utility;
+Keywords=Countdown;Clock;

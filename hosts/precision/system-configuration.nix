@@ -86,7 +86,7 @@ let
     After=graphical-session.target
 
     [Service]
-    ExecStart=${lib.getExe pkgs.noctalia}
+    ExecStart=${lib.getExe perSystem.self.noctalia}
     Restart=on-failure
     KillMode=mixed
 
@@ -177,24 +177,9 @@ let
     WantedBy=graphical-session.target
   '';
 
-  swaybgService = pkgs.writeText "swaybg.service" ''
-    [Unit]
-    Description=Wayland wallpaper daemon
-    PartOf=graphical-session.target
-    After=graphical-session.target
-
-    [Service]
-    Type=simple
-    ExecStart=${lib.getExe pkgs.swaybg} -i ${hyprlandModuleDir}/background.png -m fill
-
-    [Install]
-    WantedBy=graphical-session.target
-  '';
-
   graphicalSessionUserServices = {
     "hypridle.service" = hypridleService;
     "noctalia.service" = noctaliaService;
-    "swaybg.service" = swaybgService;
   };
 
   graphicalSessionUserServiceEtc = lib.listToAttrs (
@@ -214,6 +199,7 @@ in
   imports = [
     inputs.nix-system-graphics.systemModules.default
     inputs.sops-nix.nixosModules.sops
+    flake.modules.shared.noctalia-calendar
     flake.modules.shared.packages
     (inputs.nixpkgs + "/nixos/modules/security/chromium-suid-sandbox.nix")
   ];
@@ -244,6 +230,7 @@ in
           "excalidraw-token"
           "gemini-api-key"
           "brave-api-key"
+          "school-calendar-url"
         ]
         (_: {
           owner = "teemu.vikoeren";
@@ -329,6 +316,9 @@ in
         source = hypridleConfig;
         mode = "0644";
       };
+
+      "noctalia/plugins".source = "${perSystem.self.noctalia}/share/noctalia/plugins";
+      "noctalia/wallpaper.png".source = "${hyprlandModuleDir}/background.png";
     }
     // uwsmUserUnitEtc
     // graphicalSessionUserServiceEtc;
@@ -370,7 +360,7 @@ in
       hypridle
       hyprlock
       lockScreen
-      noctalia
+      perSystem.self.noctalia
       nwgDisplays
       perSystem.hyprland-scratchpad.default
       splitMonitorWorkspacesLua

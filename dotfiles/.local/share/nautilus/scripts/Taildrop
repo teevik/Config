@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -n "${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}" ]; then
+  mapfile -t selected <<<"$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS"
+  exec noctalia-taildrop "${selected[@]}"
+fi

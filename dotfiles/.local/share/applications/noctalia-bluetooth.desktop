@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Bluetooth (Noctalia)
+Comment=Open Noctalia's Bluetooth controls
+Exec=noctalia msg panel-open control-center bluetooth
+TryExec=noctalia
+Icon=bluetooth
+Terminal=false
+StartupNotify=false
+Categories=Settings;
+Keywords=Wireless;Devices;Pairing;

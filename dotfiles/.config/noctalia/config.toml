@@ -1,19 +1,71 @@
 # Base settings live here; changes made in Noctalia's GUI live in
 # ~/.local/state/noctalia/settings.toml and take precedence.
+[include]
+files = ["/run/secrets-rendered/noctalia-school-calendar.toml"]
+
 [shell]
 setup_wizard_enabled = false
 launch_apps_as_systemd_services = true
 clipboard_enabled = false # cliphist already records clipboard history
 polkit_agent = false # the session already runs the GNOME polkit agent
+font_family = "Google Sans Flex"
+
+# A quiet application list; plugin providers remain available by typing /.
+[shell.launcher]
+categories = false
+show_icons = true
+show_app_origin_indicator = false
+compact = true
+app_grid = false
+show_app_actions = false
+sort_by_usage = true
+pinned = ["firefox", "kitty", "org.gnome.Nautilus", "dev.zed.Zed-Nightly", "spotify"]
+
+[shell.panel]
+launcher_placement = "floating"
+launcher_position = "center"
+
+# An explicit action list replaces the defaults, so retain the standard entries.
+[[shell.session.actions]]
+action = "lock"
+shortcut = "1"
+
+[[shell.session.actions]]
+action = "logout"
+shortcut = "2"
+
+[[shell.session.actions]]
+action = "lock_and_suspend"
+shortcut = "3"
+
+[[shell.session.actions]]
+action = "command"
+label = "Hibernate"
+glyph = "moon"
+command = "systemctl hibernate"
+shortcut = "6"
+
+[[shell.session.actions]]
+action = "reboot"
+shortcut = "4"
+
+[[shell.session.actions]]
+action = "shutdown"
+shortcut = "5"
+variant = "destructive"
 
 [theme]
 mode = "dark"
-source = "builtin"
-builtin = "Catppuccin"
+source = "custom"
+custom_palette = "Catppuccin-Mocha-Maroon"
+builtin = "Catppuccin" # fallback if the custom palette is unavailable
 
-# Wallpaper and locking are handled by swaybg and hyprlock/hypridle.
+# Noctalia owns the wallpaper.
 [wallpaper]
-enabled = false
+enabled = true
+
+[wallpaper.default]
+path = "/etc/noctalia/wallpaper.png"
 
 [lockscreen]
 enabled = false
@@ -26,19 +78,96 @@ enabled = false
 
 [bar.main]
 position = "top"
-margin_ends = 8
-margin_edge = 8
+thickness = 34
+margin_ends = 12
+margin_edge = 12
+padding = 12
+radius = 6
+radius_top_left = 6
+radius_top_right = 6
+radius_bottom_left = 6
+radius_bottom_right = 6
+background_opacity = 1.0
 font_family = "Google Sans Flex"
 font_weight = 500
 font_scale = 1.1
+start = ["launcher", "workspaces", "bongocat"]
+center = ["date", "clock"]
+end = ["media", "screen-recorder", "timer", "tailnet", "tray", "keyboard_layout", "notifications", "volume", "battery", "control-center"]
+
+# Keep the smaller desktop display focused on workspaces and quick controls.
+[bar.main.monitor."HDMI-A-2"]
 start = ["launcher", "workspaces"]
 center = ["clock"]
-end = ["media", "tray", "keyboard_layout", "notifications", "volume", "network", "bluetooth", "battery", "control-center", "session"]
+end = ["tray", "keyboard_layout", "notifications", "volume", "battery", "control-center"]
 
 [widget.launcher.actions]
 left = "exec uwsm app -- tofi-drun --drun-launch=true"
+right = "panel-toggle launcher"
 
 [widget.workspaces]
 style = "regular"
 show_all_outputs = false
 show_labels = false
+pill_scale = 0.75
+focused_color = "primary"
+occupied_color = "on_surface_variant"
+# Noctalia applies 55% opacity to empty pills; this resolves to a dim gray.
+empty_color = "#6c7086"
+
+[widget.date]
+type = "clock"
+format = "{:%a %d %b}"
+color = "on_surface_variant"
+font_weight = 400
+
+[widget.clock]
+tooltip_format = "{:%A, %d %B %Y}"
+
+[widget.media]
+max_length = 160
+hide_artist = true
+hide_when_no_media = true
+title_scroll = "on_hover"
+color = "on_surface_variant"
+
+[widget.tray]
+drawer = true
+
+[widget.control-center]
+glyph = "adjustments-horizontal"
+
+[plugins]
+auto_update = "none" # Plugin sources and dependencies are pinned in flake.lock.
+enabled = [
+  "noctalia/bongocat",
+  "noctalia/screen_recorder",
+  "noctalia/timer",
+  "rylos/tailnet",
+  "carlocamacho/taildrop",
+  "srounce/systemd",
+  "cleboost/ssh-launcher",
+  "knyrps/nix-search",
+]
+
+[[plugins.source]]
+name = "nix"
+kind = "path"
+location = "/etc/noctalia/plugins"
+
+[widget.bongocat]
+type = "noctalia/bongocat:cat"
+input_devices = ["/dev/input/by-id/*-event-kbd", "/dev/input/by-path/platform-*-event-kbd"]
+audio_spectrum = true
+tappy_mode = true
+
+[widget.screen-recorder]
+type = "noctalia/screen_recorder:recorder"
+
+[widget.timer]
+type = "noctalia/timer:bar"
+show_idle_on_horizontal = false
+
+[widget.tailnet]
+type = "rylos/tailnet:bar"
+show_count = false

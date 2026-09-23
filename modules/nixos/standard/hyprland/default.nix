@@ -138,16 +138,5 @@ in
       };
     };
 
-    # Swaybg - wallpaper daemon
-    swaybg = {
-      description = "Wayland wallpaper daemon";
-      partOf = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${lib.getExe pkgs.swaybg} -i ${./background.png} -m fill";
-      };
-    };
   };
 }

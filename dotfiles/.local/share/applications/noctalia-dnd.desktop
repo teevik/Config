@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Toggle do not disturb (Noctalia)
+Comment=Toggle Noctalia's notification do not disturb mode
+Exec=noctalia msg notification-dnd-toggle
+TryExec=noctalia
+Icon=notifications-disabled
+Terminal=false
+StartupNotify=false
+Categories=Settings;
+Keywords=DND;Notifications;Quiet;

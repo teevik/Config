@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Audio (Noctalia)
+Comment=Open Noctalia's audio controls
+Exec=noctalia msg panel-open control-center audio
+TryExec=noctalia
+Icon=audio-volume-high
+Terminal=false
+StartupNotify=false
+Categories=Settings;
+Keywords=Sound;Volume;Microphone;Speakers;

@@ -155,18 +155,15 @@ hl.bind("SUPER + SHIFT + Return", exec("uwsm app -- kitty"))
 hl.bind("SUPER + Return", exec("hyprland-scratchpad toggle-exec --name terminal --exec 'uwsm app -- kitty'"))
 
 hl.bind("SUPER + D", exec("uwsm app -- tofi-drun --drun-launch=true"))
+hl.bind("SUPER + SHIFT + D", exec("noctalia msg panel-toggle launcher"))
+hl.bind("SUPER + CTRL + D", exec("uwsm app -- tofi-drun --drun-launch=true"))
 hl.bind("SUPER + comma", exec("noctalia msg settings-toggle"))
 hl.bind("SUPER + W", exec("uwsm app -- firefox"))
 hl.bind("SUPER + F", exec("uwsm app -- nautilus"))
 hl.bind("SUPER + E", exec("uwsm app -- zeditor"))
 hl.bind("SUPER + Backspace", exec("hyprland-scratchpad toggle-exec --name discord --exec 'uwsm app -- vesktop'"))
 hl.bind("SUPER + M", exec("hyprland-scratchpad toggle-exec --name spotify --exec 'uwsm app -- spotify'"))
-hl.bind(
-  "SUPER + S",
-  exec(
-    "hyprland-scratchpad toggle-exec --name settings --exec 'uwsm app -- env XDG_CURRENT_DESKTOP=gnome gnome-control-center'"
-  )
-)
+hl.bind("SUPER + S", exec("noctalia msg panel-toggle control-center"))
 
 hl.bind("Print", exec("XDG_SCREENSHOTS_DIR=" .. home .. "/Pictures/Screenshots grimblast --notify copysave output"))
 hl.bind(
