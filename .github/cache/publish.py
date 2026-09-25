@@ -13,10 +13,11 @@ import tempfile
 from urllib.parse import urljoin, urlparse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+from local import request as local_request
 
 
 HOST = "homelab.tail84b6c.ts.net"
-CACHE = f"http://{HOST}:8501"
+CACHE = os.environ.get("NIX_CACHE_URL", f"http://{HOST}:8501")
 DESTINATION = f"nix-cache@{HOST}"
 
 
@@ -67,6 +68,9 @@ def check_cached_response(path):
 
 @contextmanager
 def credentials():
+    if os.environ.get("NIX_CACHE_LOCAL_SOCKET"):
+        yield dict(os.environ), None, None
+        return
     with tempfile.TemporaryDirectory(prefix="nix-cache-credentials-") as temporary:
         work = Path(temporary)
         identity = work / "ssh-key"
@@ -103,13 +107,16 @@ def publish(host, generation, path):
     info = closure_info(path)
     nar_bytes = sum(item["narSize"] for item in info.values())
     with credentials() as (env, ssh_options, signing_key):
-        run("ssh", *ssh_options, DESTINATION, f"cache-preflight {nar_bytes}", env=env)
-        subprocess.run(["nix", "store", "sign", "--recursive", "--key-file", str(signing_key), path],
-                       check=True, env=env)
-        subprocess.run(["nix", "copy", "--to", f"ssh://{DESTINATION}",
-                        "--substitute-on-destination", path], check=True, env=env)
-        command = shlex.join(["cache-publish", host, generation, path])
-        receipt = json.loads(run("ssh", *ssh_options, DESTINATION, command, env=env))
+        if ssh_options is None:
+            receipt = local_request("publish", host=host, generation=generation, path=path)
+        else:
+            run("ssh", *ssh_options, DESTINATION, f"cache-preflight {nar_bytes}", env=env)
+            subprocess.run(["nix", "store", "sign", "--recursive", "--key-file", str(signing_key), path],
+                           check=True, env=env)
+            subprocess.run(["nix", "copy", "--to", f"ssh://{DESTINATION}",
+                            "--substitute-on-destination", path], check=True, env=env)
+            command = shlex.join(["cache-publish", host, generation, path])
+            receipt = json.loads(run("ssh", *ssh_options, DESTINATION, command, env=env))
         if receipt.get("closureDigest") != closure_digest(info) or receipt.get("closurePaths") != len(info):
             raise ValueError("The retained remote closure differs from the built system")
         public_key = Path(__file__).resolve().parents[2] / "modules/nixos/minimal/homelab-cache.pub"
@@ -148,15 +155,18 @@ def publish_dependencies(group, generation, paths, *, verified=None):
         if not info or any(value is None for value in info.values()):
             raise ValueError("Dependency closure is incomplete")
         nar_bytes = sum(item["narSize"] for item in info.values())
-        run("ssh", *ssh_options, DESTINATION, f"cache-preflight {nar_bytes}", env=env)
-        subprocess.run(["nix", "store", "sign", "--recursive", "--key-file", str(signing_key), "--stdin"],
-                       input=manifest, text=True, check=True, env=env)
-        subprocess.run(["nix", "copy", "--to", f"ssh://{DESTINATION}",
-                        "--substitute-on-destination", "--stdin"],
-                       input=manifest, text=True, check=True, env=env)
-        receipt = json.loads(run("ssh", *ssh_options, DESTINATION,
-                                 shlex.join(["cache-retain", group, generation]),
-                                 input=json.dumps(paths), env=env))
+        if ssh_options is None:
+            receipt = local_request("retain", group=group, generation=generation, paths=paths)
+        else:
+            run("ssh", *ssh_options, DESTINATION, f"cache-preflight {nar_bytes}", env=env)
+            subprocess.run(["nix", "store", "sign", "--recursive", "--key-file", str(signing_key), "--stdin"],
+                           input=manifest, text=True, check=True, env=env)
+            subprocess.run(["nix", "copy", "--to", f"ssh://{DESTINATION}",
+                            "--substitute-on-destination", "--stdin"],
+                           input=manifest, text=True, check=True, env=env)
+            receipt = json.loads(run("ssh", *ssh_options, DESTINATION,
+                                     shlex.join(["cache-retain", group, generation]),
+                                     input=json.dumps(paths), env=env))
         if receipt.get("closureDigest") != closure_digest(info) or receipt.get("closurePaths") != len(info):
             raise ValueError("Retained dependencies differ from the uploaded closure")
         public_key = Path(__file__).resolve().parents[2] / "modules/nixos/minimal/homelab-cache.pub"

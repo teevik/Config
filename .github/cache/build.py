@@ -12,6 +12,7 @@ import time
 import uuid
 
 from publish import publish_dependencies
+from local import request as local_request
 
 GCROOTS = Path("/nix/var/nix/gcroots")
 
@@ -42,6 +43,8 @@ def upload_loop(directory, group, generation, stop, errors, interval=60):
 
 
 def run(group, generation, command):
+    if os.environ.get("NIX_CACHE_LOCAL_SOCKET"):
+        return run_local(command)
     roots = GCROOTS / f"config-ci-{uuid.uuid4().hex}"
     subprocess.run(["sudo", "install", "-d", "-m", "0755", "-o", str(os.getuid()),
                     "-g", str(os.getgid()), str(roots)], check=True)
@@ -74,6 +77,34 @@ def run(group, generation, command):
             subprocess.run(["sudo", "rmdir", str(roots)], check=True)
     if errors:
         print(f"::error::Could not retain completed build dependencies: {errors[0]}", file=sys.stderr)
+    return result.returncode or (1 if errors else 0)
+
+
+def run_local(command):
+    # The untrusted runner cannot install a root daemon hook. Its dedicated
+    # daemon has an immutable hook that roots completed outputs server-side.
+    stop, errors = threading.Event(), []
+
+    def flush():
+        while True:
+            finishing = stop.wait(60)
+            try:
+                local_request("flush")
+                errors.clear()
+            except Exception as error:
+                errors[:] = [error]
+            if finishing:
+                return
+
+    worker = threading.Thread(target=flush)
+    worker.start()
+    try:
+        result = subprocess.run(command)
+    finally:
+        stop.set()
+        worker.join()
+    if errors:
+        print(f"::error::Could not retain CI outputs: {errors[0]}", file=sys.stderr)
     return result.returncode or (1 if errors else 0)
 
 

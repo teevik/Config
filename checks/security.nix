@@ -12,6 +12,7 @@ let
       ../tests/cache-upload.py
       ../tests/cache-bootstrap.py
       ../tests/cache-shared.py
+      ../tests/cache-native.py
       ../modules/nixos/minimal/homelab-cache.pub
     ];
   };
@@ -32,6 +33,7 @@ pkgs.runCommand "security-check"
     python3 tests/cache-upload.py
     python3 tests/cache-bootstrap.py
     python3 tests/cache-shared.py
+    python3 tests/cache-native.py
     actionlint -oneline .github/workflows/*.yml
     touch "$out"
   ''

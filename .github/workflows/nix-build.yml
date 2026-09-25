@@ -17,6 +17,10 @@ on:
       publish-cache:
         default: false
         type: boolean
+      native-runner:
+        description: Use the homelab runner reserved for nightly builds on main
+        default: false
+        type: boolean
     secrets:
       NIX_CACHE_SSH_KEY:
         required: false
@@ -30,13 +34,15 @@ permissions:
 jobs:
   build:
     name: ${{ inputs.prepare-update && 'Update and build shared dependencies' || format('Build and scan {0}', inputs.host) }}
-    runs-on: ubuntu-latest
+    if: ${{ !inputs.native-runner || (github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')) }}
+    runs-on: ${{ inputs.native-runner && 'homelab-config-nightly' || 'ubuntu-latest' }}
     timeout-minutes: 180
     steps:
       - name: Check out Config and its submodules
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Download nightly update
         if: inputs.update-artifact != ''
@@ -47,7 +53,7 @@ jobs:
 
       - name: Install the validated update
         if: inputs.update-artifact != ''
-        run: cp -a "$RUNNER_TEMP/nightly-update/sources/." .
+        run: python3 .github/cache/install-update.py "$RUNNER_TEMP/nightly-update"
 
       - name: Log shared nixpkgs revision
         run: |
@@ -55,6 +61,7 @@ jobs:
           echo "NIX_CACHE_VERIFIED_PATHS=$RUNNER_TEMP/nix-cache-verified-paths.json" >> "$GITHUB_ENV"
 
       - name: Free runner disk space
+        if: ${{ !inputs.native-runner }}
         run: |
           echo "Disk space before cleanup:"
           df -h /
@@ -72,6 +79,7 @@ jobs:
           df -h /
 
       - name: Check private cache access configuration
+        if: ${{ !inputs.native-runner }}
         env:
           CACHE_CLIENT_ID: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
           CACHE_AUDIENCE: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
@@ -81,6 +89,7 @@ jobs:
           test "$CACHE_POLICY_READY" = true
 
       - name: Connect to the private cache
+        if: ${{ !inputs.native-runner }}
         uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8 # v4
         with:
           oauth-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
@@ -89,6 +98,7 @@ jobs:
           ping: homelab.tail84b6c.ts.net
 
       - name: Install Nix
+        if: ${{ !inputs.native-runner }}
         uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3.22.5
         with:
           extra-conf: |
@@ -139,7 +149,7 @@ jobs:
               echo "::error::Expected Nix runtime and plugin in bootstrap-paths; got ${#bootstrap[@]} paths"
               exit 1
             fi
-            nix copy --from http://homelab.tail84b6c.ts.net:8501 "${bootstrap[@]}"
+            nix copy --from "${NIX_CACHE_URL:-http://homelab.tail84b6c.ts.net:8501}" "${bootstrap[@]}"
             nix_package="${bootstrap[0]}"
             plugin_package="${bootstrap[1]}"
           else
