@@ -125,7 +125,7 @@ class UploadTests(unittest.TestCase):
             stop, errors = threading.Event(), []
             calls = []
 
-            def publish(group, generation, paths):
+            def publish(group, generation, paths, **kwargs):
                 calls.append(paths)
                 if len(calls) == 1:
                     stop.set()  # The compilation has failed/ended during upload.
@@ -135,6 +135,44 @@ class UploadTests(unittest.TestCase):
                 cache_build.upload_loop(roots, "desktop", "123-1", stop, errors, interval=0)
             self.assertEqual(calls, [sorted([MANUAL, PRIVATE])] * 2)
             self.assertEqual(errors, [])
+
+    def test_overlapping_batches_verify_each_path_once_and_retry_failures(self):
+        verified = set()
+        checked = []
+        fail = False
+        info = {}
+
+        def run(*args, **kwargs):
+            if args[:2] == ("nix", "path-info"):
+                return json.dumps(info)
+            return json.dumps({"closureDigest": upload.closure_digest(info), "closurePaths": len(info)})
+
+        def execute(args, **kwargs):
+            if args[:3] == ["nix", "store", "verify"]:
+                self.assertNotIn("--recursive", args)
+                checked.append(set(kwargs["input"].splitlines()))
+                if fail:
+                    raise subprocess.CalledProcessError(1, args)
+
+        with tempfile.TemporaryDirectory() as temporary, \
+             patch.object(upload, "run", side_effect=run), \
+             patch.object(upload.subprocess, "run", side_effect=execute), \
+             patch.dict(os.environ, NIX_CACHE_SSH_KEY="test", NIX_CACHE_SIGNING_KEY="test",
+                        NIX_CACHE_VERIFIED_PATHS=str(Path(temporary) / "verified.json")):
+            info = {path: {"narSize": 1} for path in [MANUAL, SYSTEM]}
+            upload.publish_dependencies("desktop", "123-1", [MANUAL], verified=verified)
+            self.assertEqual(verified, {MANUAL, SYSTEM})
+            info = {path: {"narSize": 1} for path in [PRIVATE, SYSTEM]}
+            fail = True
+            with self.assertRaises(subprocess.CalledProcessError):
+                upload.publish_dependencies("desktop", "123-1", [PRIVATE], verified=verified)
+            self.assertEqual(verified, {MANUAL, SYSTEM})
+            fail = False
+            upload.publish_dependencies("desktop", "123-1", [PRIVATE], verified=verified)
+            verified.clear()  # A later step in the same job starts a fresh process.
+            upload.publish_dependencies("desktop", "123-1", [PRIVATE], verified=verified)
+        self.assertEqual(checked, [{MANUAL, SYSTEM}, {PRIVATE}, {PRIVATE}])
+        self.assertEqual(verified, {MANUAL, PRIVATE, SYSTEM})
 
     def test_failed_build_still_publishes_outputs_and_returns_original_failure(self):
         real_run = subprocess.run
@@ -163,7 +201,7 @@ sys.exit(7)
              patch.dict(os.environ, NIX_CACHE_SSH_KEY="private", NIX_CACHE_SIGNING_KEY="private"):
             result = cache_build.run("desktop", "123-1", [sys.executable, "-c", child, MANUAL + " " + PRIVATE])
             self.assertEqual(result, 7)
-            publish.assert_called_once_with("desktop", "123-1", sorted([MANUAL, PRIVATE]))
+            publish.assert_called_once_with("desktop", "123-1", sorted([MANUAL, PRIVATE]), verified=set())
             self.assertEqual(list(Path(temporary).iterdir()), [])
 
     def test_seeding_queries_existing_outputs_without_realising_them(self):

@@ -27,6 +27,18 @@ let
     }
   );
   graph = original.cargoNix.resolved;
+  manifestChanged = build (
+    flake.inputs.zed
+    // {
+      outPath =
+        pkgs.runCommand "zed-unrelated-workspace-dependency" { src = flake.inputs.zed.outPath; }
+          ''
+            cp -r "$src" "$out"
+            chmod u+w "$out/Cargo.toml"
+            printf '\n[workspace.dependencies.config_cache_unused]\nversion = "1"\n' >> "$out/Cargo.toml"
+          '';
+    }
+  );
   sourceChanged = build (
     flake.inputs.zed
     // {
@@ -49,6 +61,7 @@ let
   workspaceCacheReused = cached original "util" == cached changed "util";
   workspaceSourceTracked = cached original "util" != cached sourceChanged "util";
   registryCacheIndependent = cached original "serde" == cached sourceChanged "serde";
+  workspaceManifestIndependent = cached original "clock" == cached manifestChanged "clock";
   applicationRebuilt =
     original.cargoNix.workspaceMembers.zed.build.drvPath
     != changed.cargoNix.workspaceMembers.zed.build.drvPath;
@@ -61,6 +74,7 @@ assert registryCacheReused;
 assert workspaceCacheReused;
 assert workspaceSourceTracked;
 assert registryCacheIndependent;
+assert workspaceManifestIndependent;
 assert applicationRebuilt;
 {
   inherit
@@ -69,6 +83,7 @@ assert applicationRebuilt;
     workspaceCacheReused
     workspaceSourceTracked
     registryCacheIndependent
+    workspaceManifestIndependent
     applicationRebuilt
     ;
   roots = builtins.attrNames original.cargoNix.workspaceMembers;

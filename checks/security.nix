@@ -1,4 +1,7 @@
-{ pkgs ? import ../packages/nix-lint/pkgs.nix, ... }:
+{
+  pkgs ? import ../packages/nix-lint/pkgs.nix,
+  ...
+}:
 let
   source = pkgs.lib.fileset.toSource {
     root = ../.;
@@ -8,6 +11,7 @@ let
       ../tests/security.py
       ../tests/cache-upload.py
       ../tests/cache-bootstrap.py
+      ../tests/cache-shared.py
       ../modules/nixos/minimal/homelab-cache.pub
     ];
   };
@@ -27,6 +31,7 @@ pkgs.runCommand "security-check"
     python3 tests/security.py
     python3 tests/cache-upload.py
     python3 tests/cache-bootstrap.py
+    python3 tests/cache-shared.py
     actionlint -oneline .github/workflows/*.yml
     touch "$out"
   ''

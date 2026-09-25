@@ -14,22 +14,28 @@ The plugin must be loaded by the evaluating Nix. The existing
 `upstream.nix` retains the Crane build as the source of shared packaging and
 as a fallback that can be imported directly.
 
-The GitHub cache workers build `cargo-nix-plugin` and its matching Nix
-(`cargo-nix-plugin.nix`) from the downloaded nightly lock, then load the plugin
-through `NIX_CONFIG`. They verify Zed's resolver before evaluating the full host.
+The GitHub preparation job builds `cargo-nix-plugin` and its matching Nix
+(`cargo-nix-plugin.nix`) from the nightly lock, then loads the plugin through
+`NIX_CONFIG`. It evaluates both host graphs and builds their shared dependencies,
+including Zed, before either host job starts. Resolver compatibility is checked
+as part of Zed's package evaluation.
 The installer action only bootstraps this pair; its version need not match a
 newly updated lock.
 
 The build reuses Zed's pinned toolchain, native dependencies, WebRTC patches,
 release-channel setting, license generation, and final packaging. Workspace
 crate sources are filtered individually, with explicit shared assets for the
-crates that need them. Registry dependencies can be reused independently of
+crates that need them. Each crate receives a generated root manifest containing
+only the package metadata it inherits. Changes to unrelated workspace dependency
+declarations therefore preserve its source and derivation inputs. Dependencies
+and features still come from the full resolver graph, so relevant changes rebuild
+the affected crates. Registry dependencies can be reused independently of
 workspace changes.
 
 `prepare-cargo-nix.py` creates a separate workspace for the resolver. It removes
 development dependencies, limits roots to the application/CLI and their feature
 entry point, and makes local path patches discoverable. The actual compiled
-sources retain the original manifests. This avoids resolving every tool and
+sources retain their original crate manifests. This avoids resolving every tool and
 test in the upstream workspace as a production root. The plugin's remaining
 host/target feature-unification differences still warrant care when updating it.
 
@@ -43,6 +49,7 @@ and invalidation when a workspace crate's own source changes:
 
 ```sh
 nix eval --impure --json --expr 'import ./tests/zed-cargo-nix.nix {}'
+python3 tests/zed-local-source.py
 ```
 
 Evaluation materializes a resolver workspace and Git sources and may populate

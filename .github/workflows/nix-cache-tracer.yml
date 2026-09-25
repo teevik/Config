@@ -17,11 +17,11 @@ permissions:
 
 jobs:
   update-lock:
-    name: Update flake lock and bootstrap
+    name: Update packages and build shared dependencies
     permissions:
       contents: read
       id-token: write
-    # Keep the update and bootstrap inside the reusable workflow matched by
+    # Keep preparation and shared builds inside the reusable workflow matched by
     # the existing Tailscale OIDC job_workflow_ref claim.
     uses: ./.github/workflows/nix-build.yml
     with:

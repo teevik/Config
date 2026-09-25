@@ -40,41 +40,10 @@ let
     '';
     postFixup = "";
   };
-  localSrc =
-    relative:
-    let
-      extras = {
-        "crates/assets" = [ "assets" ];
-        "crates/settings" = [ "assets" ];
-        "crates/release_channel" = [ "crates/zed/RELEASE_CHANNEL" ];
-        "crates/prompt_store" = [ "crates/git_ui/src/commit_message_prompt.txt" ];
-        "crates/cli" = [ "script/uninstall.sh" ];
-        "crates/extension_host" = [ "crates/extension_api/wit" ];
-      };
-      paths = [
-        "Cargo.toml"
-        relative
-      ]
-      ++ (extras.${relative} or [ ]);
-    in
-    {
-      workspace_member = relative;
-      src = lib.cleanSourceWith {
-        src = source;
-        name = "source";
-        filter =
-          path: type:
-          let
-            relativePath = lib.removePrefix "${source}/" path;
-          in
-          builtins.any (
-            included:
-            relativePath == included
-            || lib.hasPrefix "${included}/" relativePath
-            || (type == "directory" && lib.hasPrefix "${relativePath}/" included)
-          ) paths;
-      };
-    };
+  localSrc = import ./local-source.nix {
+    pkgs = buildPkgs;
+    inherit source;
+  };
   rustFlags = [
     "-C"
     "symbol-mangling-version=v0"
@@ -159,33 +128,39 @@ let
                 {
                   inherit (common.env) RELEASE_VERSION ZED_COMMIT_SHA;
                 };
-          postPatch = ''
-            if [ -f crates/zed/RELEASE_CHANNEL ]; then
-              echo stable > crates/zed/RELEASE_CHANNEL
-            fi
-          ''
-          + lib.optionalString (args.crateName == "assets") ''
-            cp ${licenses}/licenses.md assets/licenses.md
-          ''
-          + lib.optionalString (args.crateName == "cxx") ''
-            # DEP_CXXBRIDGE1_HEADER must survive this crate's sandbox. The
-            # plugin retains/remaps OUT_DIR, but not the unpacked source tree.
-            substituteInPlace build.rs --replace-fail \
-              'let cxx_h = manifest_dir.join("include").join("cxx.h");' \
-              'let cxx_h = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("cxx.h");
-               std::fs::copy(manifest_dir.join("include/cxx.h"), &cxx_h).unwrap();'
-          ''
-          + lib.optionalString (args.crateName == "webrtc-sys") ''
-            substituteInPlace webrtc-sys/build.rs --replace-fail \
-              "cargo:rustc-link-lib=static=webrtc" "cargo:rustc-link-lib=dylib=webrtc"
-            substituteInPlace webrtc-sys/build.rs --replace-fail \
-              'add_gio_headers(&mut builder);' \
-              'for lib_name in ["glib-2.0", "gio-2.0"] {
-                if let Ok(lib) = pkg_config::Config::new().cargo_metadata(false).probe(lib_name) {
-                  for path in lib.include_paths { builder.include(&path); }
-                }
-              }'
-          '';
+          postPatch =
+            lib.optionalString (
+              args ? workspace_member
+              && builtins.pathExists "${source}/${args.workspace_member}/Cargo.toml"
+              && toString args.src == toString (localSrc args.workspace_member).src
+            ) (localSrc args.workspace_member).postPatch
+            + ''
+              if [ -f crates/zed/RELEASE_CHANNEL ]; then
+                echo stable > crates/zed/RELEASE_CHANNEL
+              fi
+            ''
+            + lib.optionalString (args.crateName == "assets") ''
+              cp ${licenses}/licenses.md assets/licenses.md
+            ''
+            + lib.optionalString (args.crateName == "cxx") ''
+              # DEP_CXXBRIDGE1_HEADER must survive this crate's sandbox. The
+              # plugin retains/remaps OUT_DIR, but not the unpacked source tree.
+              substituteInPlace build.rs --replace-fail \
+                'let cxx_h = manifest_dir.join("include").join("cxx.h");' \
+                'let cxx_h = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("cxx.h");
+                 std::fs::copy(manifest_dir.join("include/cxx.h"), &cxx_h).unwrap();'
+            ''
+            + lib.optionalString (args.crateName == "webrtc-sys") ''
+              substituteInPlace webrtc-sys/build.rs --replace-fail \
+                "cargo:rustc-link-lib=static=webrtc" "cargo:rustc-link-lib=dylib=webrtc"
+              substituteInPlace webrtc-sys/build.rs --replace-fail \
+                'add_gio_headers(&mut builder);' \
+                'for lib_name in ["glib-2.0", "gio-2.0"] {
+                  if let Ok(lib) = pkg_config::Config::new().cargo_metadata(false).probe(lib_name) {
+                    for path in lib.include_paths { builder.include(&path); }
+                  }
+                }'
+            '';
         }
         // lib.optionalAttrs (args.crateName == "zed") {
           # These libraries are dlopened; shrinking RPATH would remove them.
@@ -210,11 +185,13 @@ upstream.overrideAttrs (
     cargoArtifacts = null;
     doInstallCargoArtifacts = false;
     preBuild = "";
-    buildPhase = ''
-      mkdir -p "$TARGET_DIR"
-      cp ${cargoNix.workspaceMembers.zed.build}/bin/zed "$TARGET_DIR/zed"
-      cp ${cargoNix.workspaceMembers.cli.build}/bin/cli "$TARGET_DIR/cli"
-    '';
+    buildPhase =
+      assert cargoNix.apiLevel == cargoNix.resolverApiLevel;
+      ''
+        mkdir -p "$TARGET_DIR"
+        cp ${cargoNix.workspaceMembers.zed.build}/bin/zed "$TARGET_DIR/zed"
+        cp ${cargoNix.workspaceMembers.cli.build}/bin/cli "$TARGET_DIR/cli"
+      '';
     passthru = (old.passthru or { }) // {
       inherit cargoNix resolverSource;
       inherit (final) cargoArtifacts;

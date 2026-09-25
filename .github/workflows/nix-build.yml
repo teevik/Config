@@ -7,7 +7,7 @@ on:
         default: ""
         type: string
       prepare-update:
-        description: Update packages and publish the shared bootstrap before host builds
+        description: Update packages and cache shared dependencies before host builds
         default: false
         type: boolean
       update-artifact:
@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   build:
-    name: ${{ inputs.prepare-update && 'Update and bootstrap' || format('Build and scan {0}', inputs.host) }}
+    name: ${{ inputs.prepare-update && 'Update and build shared dependencies' || format('Build and scan {0}', inputs.host) }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -52,6 +52,7 @@ jobs:
       - name: Log shared nixpkgs revision
         run: |
           echo "nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
+          echo "NIX_CACHE_VERIFIED_PATHS=$RUNNER_TEMP/nix-cache-verified-paths.json" >> "$GITHUB_ENV"
 
       - name: Free runner disk space
         run: |
@@ -125,21 +126,12 @@ jobs:
           python3 .github/cache/publish.py --dependencies bootstrap \
             "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nightly-update/bootstrap-paths"
 
-      - name: Upload nightly update and bootstrap paths
-        if: inputs.prepare-update
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: nightly-update
-          path: ${{ runner.temp }}/nightly-update
-          if-no-files-found: error
-          retention-days: 7
-
       - name: Load cargo-nix-plugin with its matching Nix
-        if: ${{ !inputs.prepare-update }}
         env:
           UPDATE_ARTIFACT: ${{ inputs.update-artifact }}
+          PREPARE_UPDATE: ${{ inputs.prepare-update }}
         run: |
-          if [[ -n "$UPDATE_ARTIFACT" ]]; then
+          if [[ -n "$UPDATE_ARTIFACT" || "$PREPARE_UPDATE" == true ]]; then
             # The preparation job publishes both exact outputs before either
             # host starts. Copying paths cannot silently recompile a bootstrap.
             mapfile -t bootstrap < "$RUNNER_TEMP/nightly-update/bootstrap-paths"
@@ -164,20 +156,21 @@ jobs:
             echo 'CARGO_NIX_CONFIG'
           } >> "$GITHUB_ENV"
 
-      - name: Verify Zed's Cargo resolver
-        if: ${{ !inputs.prepare-update }}
+      - name: Plan dependencies shared by both hosts
+        if: inputs.prepare-update
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
-          # Fail before the full host evaluation if loading or API matching
-          # breaks, and exercise the real Zed graph with this evaluator.
-          nix eval --raw .#zed --apply 'zed:
-            assert builtins ? resolveCargoWorkspace;
-            assert zed.cargoNix.apiLevel == zed.cargoNix.resolverApiLevel;
-            zed.drvPath'
+          python3 .github/cache/build.py bootstrap "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
+            python3 .github/cache/shared.py plan "$RUNNER_TEMP/nightly-update" \
+            '.#nixosConfigurations.desktop.config.system.build.toplevel' \
+            '.#nixosConfigurations.zenbook.config.system.build.toplevel'
 
-      - name: Build ${{ inputs.host }}
-        if: ${{ !inputs.prepare-update }}
+      - name: Build ${{ inputs.prepare-update && 'shared dependencies' || inputs.host }}
         env:
           HOST: ${{ inputs.host }}
+          PREPARE_UPDATE: ${{ inputs.prepare-update }}
           PUBLISH_CACHE: ${{ inputs.publish-cache }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
@@ -203,13 +196,37 @@ jobs:
           }
           trap report_disk_high_water_mark EXIT
 
-          build=(nix build --out-link "$RUNNER_TEMP/nixos-system" --print-build-logs
-            ".#nixosConfigurations.${HOST}.config.system.build.toplevel")
+          if [[ "$PREPARE_UPDATE" == true ]]; then
+            build=(python3 .github/cache/shared.py build "$RUNNER_TEMP/nightly-update")
+          else
+            build=(nix build --out-link "$RUNNER_TEMP/nixos-system" --print-build-logs
+              ".#nixosConfigurations.${HOST}.config.system.build.toplevel")
+          fi
           if [[ "$PUBLISH_CACHE" == true ]]; then
-            python3 .github/cache/build.py "$HOST" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
+            python3 .github/cache/build.py "${HOST:-bootstrap}" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
           else
             "${build[@]}"
           fi
+
+      - name: Retain and verify shared dependencies before starting hosts
+        if: inputs.prepare-update
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: |
+          # Cache hits do not trigger the post-build hook. Publish every
+          # requested output so both hosts can substitute the complete plan.
+          python3 .github/cache/publish.py --dependencies bootstrap \
+            "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nightly-update/shared-paths"
+
+      - name: Upload nightly update and shared build manifests
+        if: inputs.prepare-update
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nightly-update
+          path: ${{ runner.temp }}/nightly-update
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Retain and verify the complete private system closure
         if: ${{ inputs.publish-cache && !inputs.prepare-update }}

@@ -125,7 +125,15 @@ def publish(host, generation, path):
             print("::warning::Homelab retained closures exceed the 500 GiB operating budget")
 
 
-def publish_dependencies(group, generation, paths):
+def publish_dependencies(group, generation, paths, *, verified=None):
+    # Only successful checks are remembered. CI's optional state file lives in
+    # runner.temp, so sequential build steps share it but separate jobs do not.
+    # Retention and receipt checks always cover the entire closure.
+    if verified is None:
+        verified = set()
+    state = Path(os.environ["NIX_CACHE_VERIFIED_PATHS"]) if os.environ.get("NIX_CACHE_VERIFIED_PATHS") else None
+    if state is not None and state.exists():
+        verified.update(json.loads(state.read_text()))
     paths = sorted(set(paths))
     if not paths:
         return
@@ -152,12 +160,22 @@ def publish_dependencies(group, generation, paths):
         if receipt.get("closureDigest") != closure_digest(info) or receipt.get("closurePaths") != len(info):
             raise ValueError("Retained dependencies differ from the uploaded closure")
         public_key = Path(__file__).resolve().parents[2] / "modules/nixos/minimal/homelab-cache.pub"
-        subprocess.run(["nix", "store", "verify", "--store", CACHE, "--recursive", "--no-contents",
-                        "--option", "narinfo-cache-negative-ttl", "0",
-                        "--sigs-needed", "1", "--option", "extra-trusted-public-keys",
-                        public_key.read_text().strip(), "--stdin"],
-                       input=manifest, text=True, check=True, env=env)
-        print(f"Retained {group} dependencies: {len(info)} paths, {nar_bytes / 1024**3:.1f} GiB", flush=True)
+        unchecked = sorted(set(info) - verified)
+        if unchecked:
+            # info is already the expanded closure. Recursing here would
+            # repeatedly check dependencies shared by successive batches.
+            subprocess.run(["nix", "store", "verify", "--store", CACHE, "--no-contents",
+                            "--option", "narinfo-cache-negative-ttl", "0",
+                            "--sigs-needed", "1", "--option", "extra-trusted-public-keys",
+                            public_key.read_text().strip(), "--stdin"],
+                           input="".join(path + "\n" for path in unchecked), text=True, check=True, env=env)
+            verified.update(unchecked)
+        if state is not None:
+            temporary = state.with_suffix(".tmp")
+            temporary.write_text(json.dumps(sorted(verified)) + "\n")
+            temporary.replace(state)
+        print(f"Retained {group} dependencies: {len(info)} paths, {nar_bytes / 1024**3:.1f} GiB; "
+              f"verified {len(unchecked)} new paths", flush=True)
 
 
 if __name__ == "__main__":

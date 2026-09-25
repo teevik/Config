@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import uuid
 
 from publish import publish_dependencies
@@ -21,6 +22,7 @@ def pending_paths(directory, published):
 
 def upload_loop(directory, group, generation, stop, errors, interval=60):
     published = set()
+    verified = set()
     while True:
         finishing = stop.wait(interval)
         try:
@@ -29,7 +31,7 @@ def upload_loop(directory, group, generation, stop, errors, interval=60):
             # failure, without reuploading previously acknowledged batches.
             for offset in range(0, len(paths), 256):
                 batch = paths[offset:offset + 256]
-                publish_dependencies(group, generation, batch)
+                publish_dependencies(group, generation, batch, verified=verified)
                 published.update(batch)
             errors.clear()
         except Exception as error:
@@ -52,16 +54,20 @@ def run(group, generation, command):
         hook.chmod(0o755)
         env = dict(os.environ)
         for name in ["NIX_CACHE_SSH_KEY", "NIX_CACHE_SIGNING_KEY",
-                     "NIX_CACHE_SSH_KEY_FILE", "NIX_CACHE_SIGNING_KEY_FILE"]:
+                     "NIX_CACHE_SSH_KEY_FILE", "NIX_CACHE_SIGNING_KEY_FILE", "NIX_CACHE_VERIFIED_PATHS"]:
             env.pop(name, None)
         env["NIX_CONFIG"] = env.get("NIX_CONFIG", "") + f"\npost-build-hook = {hook}\n"
         worker = threading.Thread(target=upload_loop, args=(roots, group, generation, stop, errors))
         worker.start()
+        started = time.monotonic()
         try:
             result = subprocess.run(command, env=env)
         finally:
+            finished = time.monotonic()
+            print(f"Build command finished after {finished - started:.1f}s; draining cache uploads", flush=True)
             stop.set()
             worker.join()
+            print(f"Cache upload drain finished after {time.monotonic() - finished:.1f}s", flush=True)
             for root in roots.iterdir():
                 root.unlink()
             # The directory is runner-owned, but its parent is root-owned.
