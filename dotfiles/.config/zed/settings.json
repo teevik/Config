@@ -39,6 +39,7 @@
     "model_parameters": []
   },
   "edit_predictions": {
+    "provider": "zed",
     "mode": "subtle"
   },
   "git_panel": {
