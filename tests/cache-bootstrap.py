@@ -54,6 +54,12 @@ class BootstrapTests(unittest.TestCase):
             ], cwd=work, env=env, text=True))
             self.assertEqual(manifest.read_text().splitlines(), expected,
                              "The loader needs exactly the Nix runtime and plugin, in that order")
+            # A cache hit does not run the retention hook. Keep the tools alive
+            # during the job even if host GC runs before system publication.
+            subprocess.run(["nix-store", "--gc"], cwd=work, env=env, check=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.assertTrue(all(Path(path).exists() for path in expected),
+                            "The running job must root both bootstrap outputs")
 
 
 if __name__ == "__main__":
