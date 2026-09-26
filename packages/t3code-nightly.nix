@@ -30,13 +30,13 @@ let
     pkgs.lib.genAttrs electronArgs (_: electron)
   );
 
-  version = "0.0.43-nightly.20260925.2237";
+  version = "0.0.43-nightly.20260926.2282";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-FRQWgzoFOvqOXGeitVdLUfFybvvaACxVJAPkPV8OTOk=";
+    hash = "sha256-zlATeSqceOlpGcOIl7OexZ14Oye6Y2r1Wxj4DM2N6Tg=";
   };
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
