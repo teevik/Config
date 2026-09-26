@@ -1,19 +1,16 @@
-name: Prepare or build NixOS
+name: Build NixOS
 
 on:
   workflow_call:
     inputs:
       host:
+        description: Build this host, or desktop then zenbook when empty
         default: ""
         type: string
-      prepare-update:
-        description: Update packages and cache shared dependencies before host builds
+      update-packages:
+        description: Update packages before building both hosts
         default: false
         type: boolean
-      update-artifact:
-        description: Optional validated nightly update to overlay on the checkout
-        default: ""
-        type: string
       publish-cache:
         default: false
         type: boolean
@@ -33,10 +30,12 @@ permissions:
 
 jobs:
   build:
-    name: ${{ inputs.prepare-update && 'Update and build shared dependencies' || format('Build and scan {0}', inputs.host) }}
+    name: ${{ inputs.host == '' && 'Build and scan desktop then zenbook' || format('Build and scan {0}', inputs.host) }}
     if: ${{ !inputs.native-runner || (github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')) }}
     runs-on: ${{ inputs.native-runner && 'homelab-config-nightly' || 'ubuntu-latest' }}
-    timeout-minutes: 180
+    timeout-minutes: 360
+    env:
+      PUBLISH_CACHE: ${{ inputs.publish-cache }}
     steps:
       - name: Check out Config and its submodules
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,19 +43,14 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - name: Download nightly update
-        if: inputs.update-artifact != ''
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: ${{ inputs.update-artifact }}
-          path: ${{ runner.temp }}/nightly-update
-
-      - name: Install the validated update
-        if: inputs.update-artifact != ''
-        run: python3 .github/cache/install-update.py "$RUNNER_TEMP/nightly-update"
-
-      - name: Log shared nixpkgs revision
+      - name: Validate host and log nixpkgs revision
+        env:
+          HOST: ${{ inputs.host }}
         run: |
+          case "$HOST" in
+            ''|desktop|zenbook) ;;
+            *) echo "::error::Unsupported host: $HOST"; exit 2 ;;
+          esac
           echo "nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
           echo "NIX_CACHE_VERIFIED_PATHS=$RUNNER_TEMP/nix-cache-verified-paths.json" >> "$GITHUB_ENV"
 
@@ -112,7 +106,7 @@ jobs:
             trusted-public-keys = homelab-cache-1:e0A0wubKr+XqKPA/MeUY5ixaG+1HvBBImTkPzrNJT4s= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
 
       - name: Update flake inputs and packages
-        if: inputs.prepare-update
+        if: inputs.update-packages
         env:
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
@@ -124,113 +118,28 @@ jobs:
             -c just update --export "$RUNNER_TEMP/nightly-update"
           echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
 
-      - name: Build and retain the shared bootstrap
-        if: inputs.prepare-update
+      - name: Build and load cargo-nix-plugin with its matching Nix
         env:
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
-          python3 .github/cache/build.py bootstrap "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
-            bash .github/cache/bootstrap.sh "$RUNNER_TEMP/nightly-update/bootstrap-paths"
-          # Publish the requested outputs even when they came from another cache.
-          python3 .github/cache/publish.py --dependencies bootstrap \
-            "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nightly-update/bootstrap-paths"
-
-      - name: Load cargo-nix-plugin with its matching Nix
-        env:
-          UPDATE_ARTIFACT: ${{ inputs.update-artifact }}
-          PREPARE_UPDATE: ${{ inputs.prepare-update }}
-        run: |
-          if [[ -n "$UPDATE_ARTIFACT" || "$PREPARE_UPDATE" == true ]]; then
-            # The preparation job publishes both exact outputs before either
-            # host starts. Copying paths cannot silently recompile a bootstrap.
-            mapfile -t bootstrap < "$RUNNER_TEMP/nightly-update/bootstrap-paths"
-            if [[ "${#bootstrap[@]}" -ne 2 ]]; then
-              echo "::error::Expected Nix runtime and plugin in bootstrap-paths; got ${#bootstrap[@]} paths"
-              exit 1
-            fi
-            nix copy --from "${NIX_CACHE_URL:-http://homelab.tail84b6c.ts.net:8501}" "${bootstrap[@]}"
-            nix_package="${bootstrap[0]}"
-            plugin_package="${bootstrap[1]}"
+          bootstrap=(bash .github/cache/bootstrap.sh "$RUNNER_TEMP/bootstrap-paths")
+          if [[ "$PUBLISH_CACHE" == true ]]; then
+            python3 .github/cache/build.py bootstrap "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${bootstrap[@]}"
           else
-            bash .github/cache/bootstrap.sh "$RUNNER_TEMP/bootstrap-paths"
-            mapfile -t bootstrap < "$RUNNER_TEMP/bootstrap-paths"
-            nix_package="${bootstrap[0]}"
-            plugin_package="${bootstrap[1]}"
+            "${bootstrap[@]}"
           fi
-          echo "$nix_package/bin" >> "$GITHUB_PATH"
+          mapfile -t bootstrap < "$RUNNER_TEMP/bootstrap-paths"
+          echo "${bootstrap[0]}/bin" >> "$GITHUB_PATH"
           {
             echo 'NIX_CONFIG<<CARGO_NIX_CONFIG'
             printf '%s\n' "${NIX_CONFIG:-}"
-            echo "plugin-files = $plugin_package/lib/nix/plugins"
+            echo "plugin-files = ${bootstrap[1]}/lib/nix/plugins"
             echo 'CARGO_NIX_CONFIG'
           } >> "$GITHUB_ENV"
 
-      - name: Plan dependencies shared by both hosts
-        if: inputs.prepare-update
-        env:
-          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: |
-          python3 .github/cache/build.py bootstrap "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
-            python3 .github/cache/shared.py plan "$RUNNER_TEMP/nightly-update" \
-            '.#nixosConfigurations.desktop.config.system.build.toplevel' \
-            '.#nixosConfigurations.zenbook.config.system.build.toplevel'
-
-      - name: Build ${{ inputs.prepare-update && 'shared dependencies' || inputs.host }}
-        env:
-          HOST: ${{ inputs.host }}
-          PREPARE_UPDATE: ${{ inputs.prepare-update }}
-          PUBLISH_CACHE: ${{ inputs.publish-cache }}
-          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: |
-          disk_samples="$RUNNER_TEMP/disk-usage.log"
-          while true; do
-            df -B1 --output=used,avail / | tail -n 1 >> "$disk_samples"
-            sleep 30
-          done &
-          disk_monitor_pid=$!
-
-          report_disk_high_water_mark() {
-            kill "$disk_monitor_pid" 2>/dev/null || true
-            wait "$disk_monitor_pid" 2>/dev/null || true
-            awk '
-              NR == 1 || $1 > max_used { max_used = $1 }
-              NR == 1 || $2 < min_free { min_free = $2 }
-              END {
-                printf "Disk high-water mark: %.1f GiB used; minimum free: %.1f GiB\n", max_used / 2^30, min_free / 2^30
-              }
-            ' "$disk_samples"
-            df -h /
-          }
-          trap report_disk_high_water_mark EXIT
-
-          if [[ "$PREPARE_UPDATE" == true ]]; then
-            build=(python3 .github/cache/shared.py build "$RUNNER_TEMP/nightly-update")
-          else
-            build=(nix build --out-link "$RUNNER_TEMP/nixos-system" --print-build-logs
-              ".#nixosConfigurations.${HOST}.config.system.build.toplevel")
-          fi
-          if [[ "$PUBLISH_CACHE" == true ]]; then
-            python3 .github/cache/build.py "${HOST:-bootstrap}" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
-          else
-            "${build[@]}"
-          fi
-
-      - name: Retain and verify shared dependencies before starting hosts
-        if: inputs.prepare-update
-        env:
-          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: |
-          # Cache hits do not trigger the post-build hook. Publish every
-          # requested output so both hosts can substitute the complete plan.
-          python3 .github/cache/publish.py --dependencies bootstrap \
-            "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nightly-update/shared-paths"
-
-      - name: Upload nightly update and shared build manifests
-        if: inputs.prepare-update
+      - name: Upload nightly update
+        if: inputs.update-packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nightly-update
@@ -238,53 +147,62 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Retain and verify the complete private system closure
-        if: ${{ inputs.publish-cache && !inputs.prepare-update }}
-        env:
-          HOST: ${{ inputs.host }}
-          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: |
-          python3 .github/cache/publish.py "$HOST" \
-            "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$RUNNER_TEMP/nixos-system"
-
       - name: Build pinned security tools
-        if: ${{ !inputs.prepare-update }}
         id: tools
         env:
           HOST: ${{ inputs.host }}
-          PUBLISH_CACHE: ${{ inputs.publish-cache }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
           build=(nix build --file packages/security/default.nix --out-link "$RUNNER_TEMP/security-tools")
           if [[ "$PUBLISH_CACHE" == true ]]; then
-            python3 .github/cache/build.py "$HOST" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
+            python3 .github/cache/build.py "${HOST:-bootstrap}" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
           else
             "${build[@]}"
           fi
           package=$(readlink -f "$RUNNER_TEMP/security-tools")
           echo "package=$package" >> "$GITHUB_OUTPUT"
 
-      - name: Inventory and scan ${{ inputs.host }}
-        if: ${{ !inputs.prepare-update }}
-        id: scan
+      - name: Build, retain and scan desktop
+        id: desktop
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' && (inputs.host == '' || inputs.host == 'desktop') }}
         env:
-          HOST: ${{ inputs.host }}
-          SCAN_SCOPE: ${{ inputs.update-artifact != '' && 'candidate' || 'committed' }}
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+          SCAN_SCOPE: ${{ inputs.update-packages && 'candidate' || 'committed' }}
           SCANNER: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
-        run: |
-          "$SCANNER" ".#nixosConfigurations.${HOST}.config.system.build.toplevel" \
-            --scope "$SCAN_SCOPE" --output "$RUNNER_TEMP/security-report"
+        run: bash .github/cache/host.sh desktop
 
-      - name: Retain encrypted security report
-        if: ${{ !cancelled() && steps.scan.outcome != 'skipped' && steps.scan.outcome != '' }}
+      - name: Retain encrypted desktop security report
+        if: ${{ !cancelled() && steps.desktop.outputs.scan-started == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: security-${{ inputs.host }}
+          name: security-desktop
           path: |
-            ${{ runner.temp }}/security-report/report.tar.gz.age
-            ${{ runner.temp }}/security-report/summary.json
-            ${{ runner.temp }}/security-report/summary.md
+            ${{ runner.temp }}/security-desktop/report.tar.gz.age
+            ${{ runner.temp }}/security-desktop/summary.json
+            ${{ runner.temp }}/security-desktop/summary.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Build, retain and scan zenbook
+        id: zenbook
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' && (inputs.host == '' || inputs.host == 'zenbook') }}
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+          SCAN_SCOPE: ${{ inputs.update-packages && 'candidate' || 'committed' }}
+          SCANNER: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
+        run: bash .github/cache/host.sh zenbook
+
+      - name: Retain encrypted zenbook security report
+        if: ${{ !cancelled() && steps.zenbook.outputs.scan-started == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: security-zenbook
+          path: |
+            ${{ runner.temp }}/security-zenbook/report.tar.gz.age
+            ${{ runner.temp }}/security-zenbook/summary.json
+            ${{ runner.temp }}/security-zenbook/summary.md
           if-no-files-found: error
           retention-days: 30
