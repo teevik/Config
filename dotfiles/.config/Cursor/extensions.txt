@@ -1,0 +1,36 @@
+# Editor and environment
+catppuccin.catppuccin-vsc
+eamodio.gitlens
+mkhl.direnv
+
+# Nix, Rust, and configuration files
+fill-labs.dependi
+jnoortheen.nix-ide
+nefrob.vscode-just-syntax
+rust-lang.rust-analyzer
+tamasfe.even-better-toml
+thenuprojectcontributors.vscode-nushell-lang
+
+# TypeScript / TSX (native Go language server)
+bradlc.vscode-tailwindcss
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+typescriptteam.native-preview
+yoavbls.pretty-ts-errors
+
+# Python and notebooks (Cursor Pyright replaces Pylance; Jupyter keymaps are built in)
+ms-python.debugpy
+ms-python.python
+anysphere.cursorpyright
+ms-python.vscode-python-envs
+ms-toolsai.jupyter
+ms-toolsai.jupyter-renderers
+ms-toolsai.vscode-jupyter-cell-tags
+ms-toolsai.vscode-jupyter-slideshow
+
+# Typst
+myriad-dreamin.tinymist
+
+# YAML and GitHub Actions
+github.vscode-github-actions
+redhat.vscode-yaml

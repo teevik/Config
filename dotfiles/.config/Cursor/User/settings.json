@@ -1,0 +1,71 @@
+// Based on the VS Code dotfiles; Cursor-specific settings are kept separate.
+{
+  "window.titleBarStyle": "custom",
+  "editor.fontFamily": "JetBrains Mono, Consolas, 'Courier New', monospace",
+  "editor.fontSize": 13,
+  "editor.lineHeight": 1.7,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  },
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "editor.inlayHints.enabled": "off",
+  "explorer.confirmDragAndDrop": false,
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "notebook.output.lineHeight": 1.2,
+  "diffEditor.renderSideBySide": false,
+  "git.autofetch": true,
+  "security.workspace.trust.untrustedFiles": "open",
+  "git.openRepositoryInParentFolders": "always",
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nil",
+  "nix.serverSettings": {
+    "nil": {
+      "formatting": {
+        "command": ["nixfmt"]
+      }
+    }
+  },
+  "[nix]": {
+    "editor.defaultFormatter": "jnoortheen.nix-ide"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "rust-analyzer.procMacro.ignored": {
+    "cached_proc_macro": ["cached"]
+  },
+  "css.lint.unknownAtRules": "ignore",
+  "js/ts.experimental.useTsgo": true,
+  "[typescript][typescriptreact]": {
+    "js/ts.inlayHints.enumMemberValues.enabled": true,
+    "js/ts.inlayHints.functionLikeReturnTypes.enabled": true,
+    "js/ts.inlayHints.parameterNames.enabled": "literals",
+    "js/ts.inlayHints.parameterTypes.enabled": true,
+    "js/ts.inlayHints.propertyDeclarationTypes.enabled": true
+  },
+  "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][html][css][scss][less][markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml"
+  ],
+  "[typst]": {
+    "editor.defaultFormatter": "myriad-dreamin.tinymist"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "jupyter.widgetScriptSources": ["jsdelivr.com", "unpkg.com"],
+  "editor.inlineSuggest.enabled": true,
+  "cursor.cpp.disabledLanguages": ["plaintext"],
+  "cursor.cpp.enablePartialAccepts": true
+}

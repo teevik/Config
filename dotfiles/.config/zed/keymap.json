@@ -32,6 +32,12 @@
     }
   },
   {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      "ctrl-s": "workspace::Save"
+    }
+  },
+  {
     "context": "Editor",
     "bindings": {
       "ctrl-d": ["editor::SelectNext", { "replace_newest": false }],

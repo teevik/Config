@@ -84,6 +84,7 @@ in
       zoxide
 
       # Editors
+      code-cursor
       perSystem.self.helix
       perSystem.neovim.default
       perSystem.self.zed
@@ -138,6 +139,7 @@ in
       agent-browser
       perSystem.self.agent-workspace-linux
       pi-coding-agent
+      perSystem.llm-agents.chatgpt
       perSystem.llm-agents.claude-code
       perSystem.llm-agents.claude-desktop
       perSystem.llm-agents.codex
