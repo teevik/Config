@@ -3,9 +3,9 @@ name: Nix cache
 on:
   # Scheduled workflows are best-effort and may be delayed or disabled after
   # 60 days without repository activity.
-  schedule:
-    - cron: "17 3 * * *"
-      timezone: "Europe/Oslo"
+#  schedule:
+#    - cron: "17 3 * * *"
+#      timezone: "Europe/Oslo"
   workflow_dispatch:
 
 concurrency:
