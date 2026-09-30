@@ -136,6 +136,29 @@ class UploadTests(unittest.TestCase):
             self.assertEqual(calls, [sorted([MANUAL, PRIVATE])] * 2)
             self.assertEqual(errors, [])
 
+    def test_only_verified_uploads_release_local_gc_roots(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            roots = Path(temporary)
+            paths = ["/nix/store/" + f"{i:032d}" + "-dependency" for i in range(257)]
+            cache_record.record(roots, paths)
+            stop, errors = threading.Event(), []
+            stop.set()
+            batches = []
+
+            def publish(group, generation, batch, **kwargs):
+                batches.append(batch)
+                if len(batches) == 1:
+                    self.assertEqual(len(list(roots.iterdir())), 257)
+                else:
+                    self.assertEqual(len(list(roots.iterdir())), 1,
+                                     "Verified remote retention should allow local GC")
+                    raise ValueError("retention verification failed")
+
+            with patch.object(cache_build, "publish_dependencies", side_effect=publish):
+                cache_build.upload_loop(roots, "desktop", "123-1", stop, errors)
+            self.assertEqual(cache_build.pending_paths(roots, set()), paths[-1:])
+            self.assertEqual(len(errors), 1)
+
     def test_overlapping_batches_verify_each_path_once_and_retry_failures(self):
         verified = set()
         checked = []
@@ -194,15 +217,20 @@ sys.exit(7)
                 return SimpleNamespace(returncode=0)
             return real_run(args, **kwargs)
 
-        with tempfile.TemporaryDirectory() as temporary, \
-             patch.object(cache_build, "GCROOTS", Path(temporary)), \
-             patch.object(cache_build.subprocess, "run", side_effect=execute), \
-             patch.object(cache_build, "publish_dependencies") as publish, \
-             patch.dict(os.environ, NIX_CACHE_SSH_KEY="private", NIX_CACHE_SIGNING_KEY="private"):
-            result = cache_build.run("desktop", "123-1", [sys.executable, "-c", child, MANUAL + " " + PRIVATE])
-            self.assertEqual(result, 7)
-            publish.assert_called_once_with("desktop", "123-1", sorted([MANUAL, PRIVATE]), verified=set())
-            self.assertEqual(list(Path(temporary).iterdir()), [])
+        for upload_error in [None, ValueError("cache unavailable")]:
+            with tempfile.TemporaryDirectory() as temporary, \
+                 patch.object(cache_build, "GCROOTS", Path(temporary)), \
+                 patch.object(cache_build.subprocess, "run", side_effect=execute), \
+                 patch.object(cache_build, "publish_dependencies", side_effect=upload_error) as publish, \
+                 patch.dict(os.environ, NIX_CACHE_SSH_KEY="private", NIX_CACHE_SIGNING_KEY="private"):
+                result = cache_build.run("desktop", "123-1", [sys.executable, "-c", child, MANUAL + " " + PRIVATE])
+                self.assertEqual(result, 7)
+                publish.assert_called_once_with("desktop", "123-1", sorted([MANUAL, PRIVATE]), verified=set())
+                if upload_error:
+                    roots = next(Path(temporary).iterdir())
+                    self.assertEqual(cache_build.pending_paths(roots, set()), sorted([MANUAL, PRIVATE]))
+                else:
+                    self.assertEqual(list(Path(temporary).iterdir()), [])
 
     def test_seeding_queries_existing_outputs_without_realising_them(self):
         with patch.object(cache_seed.subprocess, "check_output", return_value=f"{MANUAL}\n{PRIVATE}.drv\n{PRIVATE}\n") as query, \

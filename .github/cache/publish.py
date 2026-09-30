@@ -100,6 +100,15 @@ def credentials():
         yield env, ssh_options, signing_key
 
 
+def preflight():
+    # Check the restricted upload endpoint before spending time on builds.
+    with credentials() as (env, ssh_options, _signing_key):
+        if ssh_options is None:
+            raise ValueError("Hosted publication credentials are required")
+        run("ssh", *ssh_options, DESTINATION, "cache-preflight 0", env=env)
+    print("Private cache upload authentication and disk headroom verified", flush=True)
+
+
 def publish(host, generation, path):
     if host not in {"desktop", "zenbook"}:
         raise ValueError("Unsupported host")
@@ -189,9 +198,11 @@ def publish_dependencies(group, generation, paths, *, verified=None):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 5 and sys.argv[1] == "--dependencies":
+    if sys.argv[1:] == ["--preflight"]:
+        preflight()
+    elif len(sys.argv) == 5 and sys.argv[1] == "--dependencies":
         publish_dependencies(sys.argv[2], sys.argv[3], Path(sys.argv[4]).read_text().splitlines())
     elif len(sys.argv) == 4:
         publish(*sys.argv[1:])
     else:
-        raise SystemExit("Usage: publish.py HOST GENERATION SYSTEM_PATH | --dependencies GROUP GENERATION PATHS_FILE")
+        raise SystemExit("Usage: publish.py --preflight | HOST GENERATION SYSTEM_PATH | --dependencies GROUP GENERATION PATHS_FILE")

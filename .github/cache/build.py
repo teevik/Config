@@ -34,6 +34,11 @@ def upload_loop(directory, group, generation, stop, errors, interval=60):
                 batch = paths[offset:offset + 256]
                 publish_dependencies(group, generation, batch, verified=verified)
                 published.update(batch)
+                # Remote retention and signature verification have succeeded.
+                # Active Nix builds and host out-links keep their own roots;
+                # unused intermediate outputs can now be collected locally.
+                for path in batch:
+                    (directory / Path(path).name).unlink(missing_ok=True)
             errors.clear()
         except Exception as error:
             errors[:] = [error]
@@ -71,10 +76,13 @@ def run(group, generation, command):
             stop.set()
             worker.join()
             print(f"Cache upload drain finished after {time.monotonic() - finished:.1f}s", flush=True)
-            for root in roots.iterdir():
-                root.unlink()
-            # The directory is runner-owned, but its parent is root-owned.
-            subprocess.run(["sudo", "rmdir", str(roots)], check=True)
+            if not errors:
+                for root in roots.iterdir():
+                    root.unlink()
+                # The directory is runner-owned, but its parent is root-owned.
+                subprocess.run(["sudo", "rmdir", str(roots)], check=True)
+            # Unverified uploads stay rooted for the rest of this ephemeral
+            # runner job, including when a later host reuses their outputs.
     if errors:
         print(f"::error::Could not retain completed build dependencies: {errors[0]}", file=sys.stderr)
     return result.returncode or (1 if errors else 0)

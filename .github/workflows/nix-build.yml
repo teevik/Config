@@ -14,10 +14,6 @@ on:
       publish-cache:
         default: false
         type: boolean
-      native-runner:
-        description: Use the homelab runner reserved for nightly builds on main
-        default: false
-        type: boolean
     secrets:
       NIX_CACHE_SSH_KEY:
         required: false
@@ -31,8 +27,8 @@ permissions:
 jobs:
   build:
     name: ${{ inputs.host == '' && 'Build and scan desktop then zenbook' || format('Build and scan {0}', inputs.host) }}
-    if: ${{ !inputs.native-runner || (github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')) }}
-    runs-on: ${{ inputs.native-runner && 'homelab-config-nightly' || 'ubuntu-latest' }}
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
       PUBLISH_CACHE: ${{ inputs.publish-cache }}
@@ -55,7 +51,6 @@ jobs:
           echo "NIX_CACHE_VERIFIED_PATHS=$RUNNER_TEMP/nix-cache-verified-paths.json" >> "$GITHUB_ENV"
 
       - name: Free runner disk space
-        if: ${{ !inputs.native-runner }}
         run: |
           echo "Disk space before cleanup:"
           df -h /
@@ -73,17 +68,20 @@ jobs:
           df -h /
 
       - name: Check private cache access configuration
-        if: ${{ !inputs.native-runner }}
         env:
           CACHE_CLIENT_ID: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
           CACHE_AUDIENCE: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
           CACHE_POLICY_READY: ${{ vars.NIX_CACHE_POLICY_READY }}
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
           test -n "$CACHE_CLIENT_ID" && test -n "$CACHE_AUDIENCE"
           test "$CACHE_POLICY_READY" = true
+          if [[ "$PUBLISH_CACHE" == true ]]; then
+            test -n "$NIX_CACHE_SSH_KEY" && test -n "$NIX_CACHE_SIGNING_KEY"
+          fi
 
       - name: Connect to the private cache
-        if: ${{ !inputs.native-runner }}
         uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8 # v4
         with:
           oauth-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
@@ -92,18 +90,31 @@ jobs:
           ping: homelab.tail84b6c.ts.net
 
       - name: Install Nix
-        if: ${{ !inputs.native-runner }}
         uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3.22.5
         with:
           extra-conf: |
             extra-experimental-features = parallel-eval
-            eval-cores = 0
+            eval-cores = 2
+            max-jobs = 1
+            cores = 4
+            # Reclaim unused, already-uploaded build inputs under disk pressure.
+            min-free = 8589934592
+            max-free = 21474836480
+            # A just-published path must not remain a cached miss for an hour.
+            narinfo-cache-negative-ttl = 0
             lazy-trees = true
             accept-flake-config = true
             connect-timeout = 5
             fallback = true
             substituters = http://homelab.tail84b6c.ts.net:8501 https://cache.nixos.org
             trusted-public-keys = homelab-cache-1:e0A0wubKr+XqKPA/MeUY5ixaG+1HvBBImTkPzrNJT4s= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
+
+      - name: Verify private cache publication access
+        if: inputs.publish-cache
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: python3 .github/cache/publish.py --preflight
 
       - name: Update flake inputs and packages
         if: inputs.update-packages

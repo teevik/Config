@@ -23,12 +23,13 @@ jobs:
       id-token: write
     # Keep both hosts in one job: the Nix store and source/evaluation caches
     # are reused without a separate shared-dependency planner or artifact hop.
-    # The native runner enforces this caller and reusable workflow on main.
     uses: ./.github/workflows/nix-build.yml
     with:
       update-packages: true
       publish-cache: true
-      native-runner: true
+    secrets:
+      NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+      NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
 
   pull-request:
     name: Open nightly update pull request
