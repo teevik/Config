@@ -76,10 +76,6 @@ in
         eval-cores = lib.mkDefault 0;
         lazy-trees = true;
 
-        # Built against the same Determinate Nix components as `nix.package`,
-        # since the plugin ABI is not stable across Nix versions.
-        plugin-files = "${perSystem.self.cargo-nix-plugin}/lib/nix/plugins";
-
         keep-derivations = true;
         keep-outputs = true;
 

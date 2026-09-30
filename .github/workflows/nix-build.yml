@@ -132,26 +132,6 @@ jobs:
             -c just update --export "$RUNNER_TEMP/nightly-update"
           echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
 
-      - name: Build and load cargo-nix-plugin with its matching Nix
-        env:
-          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: |
-          bootstrap=(bash .github/cache/bootstrap.sh "$RUNNER_TEMP/bootstrap-paths")
-          if [[ "$PUBLISH_CACHE" == true ]]; then
-            python3 .github/cache/build.py bootstrap "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${bootstrap[@]}"
-          else
-            "${bootstrap[@]}"
-          fi
-          mapfile -t bootstrap < "$RUNNER_TEMP/bootstrap-paths"
-          echo "${bootstrap[0]}/bin" >> "$GITHUB_PATH"
-          {
-            echo 'NIX_CONFIG<<CARGO_NIX_CONFIG'
-            printf '%s\n' "${NIX_CONFIG:-}"
-            echo "plugin-files = ${bootstrap[1]}/lib/nix/plugins"
-            echo 'CARGO_NIX_CONFIG'
-          } >> "$GITHUB_ENV"
-
       - name: Upload nightly update
         if: inputs.update-packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
