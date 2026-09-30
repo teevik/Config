@@ -162,7 +162,7 @@ in
       rounded
       vesktop
       xournalpp
-      zotero
+      perSystem.self.zotero
       pavucontrol
 
       # Wayland tools

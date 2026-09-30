@@ -1088,6 +1088,23 @@
         "type": "github"
       }
     },
+    "nixpkgs-zotero-runtime": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790323409,
+        "narHash": "sha256-VVTPf+Hyd5ebpjBMHmrLMSBIeW6ls48Bqtosj7CNKLA=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "e94cb152ed51bd6e24eb4a41f1460252beb52cd2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "e94cb152ed51bd6e24eb4a41f1460252beb52cd2",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1785828668,
@@ -1329,6 +1346,7 @@
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_5",
+        "nixpkgs-zotero-runtime": "nixpkgs-zotero-runtime",
         "noctalia-community-plugins": "noctalia-community-plugins",
         "noctalia-official-plugins": "noctalia-official-plugins",
         "openconnect-sso": "openconnect-sso",

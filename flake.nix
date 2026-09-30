@@ -5,6 +5,14 @@
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    # Temporary: Zotero 10 still patches ESR 140 internals, but nixpkgs removed
+    # that runtime and switched Zotero to incompatible ESR 153. Pin only the
+    # runtime until Zotero's build scripts support the newer ESR.
+    nixpkgs-zotero-runtime = {
+      url = "github:nixos/nixpkgs/e94cb152ed51bd6e24eb4a41f1460252beb52cd2";
+      flake = false;
+    };
+
     nixos-apple-silicon = {
       url = "github:nix-community/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
