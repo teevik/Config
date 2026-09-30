@@ -83,15 +83,18 @@ in
         keep-derivations = true;
         keep-outputs = true;
 
-        # The cache is normally about 2 ms away over Tailscale.
-        connect-timeout = 2;
+        # Leave time for cold proxy requests and temporary Tailscale latency.
+        connect-timeout = 15;
         fallback = true;
         narinfo-cache-negative-ttl = 3600;
         require-sigs = true;
 
-        # ncps fans out to the upstream caches once and shares warm results
-        # across every machine on the tailnet.
-        substituters = lib.mkForce [ "http://homelab.tail84b6c.ts.net:8501" ];
+        # Prefer ncps for shared results, with a direct public fallback when
+        # the proxy is unavailable so cache outages don't rebuild toolchains.
+        substituters = lib.mkForce [
+          "http://homelab.tail84b6c.ts.net:8501"
+          "https://cache.nixos.org"
+        ];
 
         # ncps passes through upstream signatures; clients remain the trust
         # boundary instead of trusting a proxy-generated signing key.

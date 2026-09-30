@@ -44,6 +44,21 @@ publication. The native runner's service, private daemon and local retention
 socket are retired. Weekly committed-configuration scans remain on GitHub-hosted
 runners with read-only cache access.
 
+Clients prefer the homelab proxy and also configure `https://cache.nixos.org`
+as a fallback for public packages, with a 15-second connection timeout. A
+two-second timeout could disable the only substituter during a package update,
+triggering source builds of otherwise cached toolchains and their dependencies.
+`fallback = true` permits source builds; it does not supply a backup cache.
+Before activating the updated machine configuration, the equivalent temporary
+settings in `~/.config/nix/nix.conf` are:
+
+```conf
+connect-timeout = 15
+extra-substituters = https://cache.nixos.org
+```
+
+Remove those temporary settings after activating the machine configuration.
+
 ## First use
 
 The private cache and hosted workflow credentials are installed. For a fresh

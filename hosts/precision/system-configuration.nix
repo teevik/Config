@@ -268,11 +268,11 @@ in
         http-connections = 32
         keep-derivations = true
         keep-outputs = true
-        connect-timeout = 2
+        connect-timeout = 15
         fallback = true
         narinfo-cache-negative-ttl = 3600
         require-sigs = true
-        substituters = http://homelab.tail84b6c.ts.net:8501
+        substituters = http://homelab.tail84b6c.ts.net:8501 https://cache.nixos.org
         trusted-public-keys = ${
           lib.concatStringsSep " " [
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
