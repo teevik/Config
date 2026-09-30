@@ -10,7 +10,6 @@ let
       ../packages/security
       ../tests/security.py
       ../tests/cache-upload.py
-      ../tests/cache-bootstrap.py
       ../tests/cache-hosts.py
       ../tests/cache-native.py
       ../modules/nixos/minimal/homelab-cache.pub
@@ -31,7 +30,6 @@ pkgs.runCommand "security-check"
     cd ${source}
     python3 tests/security.py
     python3 tests/cache-upload.py
-    python3 tests/cache-bootstrap.py
     python3 tests/cache-hosts.py
     python3 tests/cache-native.py
     shellcheck .github/cache/host.sh

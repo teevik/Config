@@ -63,10 +63,6 @@
       flake = false;
     };
     determinate-nix.url = "github:DeterminateSystems/nix-src";
-    cargo-nix-plugin = {
-      url = "github:anthropics/cargo-nix-plugin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     helix = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -85,8 +81,6 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    zed.url = "github:zed-industries/zed";
 
     # opencode = {
     #   url = "github:sst/opencode";

@@ -1,10 +1,10 @@
 # Private nightly system cache
 
 The nightly workflow uses one GitHub-hosted `ubuntu-24.04` VM. It updates
-packages, loads the matching Nix/Cargo plugin, then builds, retains and scans
-desktop followed by zenbook. Both builds share the VM's `/nix/store` and Git
+packages, then builds, retains and scans desktop followed by zenbook.
+Both builds share the VM's `/nix/store` and Git
 source/evaluation caches. Nix automatically reuses existing outputs; there is
-no separate shared-dependency planner or bootstrap handoff between build jobs.
+no separate shared-dependency planner or handoff between build jobs.
 Only the validated package update crosses to the separate PR job.
 
 `.github/cache/host.sh` performs each host's build, full closure publication and
@@ -22,7 +22,7 @@ repeat signature checks. Complete host publication still verifies every path,
 the remote retention receipt, signatures and archive availability.
 
 After a batch is remotely retained and verified, its upload-only local GC roots
-are removed. Nix's active builds, bootstrap links, security-tool link and host
+are removed. Nix's active builds, security-tool link and host
 output links retain the paths still needed locally. Failed uploads stay rooted
 for the rest of the VM job. Nix reclaims unused paths below 8 GiB free disk,
 aiming for 20 GiB free; it does not discard the first host's rooted runtime
@@ -33,8 +33,9 @@ cores, limiting memory contention on the standard 16 GB runner.
 Caching is per derivation/output, not per compiler invocation. Exact outputs are
 reused automatically; changed package sources, toolchains or dependencies can
 require new builds. Incomplete compilations cannot be resumed from the cache.
-The Cargo plugin gives Zed reuse across unchanged Rust crates, but changed crates
-and the final executable can still be expensive. GitHub creates a fresh VM for
+Zed uses `pkgs.zed-editor` from the locked nixpkgs revision, so its releases can
+use the public binary cache without our own Git HEAD build or Cargo plugin.
+GitHub creates a fresh VM for
 each run, so cached store paths must be downloaded again. Neither private store
 contents nor fetcher caches are saved in publicly accessible Actions caches.
 
@@ -134,7 +135,7 @@ or system derivations. It never realises missing paths or starts builds. Review
 the manifest before uploading:
 
 ```sh
-python3 .github/cache/seed.py --manifest /tmp/cache-seed-paths /run/current-system result-zed-cargo-nix
+python3 .github/cache/seed.py --manifest /tmp/cache-seed-paths /run/current-system
 ```
 
 Repeat with `--upload` to sign, copy and retain the selection. Supply credentials
@@ -165,7 +166,7 @@ passed with negative-cache TTL disabled during verification.
 
 Desktop seeding completed on 2026-09-23: 17,847 existing outputs (88.6 GiB)
 were retained and every path passed private-cache signature verification. This
-includes the exact current Nix/plugin bootstrap and Zed crate outputs. Detailed
+included the then-current Nix/plugin bootstrap and custom Zed crate outputs. Detailed
 local evidence is in `.scratch/private-nix-cache/improvements-validation.md`.
 
 On 2026-09-25, the shared dependency stage and the updated Zed crate build were
