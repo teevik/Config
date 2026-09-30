@@ -75,6 +75,17 @@ def main [source: path] {
         assert equal (contents $quick) $after
         print 'PASS: source-only updates refresh all inputs and skip validation builds'
 
+        # Hosted runners can exhaust the shared unauthenticated GitHub quota.
+        # Drive the real updater through a release endpoint that requires auth.
+        let authenticated = ($scratch | path join 'authenticated metadata')
+        cp --recursive $baseline $authenticated
+        with-env {GITHUB_TOKEN: 'fixture-read-only-token'} {
+            assert-success (run-update $authenticated [--no-build] '' 'require-auth')
+        }
+        assert equal (contents $authenticated) $after
+        assert not (open --raw $env.MOCK_LOG | str contains 'fixture-read-only-token')
+        print 'PASS: GitHub release metadata uses the read-only token without putting it in command arguments'
+
         let skipped = ($scratch | path join 'inputs already refreshed')
         cp --recursive $baseline $skipped
         assert-success (run-update $skipped [--skip-inputs --no-build])

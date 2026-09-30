@@ -72,7 +72,12 @@ def main [] {
     # Once its version is known, these three metadata requests are independent.
     let responses = ([cli-linux-x64-baseline cli-linux-arm64 desktop] | par-each --threads 3 --keep-order {|platform|
         let response = if $platform == 'desktop' {
-            (^curl --fail --silent --show-error --max-time 60
+            # CI's shared IP can exhaust GitHub's unauthenticated API quota.
+            # Feed the optional read-only token over stdin, never argv or logs.
+            let token = ($env.GITHUB_TOKEN? | default '')
+            let headers = if $token == '' { [] } else { [--header '@-'] }
+            let authorization = if $token == '' { '' } else { $"Authorization: Bearer ($token)\n" }
+            ($authorization | ^curl --fail --silent --show-error --max-time 60 ...$headers
                 $"https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v($version)" | complete)
         } else {
             ^npm view $"@opencode-ai/($platform)@($version)" dist.integrity | complete

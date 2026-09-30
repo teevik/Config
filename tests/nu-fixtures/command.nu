@@ -42,6 +42,13 @@ def update-command [tool: string, args: list<string>] {
         }
         'curl' => {
             assert equal ($args | last) 'https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v1.2.3-beta-fixture'
+            if $release_mode == 'require-auth' {
+                let input = if '@-' in $args { ^cat } else { '' }
+                if '--header' not-in $args or '@-' not-in $args or ($input | default '' | str trim) != 'Authorization: Bearer fixture-read-only-token' {
+                    print --stderr 'curl: (22) The requested URL returned error: 403'
+                    exit 22
+                }
+            }
             if $release_mode == 'invalid-json' { print 'not JSON'; return }
             mut release = {
                 tag_name: v1.2.3-beta-fixture

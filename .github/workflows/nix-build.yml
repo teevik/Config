@@ -119,6 +119,7 @@ jobs:
       - name: Update flake inputs and packages
         if: inputs.update-packages
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
         run: |
