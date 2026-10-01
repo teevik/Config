@@ -127,6 +127,27 @@
         "type": "github"
       }
     },
+    "cargo-nix-plugin": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790080523,
+        "narHash": "sha256-F9BOlx2e+z0+5XoahgW9LQfrH+7xSwrgdW/UQ5j2x5c=",
+        "owner": "anthropics",
+        "repo": "cargo-nix-plugin",
+        "rev": "191bf8e7bd086e96759362817e4fa6c06fa6359b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "cargo-nix-plugin",
+        "rev": "191bf8e7bd086e96759362817e4fa6c06fa6359b",
+        "type": "github"
+      }
+    },
     "determinate-nix": {
       "inputs": {
         "bdwgc": "bdwgc",
@@ -1167,6 +1188,7 @@
     "root": {
       "inputs": {
         "blueprint": "blueprint",
+        "cargo-nix-plugin": "cargo-nix-plugin",
         "determinate-nix": "determinate-nix",
         "disko": "disko",
         "gaze": "gaze",
