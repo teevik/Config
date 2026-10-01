@@ -35,6 +35,9 @@ reused automatically; changed package sources, toolchains or dependencies can
 require new builds. Incomplete compilations cannot be resumed from the cache.
 Zed uses `pkgs.zed-editor` from the locked nixpkgs revision, so its releases can
 use the public binary cache without our own Git HEAD build or Cargo plugin.
+Helix and Neovim also use the locked nixpkgs packages. Their separate Git HEAD
+and nightly inputs, custom Helix grammar patches, and duplicate Helix output
+have been removed; releases can use the public binary cache.
 GitHub creates a fresh VM for
 each run, so cached store paths must be downloaded again. Neither private store
 contents nor fetcher caches are saved in publicly accessible Actions caches.
