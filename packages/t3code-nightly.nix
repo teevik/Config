@@ -29,6 +29,7 @@ let
     # Follow upstream's argument name when stable T3 Code changes majors too.
     pkgs.lib.genAttrs electronArgs (_: electron)
   );
+  cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
   version = "0.0.45-nightly.20261001.2525";
 
@@ -103,6 +104,7 @@ let
       (oldAttrs.nativeBuildInputs or [ ])
       ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         pkgs.pkg-config
+        pkgs.patchelf
       ];
 
     buildInputs =
@@ -125,6 +127,26 @@ let
         install -Dm755 native/browser-secret/build/${pkgs.stdenv.hostPlatform.node.arch}/t3-browser-secret \
           "$desktop/libexec/t3code/apps/desktop/prod-resources/browser-secret/t3-browser-secret"
       '';
+
+    # Electron does not preload libstdc++ like Node.js does. The vendored tree
+    # skips ELF fixup, so give the installed host addon an explicit library path.
+    postFixup =
+      (oldAttrs.postFixup or "")
+      + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+        patchelf --add-rpath ${cppRuntime}/lib \
+          "$out/libexec/t3code/apps/server/node_modules/node-pty/prebuilds/linux-${pkgs.stdenv.hostPlatform.node.arch}/pty.node"
+      '';
+
+    postInstallCheck =
+      (oldAttrs.postInstallCheck or "")
+      +
+        pkgs.lib.optionalString
+          (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.buildPlatform.canExecute pkgs.stdenv.hostPlatform)
+          ''
+            env -u LD_LIBRARY_PATH ELECTRON_RUN_AS_NODE=1 \
+              T3CODE_PACKAGE_ROOT="$out" T3CODE_TEST_SHELL=${pkgs.stdenv.shell} \
+              ${pkgs.lib.getExe electron} ${../tests/t3code-native.cjs}
+          '';
 
     passthru = (oldAttrs.passthru or { }) // {
       inherit electron;
