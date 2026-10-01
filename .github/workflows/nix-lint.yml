@@ -45,6 +45,8 @@ jobs:
         run: nix build --file checks/cachix-privacy.nix --no-link --print-build-logs
       - name: Check Nushell helpers and offline script regressions
         run: nix build --file checks/nu-scripts.nix --no-link --print-build-logs
+      - name: Check Skim plugin compatibility with Nushell
+        run: nix build --file checks/nu-plugin-skim.nix --no-link --print-build-logs
       - name: Check relative-input prefetch handling
         run: nix build --file checks/nix-prefetch.nix --no-link --print-build-logs
       - name: Check security reporting and workflow definitions

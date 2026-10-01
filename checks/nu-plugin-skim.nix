@@ -1,4 +1,7 @@
-{ pkgs, ... }:
+{
+  pkgs ? import ../packages/nix-lint/pkgs.nix,
+  ...
+}:
 
 # Keep the former package override's protocol compatibility check separate so
 # the plugin itself can use nixpkgs's cached output.
