@@ -1,4 +1,4 @@
-"""Validate the native runner's artifact before copying into another job."""
+"""Validate the nightly update artifact before copying into the PR job."""
 
 import json
 from pathlib import Path

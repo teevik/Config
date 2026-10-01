@@ -1,7 +1,6 @@
 {
   lib,
   pkgs,
-  perSystem,
   ...
 }:
 let
@@ -68,7 +67,7 @@ in
     variables.SHELL = "${pkgs.bash}/bin/bash";
 
     etc = {
-      "nushell/plugins/skim".source = "${perSystem.self.nu-plugin-skim}/bin/nu_plugin_skim";
+      "nushell/plugins/skim".source = "${pkgs.nushellPlugins.skim}/bin/nu_plugin_skim";
       "nushell/scripts/ultimate_extractor.nu".source =
         "${pkgs.nu_scripts}/share/nu_scripts/modules/data_extraction/ultimate_extractor.nu";
       "nushell/scripts/completions.nu".source = nuCompletions;

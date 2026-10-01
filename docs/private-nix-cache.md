@@ -42,8 +42,10 @@ contents nor fetcher caches are saved in publicly accessible Actions caches.
 Homelab now only serves and retains the cache; it no longer runs GitHub jobs.
 Its availability is still required for private downloads and successful
 publication. The native runner's service, private daemon and local retention
-socket are retired. Weekly committed-configuration scans remain on GitHub-hosted
-runners with read-only cache access.
+socket have been removed, along with Config's unused native client path.
+Weekly committed-configuration scans also use one GitHub-hosted VM to scan
+desktop then zenbook with shared store contents and read-only cache access.
+All workflow jobs use the tested Ubuntu 24.04 runner image explicitly.
 
 Clients prefer the homelab proxy and also configure `https://cache.nixos.org`
 as a fallback for public packages, with a 15-second connection timeout. A

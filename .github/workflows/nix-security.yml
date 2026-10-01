@@ -16,11 +16,5 @@ concurrency:
 
 jobs:
   scan:
-    name: Scan committed ${{ matrix.host }}
-    strategy:
-      fail-fast: false
-      matrix:
-        host: [desktop, zenbook]
+    name: Scan committed desktop then zenbook
     uses: ./.github/workflows/nix-build.yml
-    with:
-      host: ${{ matrix.host }}

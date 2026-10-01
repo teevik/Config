@@ -1,39 +1,17 @@
-"""Check native publication and the boundary to the write-enabled PR job."""
+"""Check the update artifact boundary to the write-enabled PR job."""
 
 import importlib.util
-import json
-import os
 from pathlib import Path
-import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / ".github/cache"))
-import publish
-
 spec = importlib.util.spec_from_file_location("install_update", ROOT / ".github/cache/install-update.py")
 update = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(update)
 
 
-class NativeTests(unittest.TestCase):
-    def test_native_publish_has_no_signing_or_ssh_credentials(self):
-        path = "/nix/store/" + "0" * 32 + "-nixos-system-desktop-test"
-        info = {path: {"narSize": 10}}
-        receipt = {"closureDigest": publish.closure_digest(info), "closurePaths": 1}
-        with patch.dict(os.environ, {"NIX_CACHE_LOCAL_SOCKET": "/test/socket"}, clear=True), \
-             patch.object(publish, "closure_info", return_value=info), \
-             patch.object(publish, "local_request", return_value=receipt) as request, \
-             patch.object(publish.subprocess, "run") as execute, \
-             patch.object(publish, "check_cached") as check:
-            publish.publish("desktop", "1-1", path)
-        request.assert_called_once_with("publish", host="desktop", generation="1-1", path=path)
-        self.assertEqual(execute.call_count, 1)
-        self.assertEqual(execute.call_args.args[0][:3], ["nix", "store", "verify"])
-        check.assert_called_once_with(path)
-
+class UpdateArtifactTests(unittest.TestCase):
     def fixture(self, root, artifact):
         (root / "packages").mkdir()
         (root / "packages/update-packages.json").write_text('{"test":"flake.lock"}')
