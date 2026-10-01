@@ -27,6 +27,7 @@ let
     inherit opencode;
     opencode-desktop = import ./opencode-desktop.nix { inherit perSystem pkgs; };
     omp = perSystem.llm-agents.omp;
+    roc-nightly = import ./roc-nightly.nix { inherit pkgs; };
     t3code-nightly = import ./t3code-nightly.nix { inherit perSystem pkgs; };
   };
 in

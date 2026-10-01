@@ -2,7 +2,7 @@ use std/assert
 use test-utils.nu [with-scratch assert-success]
 
 def owned-files [] {
-    [flake.lock packages/opencode-desktop.nix packages/opencode.nix packages/t3code-nightly.nix]
+    [flake.lock packages/opencode-desktop.nix packages/opencode.nix packages/roc-nightly.nix packages/t3code-nightly.nix]
 }
 
 def contents [root: path] {
@@ -41,7 +41,7 @@ def main [source: path] {
         assert-success (run-update $checkout [--export $exported])
         assert ((nix-actions) == [
             [flake update]
-            [build --no-link --print-build-logs --file packages/update-targets.nix opencode opencode-desktop omp t3code-nightly]
+            [build --no-link --print-build-logs --file packages/update-targets.nix opencode opencode-desktop omp roc-nightly t3code-nightly]
         ])
         assert equal (calls | where tool == nix-update | length) 1
         let after = (contents $checkout)
@@ -50,10 +50,13 @@ def main [source: path] {
         assert equal (open --raw ($checkout | path join unrelated.txt)) 'unrelated user file'
         let cli = (open --raw ($checkout | path join packages/opencode.nix))
         let desktop = (open --raw ($checkout | path join packages/opencode-desktop.nix))
+        let roc = (open --raw ($checkout | path join packages/roc-nightly.nix))
+        assert ($roc | str contains '2026-10-01-abcdef0')
         for arch in [x64 arm64] {
             let digest = ('sha256-' + ($arch | hash sha256 --binary | encode base64))
             assert ($cli | str contains $digest)
             assert ($desktop | str contains $digest)
+            assert ($roc | str contains $digest)
         }
         assert equal (open --raw ($exported | path join files.txt) | lines) (owned-files)
         let payload = ($exported | path join sources)
@@ -135,6 +138,21 @@ def main [source: path] {
         assert ((run-update $drift []).exit_code != 0)
         assert equal (contents $drift | skip 1) $drift_before
         print 'PASS: release mismatch, missing assets/digests, malformed hashes/JSON, and source-layout drift preserve package files'
+
+        for release in [roc-invalid-tag roc-missing-arm64 roc-invalid-digest roc-missing-digest roc-duplicate-asset] {
+            let work = ($scratch | path join $release)
+            cp --recursive $baseline $work
+            assert ((run-update $work [] '' $release).exit_code != 0)
+            assert equal (open --raw ($work | path join packages/roc-nightly.nix)) $before.3.content
+            assert equal (calls | where tool == nix-update | length) 0
+        }
+        let roc_drift = ($scratch | path join roc-drift)
+        cp --recursive $baseline $roc_drift
+        $before.3.content | save --append ($roc_drift | path join packages/roc-nightly.nix)
+        let roc_before = (open --raw ($roc_drift | path join packages/roc-nightly.nix))
+        assert ((run-update $roc_drift []).exit_code != 0)
+        assert equal (open --raw ($roc_drift | path join packages/roc-nightly.nix)) $roc_before
+        print 'PASS: Roc tag, both architectures, digest validation, duplicate assets, and source drift are checked before writing'
 
         for args in [[--no-build --export $exported] [--export $exported] [--unknown]] {
             assert ((run-update $checkout $args).exit_code != 0)

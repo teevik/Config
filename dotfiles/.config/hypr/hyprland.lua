@@ -166,6 +166,7 @@ hl.bind("SUPER + M", exec("hyprland-scratchpad toggle-exec --name spotify --exec
 hl.bind("SUPER + S", exec("noctalia msg panel-toggle control-center"))
 
 hl.bind("Print", exec("XDG_SCREENSHOTS_DIR=" .. home .. "/Pictures/Screenshots grimblast --notify copysave output"))
+hl.bind("CTRL + SHIFT + 2", hl.dsp.global("com.t3tools.T3Code:capture-window"))
 hl.bind(
   "CTRL + Print",
   exec("XDG_SCREENSHOTS_DIR=" .. home .. "/Pictures/Screenshots grimblast --notify copysave area")

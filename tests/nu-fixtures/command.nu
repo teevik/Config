@@ -18,6 +18,7 @@ def update-command [tool: string, args: list<string>] {
                 {fixture: updated} | to json | save --force flake.lock
             } else if $args.0 == 'build' {
                 assert (open --raw packages/opencode.nix | str contains '1.2.3-beta-fixture')
+                assert (open --raw packages/roc-nightly.nix | str contains '2026-10-01-abcdef0')
                 assert (open --raw packages/t3code-nightly.nix | str contains '# fixture: t3 source refreshed')
                 assert equal (open --raw flake.lock | from json).fixture updated
                 if $failure == 'build' { exit 17 }
@@ -41,13 +42,33 @@ def update-command [tool: string, args: list<string>] {
             }
         }
         'curl' => {
-            assert equal ($args | last) 'https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v1.2.3-beta-fixture'
+            let url = ($args | last)
+            assert ($url in [
+                'https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v1.2.3-beta-fixture'
+                'https://api.github.com/repos/roc-lang/nightlies/releases/latest'
+            ])
             if $release_mode == 'require-auth' {
                 let input = if '@-' in $args { ^cat } else { '' }
                 if '--header' not-in $args or '@-' not-in $args or ($input | default '' | str trim) != 'Authorization: Bearer fixture-read-only-token' {
                     print --stderr 'curl: (22) The requested URL returned error: 403'
                     exit 22
                 }
+            }
+            if $url == 'https://api.github.com/repos/roc-lang/nightlies/releases/latest' {
+                mut release = {
+                    tag_name: nightly-2026-10-01-abcdef0
+                    assets: [
+                        {name: roc_nightly-linux_x86_64-2026-10-01-abcdef0.tar.gz, digest: ('sha256:' + ('x64' | hash sha256))}
+                        {name: roc_nightly-linux_arm64-2026-10-01-abcdef0.tar.gz, digest: ('sha256:' + ('arm64' | hash sha256))}
+                    ]
+                }
+                if $release_mode == 'roc-invalid-tag' { $release = ($release | update tag_name 'alpha4-rolling') }
+                if $release_mode == 'roc-missing-arm64' { $release = ($release | update assets ($release.assets | first 1)) }
+                if $release_mode == 'roc-invalid-digest' { $release = ($release | update assets.1.digest 'sha256:bad') }
+                if $release_mode == 'roc-missing-digest' { $release = ($release | reject assets.1.digest) }
+                if $release_mode == 'roc-duplicate-asset' { $release = ($release | update assets ($release.assets | append $release.assets.0)) }
+                $release | to json | print
+                return
             }
             if $release_mode == 'invalid-json' { print 'not JSON'; return }
             mut release = {

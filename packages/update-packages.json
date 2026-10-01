@@ -2,5 +2,6 @@
   "opencode": "packages/opencode.nix",
   "opencode-desktop": "packages/opencode-desktop.nix",
   "omp": "flake.lock",
+  "roc-nightly": "packages/roc-nightly.nix",
   "t3code-nightly": "packages/t3code-nightly.nix"
 }

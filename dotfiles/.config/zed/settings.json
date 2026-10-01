@@ -88,6 +88,10 @@
       "formatter": "language_server",
       "semantic_tokens": "combined"
     },
+    "Roc": {
+      "formatter": "language_server",
+      "semantic_tokens": "combined"
+    },
     "Typst": {
       "soft_wrap": "bounded",
       "show_wrap_guides": false,
@@ -219,6 +223,12 @@
     }
   },
   "lsp": {
+    "roc": {
+      "binary": {
+        "path": "/run/current-system/sw/bin/roc",
+        "arguments": ["experimental-lsp", "--stdio"]
+      }
+    },
     "clangd": {
       "binary": {
         "path": "/run/current-system/sw/bin/clangd",
@@ -278,6 +288,7 @@
   "context_servers": {},
 
   "auto_install_extensions": {
+    "roc": true,
     "nix": true,
     "html": true,
     "catppuccin": true,

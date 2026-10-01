@@ -39,6 +39,8 @@ def main [
         }
         print 'Updating OpenCode CLI and desktop'
         ^$nu.current-exe --no-config-file packages/update-opencode.nu
+        print 'Updating Roc nightly'
+        ^$nu.current-exe --no-config-file packages/update-roc.nu
         print 'Updating T3 Code nightly'
         ^$nu.current-exe --no-config-file packages/update-t3code.nu --no-build
         if not $no_build {

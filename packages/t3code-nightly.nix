@@ -73,6 +73,13 @@ let
     cargoHash = "sha256-5cmG2daM1bVOA23gjjoalbx0fEL1hmqV6WZov0sUZp8=";
   };
 
+  hyprlandCapture = pkgs.rustPlatform.buildRustPackage {
+    pname = "t3code-hyprland-capture";
+    inherit version src;
+    sourceRoot = "${src.name}/native/hyprland-snap-shot";
+    cargoLock.lockFile = "${src}/native/hyprland-snap-shot/Cargo.lock";
+  };
+
   pnpmDeps = pkgs.fetchPnpmDeps {
     pnpm = pkgs.pnpm_11;
     pname = "t3code";
@@ -126,6 +133,12 @@ let
       + pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
         install -Dm755 native/browser-secret/build/${pkgs.stdenv.hostPlatform.node.arch}/t3-browser-secret \
           "$desktop/libexec/t3code/apps/desktop/prod-resources/browser-secret/t3-browser-secret"
+
+        # Capture setup copies this bundled helper into the user's data home.
+        install -Dm755 ${hyprlandCapture}/bin/t3-hyprland-snap-shot \
+          "$desktop/libexec/t3code/apps/desktop/prod-resources/hyprland-capture/t3-hyprland-snap-shot"
+        cp -r native/hyprland-snap-shot/protocols \
+          "$desktop/libexec/t3code/apps/desktop/prod-resources/hyprland-capture/protocols"
       '';
 
     # Electron does not preload libstdc++ like Node.js does. The vendored tree
@@ -143,13 +156,14 @@ let
         pkgs.lib.optionalString
           (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.buildPlatform.canExecute pkgs.stdenv.hostPlatform)
           ''
+            test -x "$desktop/libexec/t3code/apps/desktop/prod-resources/hyprland-capture/t3-hyprland-snap-shot"
             env -u LD_LIBRARY_PATH ELECTRON_RUN_AS_NODE=1 \
               T3CODE_PACKAGE_ROOT="$out" T3CODE_TEST_SHELL=${pkgs.stdenv.shell} \
               ${pkgs.lib.getExe electron} ${../tests/t3code-native.cjs}
           '';
 
     passthru = (oldAttrs.passthru or { }) // {
-      inherit electron;
+      inherit electron hyprlandCapture;
       # Exposed as subpackages so nix-update refreshes both dependency hashes.
       inherit licenseNotices resourceMonitor;
     };
@@ -170,6 +184,7 @@ let
           # here so nix-update sees this editable file as their source position.
           passthru = (oldAttrs.passthru or { }) // {
             inherit (nightlyUnwrapped)
+              hyprlandCapture
               licenseNotices
               pnpmDeps
               resourceMonitor

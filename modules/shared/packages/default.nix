@@ -131,6 +131,9 @@ in
       openssl.dev
       rustup
 
+      # Dev tools - Roc
+      perSystem.self.roc-nightly
+
       # Nix and repo tools
       nix-inspect
       perSystem.self.nix-update
