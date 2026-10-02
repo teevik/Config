@@ -9,7 +9,7 @@
 let
   application = pkgs.writers.writeNuBin name {
     check = "${pkgs.lib.getExe pkgs.nushell} --no-config-file ${./check.nu}";
-  } script;
+  } (builtins.readFile script);
   wrapperArgs =
     pkgs.lib.optionals (runtimeInputs != [ ]) [
       "--prefix"
