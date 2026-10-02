@@ -1,4 +1,7 @@
-{ pkgs ? import ../nix-lint/pkgs.nix, ... }:
+{
+  pkgs ? import ../nix-lint/pkgs.nix,
+  ...
+}:
 let
   # This revision supports NixOS toplevel metadata and mandatory CPE data.
   # Keep the caller's Nix first on PATH: its Cargo plugin requires that ABI.
