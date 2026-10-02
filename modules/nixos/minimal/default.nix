@@ -10,7 +10,6 @@ let
 in
 {
   imports = [
-    # inputs.determinate.nixosModules.default
     ./networking.nix
     ./parallel-eval.nix
     ./ssh.nix
@@ -36,25 +35,17 @@ in
       nixos.enable = false;
     };
 
-    # nixpkgs.overlays = [
-    #   (final: prev: {
-    #     nix = perSystem.nix.default;
-    #   })
-    # ];
-
     # nixpkgs.flake = {
     #   setFlakeRegistry = false;
     #   setNixPath = false;
     # };
 
     nix = {
-      package = perSystem.determinate-nix.default;
+      package = perSystem.self.determinate-nix;
       channel.enable = false;
       # Deduplicate on an idle, AC-powered maintenance timer instead of
       # adding hashing/linking work to every build and substitution.
       optimise.automatic = true;
-      # package = pkgs.lix;
-      # package = perSystem.self.lix;
 
       settings = {
         experimental-features = [

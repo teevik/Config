@@ -33,7 +33,10 @@
   # Keep simultaneous heavy builds bounded on this 8-core laptop. For a
   # single large compilation, --max-jobs 1 --cores 8 can use the whole CPU.
   nix.settings = {
-    # Four evaluator threads beat eight in the uncached toplevel benchmark.
+    # One evaluator thread per Lunar Lake P-core. Four beat eight in the
+    # uncached toplevel benchmark; the LP E-cores sit on a separate cache
+    # island and stall the shared heap. Re-check with nix-src #572 using
+    # `just benchmark-eval-cores zenbook`.
     eval-cores = 4;
     max-jobs = 2;
     cores = 4;

@@ -81,7 +81,7 @@ update-inputs-check:
 
 # Fetch the locked input graph ahead of offline work; does not update pins.
 prefetch-inputs:
-    nix eval --impure --json --expr 'import ./tests/evaluation/prefetch-inputs.nix {}'
+    nix flake prefetch-inputs
 
 # Fail on evaluation warnings, with a stack trace for builtins.warn.
 [positional-arguments]

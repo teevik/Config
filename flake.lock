@@ -171,6 +171,18 @@
         "type": "github"
       }
     },
+    "determinate-nix-pr-572": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-PEE2kvIKXbQhbblk41OzkkfYJe/KuO9bfGmdGjkM/S8=",
+        "type": "file",
+        "url": "https://github.com/DeterminateSystems/nix-src/compare/7ed15851f9ff328b9f8c42099a4b7f7ed174974b...3f13349a527b6aa3096e7a36b21f61886c552a95.diff"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/DeterminateSystems/nix-src/compare/7ed15851f9ff328b9f8c42099a4b7f7ed174974b...3f13349a527b6aa3096e7a36b21f61886c552a95.diff"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -1190,6 +1202,7 @@
         "blueprint": "blueprint",
         "cargo-nix-plugin": "cargo-nix-plugin",
         "determinate-nix": "determinate-nix",
+        "determinate-nix-pr-572": "determinate-nix-pr-572",
         "disko": "disko",
         "gaze": "gaze",
         "hyprland": "hyprland",

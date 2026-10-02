@@ -4,5 +4,5 @@
   ...
 }:
 pkgs.nix-update.override {
-  nix = perSystem.determinate-nix.default;
+  nix = perSystem.self.determinate-nix;
 }

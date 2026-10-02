@@ -34,7 +34,6 @@
     };
 
     # Modules
-    # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko = {
       url = "https://flakehub.com/f/nix-community/disko/1.tar.gz";
@@ -63,6 +62,13 @@
       flake = false;
     };
     determinate-nix.url = "github:DeterminateSystems/nix-src";
+    # Unmerged nix-src PRs applied by packages/determinate-nix.nix. Pinned to
+    # PR commits; a patch stops applying once its PR lands on main.
+    # https://github.com/DeterminateSystems/nix-src/pull/572
+    determinate-nix-pr-572 = {
+      url = "file+https://github.com/DeterminateSystems/nix-src/compare/7ed15851f9ff328b9f8c42099a4b7f7ed174974b...3f13349a527b6aa3096e7a36b21f61886c552a95.diff";
+      flake = false;
+    };
     cargo-nix-plugin = {
       # Match the library currently used by master-thesis (resolver API 4).
       url = "github:anthropics/cargo-nix-plugin/191bf8e7bd086e96759362817e4fa6c06fa6359b";
