@@ -52,6 +52,7 @@ in
           "nix-command"
           "flakes"
           "parallel-eval"
+          "wasm-builtin"
         ];
 
         auto-optimise-store = false;
