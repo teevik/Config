@@ -239,6 +239,17 @@ in
         });
   };
 
+  systemd.services.firefox-seed-profiles = {
+    enable = true;
+    description = "Create Firefox profiles.ini on first run";
+    wantedBy = [ "system-manager.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = import ../../packages/firefox/seed-profiles.nix { inherit pkgs; };
+    };
+  };
+
   systemd.services.nix-electron-apparmor = {
     enable = true;
     description = "Load AppArmor profile for Nix Electron apps";
@@ -353,7 +364,7 @@ in
       age
       sops
 
-      firefox
+      perSystem.self.firefox
       hyprlandPackage
       uwsm
       brightnessctl

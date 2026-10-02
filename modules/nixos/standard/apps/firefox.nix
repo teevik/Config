@@ -1,4 +1,7 @@
+{ pkgs, ... }:
 let
+  seedProfiles = import ../../../../packages/firefox/seed-profiles.nix { inherit pkgs; };
+
   lock-false = {
     Value = false;
     Status = "locked";
@@ -17,6 +20,10 @@ in
 {
   programs.firefox = {
     enable = true;
+    # Prefs and userContent.css are baked in, see packages/firefox
+    package = pkgs.firefox.override (
+      import ../../../../packages/firefox/autoconfig.nix { inherit pkgs; }
+    );
 
     policies = {
       DisableTelemetry = true;
@@ -176,4 +183,6 @@ in
       };
     };
   };
+
+  system.activationScripts.firefoxProfiles.text = "${seedProfiles}";
 }
