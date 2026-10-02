@@ -1,11 +1,14 @@
 # Exercise real toplevel evaluation, bypassing cached warning-free results.
 # Ignore only the Git worktree notice; never suppress evaluation warnings.
+# Speculative evaluation (packages/determinate-nix) can warn for values that
+# are never demanded, e.g. option docs; disable it to see only real warnings.
 def main [...hosts: string] {
     cd ($env.FILE_PWD | path dirname)
     let hosts = if ($hosts | is-empty) { [zenbook] } else { $hosts }
     mut status = 0
     for host in $hosts {
         let result = (^nix eval --option eval-cache false --option warn-dirty false
+            --option eval-speculation-threshold 0
             --abort-on-warn --show-trace
             --raw $".#nixosConfigurations.($host).config.system.build.toplevel.drvPath"
             | complete)

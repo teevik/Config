@@ -99,7 +99,7 @@ def --wrapped main [...raw_args] {
     if ($env.MOCK_FAILURE? | default '') == $env.MOCK_TOOL { exit 17 }
 
     if $env.MOCK_TOOL == 'nix' and $args.0 == 'eval' {
-        let prefix = [eval --option eval-cache 'false' --option warn-dirty 'false' --abort-on-warn --show-trace --raw]
+        let prefix = [eval --option eval-cache 'false' --option warn-dirty 'false' --option eval-speculation-threshold '0' --abort-on-warn --show-trace --raw]
         assert equal ($args | drop 1) $prefix
         let target = ($args | last)
         if $target =~ '\.warning\.' { print --stderr 'evaluation warning: fixture' }

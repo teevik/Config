@@ -1,0 +1,1295 @@
+nix-src slop-optimizations, rebased onto main 8bb6b3514 (v3.23.0) + #572.
+
+Source: https://github.com/DeterminateSystems/nix-src/tree/slop-optimizations
+at d5ac293d7. Of its 13 commits, 9 are #572 or already on main. This is the
+remaining four, ported to main's per-worker scheduler (pinned fibers,
+per-worker fiber limits, no drainQueue()):
+
+  c9eb28086 Executor::drainQueue(): Don't flush the wait lists ...
+            Dropped: drainQueue() no longer exists on main.
+  cb1ede673 Speculatively evaluate substantial thunks in the background
+  ff8f5e183 derivationStrict: Run the background instantiation as speculative work
+  95db2e442 Prefetch imports of lists of path literals in the background
+
+Porting changes: the per-worker readyFibers update nrReadyFibers; the
+speculative fiber reserve is one slot per worker
+(canStartSpeculativeFiber()); failItems() releases the counters of
+dropped items; spawnSpeculative() uses main's wake logic and drops work
+after shutdown.
+
+diff --git a/src/libexpr/eval.cc b/src/libexpr/eval.cc
+index 9e1c3425d..d190bc934 100644
+--- a/src/libexpr/eval.cc
++++ b/src/libexpr/eval.cc
+@@ -348,6 +348,7 @@ EvalState::EvalState(
+     , functionCalls(make_ref<decltype(functionCalls)::element_type>())
+     , attrSelects(make_ref<decltype(attrSelects)::element_type>())
+     , executor{make_ref<Executor>(settings)}
++    , speculationThreshold(executor->enabled ? settings.evalSpeculationThreshold.get() : 0)
+ {
+ #ifndef _WIN32
+     static std::once_flag stackSizeBumped;
+@@ -1309,6 +1310,13 @@ void ExprAttrs::eval(EvalState & state, Env & env, Value & v)
+     auto dynamicEnv = &env;
+     bool sort = false;
+ 
++    /* Candidates for speculative evaluation (see
++       `EvalState::speculate()`). These are only submitted at the end,
++       when the environment they capture is fully initialised. */
++    auto threshold = speculable ? state.speculationThreshold : 0;
++    Value * cands[EvalState::maxSpeculationCandidates];
++    size_t nCands = 0;
++
+     if (recursive) {
+         /* Create a new environment that contains the attributes in
+            this `rec'. */
+@@ -1333,6 +1341,9 @@ void ExprAttrs::eval(EvalState & state, Env & env, Value & v)
+                 vAttr = i.second.e->maybeThunk(state, *i.second.chooseByKind(&env2, &env, inheritEnv));
+             env2.values[displ++] = vAttr;
+             bindings.insert(i.first, vAttr, i.second.pos);
++            if (threshold && nCands < EvalState::maxSpeculationCandidates && i.second.kind == AttrDef::Kind::Plain
++                && i.second.e->size >= threshold)
++                cands[nCands++] = vAttr;
+         }
+ 
+         /* If the rec contains an attribute called `__overrides', then
+@@ -1359,14 +1370,21 @@ void ExprAttrs::eval(EvalState & state, Env & env, Value & v)
+                     bindings.push_back(i);
+             }
+             sort = true;
++            /* The overrides may have replaced some of the candidate
++               thunks, so don't speculate on them. */
++            nCands = 0;
+         }
+     }
+ 
+     else {
+         Env * inheritEnv = inheritFromExprs ? buildInheritFromEnv(state, env) : nullptr;
+-        for (auto & i : *attrs)
+-            bindings.insert(
+-                i.first, i.second.e->maybeThunk(state, *i.second.chooseByKind(&env, &env, inheritEnv)), i.second.pos);
++        for (auto & i : *attrs) {
++            auto vAttr = i.second.e->maybeThunk(state, *i.second.chooseByKind(&env, &env, inheritEnv));
++            bindings.insert(i.first, vAttr, i.second.pos);
++            if (threshold && nCands < EvalState::maxSpeculationCandidates && i.second.kind == AttrDef::Kind::Plain
++                && i.second.e->size >= threshold)
++                cands[nCands++] = vAttr;
++        }
+     }
+ 
+     /* Dynamic attrs apply *after* rec and __overrides. */
+@@ -1391,10 +1409,16 @@ void ExprAttrs::eval(EvalState & state, Env & env, Value & v)
+ 
+         i.valueExpr->setName(nameSym);
+         /* Keep sorted order so find can catch duplicates */
+-        bindings.insert(nameSym, i.valueExpr->maybeThunk(state, *dynamicEnv), i.pos);
++        auto vAttr = i.valueExpr->maybeThunk(state, *dynamicEnv);
++        bindings.insert(nameSym, vAttr, i.pos);
+         sort = true;
++        if (threshold && nCands < EvalState::maxSpeculationCandidates && i.valueExpr->size >= threshold)
++            cands[nCands++] = vAttr;
+     }
+ 
++    if (nCands) [[unlikely]]
++        state.speculate(cands, nCands, EvalState::SpeculationSite::Attrs);
++
+     /* Empty attrsets share the static Bindings::emptyBindings, which we
+        must not write to: apart from being a data race, it causes false
+        sharing on emptyBindings' cache line (which may also hold other hot
+@@ -1417,11 +1441,23 @@ void ExprLet::eval(EvalState & state, Env & env, Value & v)
+     /* The recursive attributes are evaluated in the new environment,
+        while the inherited attributes are evaluated in the original
+        environment. */
++    auto threshold = attrs->speculable ? state.speculationThreshold : 0;
++    Value * cands[EvalState::maxSpeculationCandidates];
++    size_t nCands = 0;
+     Displacement displ = 0;
+     for (auto & i : *attrs->attrs) {
+-        env2.values[displ++] = i.second.e->maybeThunk(state, *i.second.chooseByKind(&env2, &env, inheritEnv));
++        auto vAttr = i.second.e->maybeThunk(state, *i.second.chooseByKind(&env2, &env, inheritEnv));
++        env2.values[displ++] = vAttr;
++        if (threshold && nCands < EvalState::maxSpeculationCandidates
++            && i.second.kind == ExprAttrs::AttrDef::Kind::Plain && i.second.e->size >= threshold)
++            cands[nCands++] = vAttr;
+     }
+ 
++    /* Note: only now that `env2` is fully initialised may the thunks
++       be evaluated speculatively. */
++    if (nCands) [[unlikely]]
++        state.speculate(cands, nCands, EvalState::SpeculationSite::Let);
++
+     if (state.debugRepl) {
+         auto dts = makeDebugTraceStacker(state, *this, env2, getPos(), "while evaluating a '%1%' expression", "let");
+         return body->eval(state, env2, v);
+@@ -1433,9 +1469,19 @@ void ExprLet::eval(EvalState & state, Env & env, Value & v)
+ void ExprList::eval(EvalState & state, Env & env, Value & v)
+ {
+     auto list = state.buildList(elems.size());
+-    for (const auto & [n, v2] : enumerate(list))
++    auto threshold = speculable ? state.speculationThreshold : 0;
++    Value * cands[EvalState::maxSpeculationCandidates];
++    size_t nCands = 0;
++    for (const auto & [n, v2] : enumerate(list)) {
+         v2 = elems[n]->maybeThunk(state, env);
++        if (threshold && nCands < EvalState::maxSpeculationCandidates && elems[n]->size >= threshold)
++            cands[nCands++] = v2;
++    }
+     v.mkList(list);
++    if (nCands) [[unlikely]]
++        state.speculate(cands, nCands, EvalState::SpeculationSite::List);
++    if (prefetchImports) [[unlikely]]
++        state.prefetchImports(elems);
+ }
+ 
+ Value * ExprList::maybeThunk(EvalState & state, Env & env)
+@@ -1850,6 +1896,20 @@ void ExprCall::eval(EvalState & state, Env & env, Value & v)
+     for (size_t i = 0; i < args->size(); ++i)
+         vArgs[i] = (*args)[i]->maybeThunk(state, env);
+ 
++    if (speculable) [[unlikely]] {
++        auto threshold = state.speculationThreshold;
++        Value * cands[EvalState::maxSpeculationCandidates];
++        size_t nCands = 0;
++        for (size_t i = 0; i < args->size() && nCands < EvalState::maxSpeculationCandidates; ++i)
++            if ((*args)[i]->size >= threshold)
++                cands[nCands++] = vArgs[i];
++        if (nCands)
++            state.speculate(cands, nCands, EvalState::SpeculationSite::Call);
++    }
++
++    if (prefetchImport) [[unlikely]]
++        state.prefetchImports({args->data(), args->size()});
++
+     state.callFunction(vFun, vArgs, v, pos);
+ }
+ 
+@@ -3105,6 +3165,23 @@ void EvalState::printStatistics()
+     topObj["maxSuspendedFibers"] = executor->maxSuspendedFibers.load();
+     topObj["maxLiveFibers"] = executor->maxLiveFibers.load();
+     topObj["nrFiberStacksAllocated"] = executor->nrFiberStacksAllocated.load();
++    topObj["nrThunksSpeculated"] = nrThunksSpeculated.load();
++    topObj["nrSpeculationItems"] = nrSpeculationItems.load();
++    topObj["nrSpeculationsRejectedBrake"] = nrSpeculationsRejectedBrake.load();
++    topObj["nrSpeculationsRejectedBacklog"] = nrSpeculationsRejectedBacklog.load();
++    topObj["nrSpeculationsRejectedBusy"] = nrSpeculationsRejectedBusy.load();
++    topObj["nrSpeculatedAlreadyFinished"] = nrSpeculatedAlreadyFinished.load();
++    topObj["nrSpeculatedFailed"] = nrSpeculatedFailed.load();
++    topObj["nrSpeculatedFromAttrs"] = nrSpeculatedFromAttrs.load();
++    topObj["nrSpeculatedFromLet"] = nrSpeculatedFromLet.load();
++    topObj["nrSpeculatedFromList"] = nrSpeculatedFromList.load();
++    topObj["nrSpeculatedFromCall"] = nrSpeculatedFromCall.load();
++    topObj["maxSpeculativeOutstanding"] = executor->maxSpeculativeOutstanding.load();
++    topObj["maxInstantiationsOutstanding"] = executor->maxInstantiationsOutstanding.load();
++    topObj["nrImportsPrefetched"] = nrImportsPrefetched.load();
++    topObj["nrImportPrefetchItems"] = nrImportPrefetchItems.load();
++    topObj["nrImportPrefetchesRejected"] = nrImportPrefetchesRejected.load();
++    topObj["nrImportsPrefetchFailed"] = nrImportsPrefetchFailed.load();
+     topObj["nrAvoided"] = nrAvoided.load();
+     topObj["nrLookups"] = nrLookups.load();
+     topObj["nrPrimOpCalls"] = nrPrimOpCalls.load();
+diff --git a/src/libexpr/include/nix/expr/eval-settings.hh b/src/libexpr/include/nix/expr/eval-settings.hh
+index 9d0776139..78ea84585 100644
+--- a/src/libexpr/include/nix/expr/eval-settings.hh
++++ b/src/libexpr/include/nix/expr/eval-settings.hh
+@@ -530,6 +530,32 @@ public:
+ 
+           The value `0` means four fibers per evaluation thread.
+         )"};
++
++    Setting<unsigned int> evalSpeculationThreshold{
++        this,
++        128,
++        "eval-speculation-threshold",
++        R"(
++          Controls speculative evaluation by the multi-threaded evaluator.
++
++          When an attribute set, list, `let` expression or function call creates thunks (delayed computations), the evaluator can hand the ones whose expressions are large enough to idle worker threads, which then evaluate them ahead of time.
++          If the value is needed later, it is already available; if it is never needed, the work was wasted.
++          This setting is the minimum size of an expression, measured in syntax tree nodes (not counting nested lambdas, attribute values and list elements, which are delayed computations of their own), for its thunk to be evaluated speculatively.
++
++          The value `0` disables speculative evaluation.
++          Lower values speculate more aggressively: e.g. on a typical NixOS configuration evaluated with 24 threads, the default of `128` reduced the evaluation time by about 20% at a few percent more CPU time, while `64` reduced it by about 30% at 35% more CPU time, but also slowed down workloads that already keep all threads busy (such as `nix search`).
++          This setting has no effect unless `eval-cores` is greater than 1.
++        )"};
++
++    Setting<unsigned int> evalSpeculationBacklog{
++        this,
++        128,
++        "eval-speculation-backlog",
++        R"(
++          The maximum number of speculative work items (see `eval-speculation-threshold`) per evaluation thread that may be waiting to be evaluated or being evaluated at the same time.
++          When this limit is reached, no further thunks are evaluated speculatively until some of the outstanding work has finished.
++          Higher values allow the evaluator to run further ahead of demand, at the cost of memory and possibly wasted work.
++        )"};
+ };
+ 
+ /**
+diff --git a/src/libexpr/include/nix/expr/eval.hh b/src/libexpr/include/nix/expr/eval.hh
+index d73e55fb3..faeed09c8 100644
+--- a/src/libexpr/include/nix/expr/eval.hh
++++ b/src/libexpr/include/nix/expr/eval.hh
+@@ -56,6 +56,7 @@ struct MountedSourceAccessor;
+ struct AsyncPathWriter;
+ struct Provenance;
+ struct Executor;
++enum class SpeculationKind;
+ 
+ namespace eval_cache {
+ class EvalCache;
+@@ -1114,6 +1115,23 @@ public:
+     Counter maxWaiting;
+     Counter nrSpuriousWakeups;
+ 
++    /* Speculative evaluation statistics (see `speculate()`). */
++    Counter nrThunksSpeculated;
++    Counter nrSpeculationItems;
++    Counter nrSpeculationsRejectedBrake;
++    Counter nrSpeculationsRejectedBacklog;
++    Counter nrSpeculationsRejectedBusy;
++    Counter nrSpeculatedAlreadyFinished;
++    Counter nrSpeculatedFailed;
++    Counter nrSpeculatedFromAttrs;
++    Counter nrSpeculatedFromLet;
++    Counter nrSpeculatedFromList;
++    Counter nrSpeculatedFromCall;
++    Counter nrImportsPrefetched;
++    Counter nrImportPrefetchItems;
++    Counter nrImportPrefetchesRejected;
++    Counter nrImportsPrefetchFailed;
++
+ private:
+     const bool countCalls;
+ 
+@@ -1194,6 +1212,57 @@ public:
+         futures.spawn(priority, makeWork(std::move(t)));
+     }
+ 
++    /**
++     * The kind of expression that created the thunks passed to
++     * `speculate()`, for statistics.
++     */
++    enum class SpeculationSite { Attrs, Let, List, Call };
++
++    /**
++     * The maximum number of candidates per `speculate()` call.
++     */
++    static constexpr size_t maxSpeculationCandidates = 32;
++
++    /**
++     * Submit the thunks among `candidates` (at most
++     * `maxSpeculationCandidates`, already filtered by the caller on
++     * `Expr::size >= speculationThreshold`) as a single lowest-priority
++     * work item that forces them to weak head normal form, so that
++     * idle worker threads evaluate them ahead of demand. Does nothing
++     * if the current execution context is itself speculative, or if
++     * the executor is busy. Errors during the speculative evaluation
++     * are left in the thunks and reported when (if) they are demanded.
++     * Never throws.
++     *
++     * Callers must ensure that the environments captured by the thunks
++     * are fully initialised (e.g. `rec` attrsets and `let` bindings
++     * must call this only after all their thunks have been created).
++     */
++    [[gnu::noinline]] void speculate(Value * const * candidates, size_t n, SpeculationSite site);
++
++    /**
++     * Whether fewer than `eval-speculation-backlog` speculative work
++     * items of the given kind per helper thread are outstanding.
++     */
++    bool speculationBudgetAvailable(SpeculationKind kind) const;
++
++    /**
++     * The minimum number of path literals in a list for it to qualify
++     * for `prefetchImports()`.
++     */
++    static constexpr size_t minPrefetchImports = 8;
++
++    /**
++     * Parse and evaluate (to weak head normal form) the files denoted
++     * by the path literals among `exprs` in the background, so that
++     * later `import`s of them find them in the file evaluation cache.
++     * Used for lists of path literals (e.g. NixOS module lists) and
++     * `import ./path` calls, which would otherwise be parsed one after
++     * another on the critical path. Subject to the same gates and
++     * budget as `speculate()`. Never throws.
++     */
++    [[gnu::noinline]] void prefetchImports(std::span<Expr * const> exprs);
++
+     /**
+      * Worker threads manager.
+      *
+@@ -1203,6 +1272,13 @@ public:
+      * `EvalState`.
+      */
+     ref<Executor> executor;
++
++    /**
++     * The `eval-speculation-threshold` setting if parallel evaluation
++     * is enabled, 0 otherwise. Read by `bindVars()` to precompute the
++     * `speculable` flags of attrset, list and call expressions.
++     */
++    const uint32_t speculationThreshold;
+ };
+ 
+ struct DebugTraceStacker
+diff --git a/src/libexpr/include/nix/expr/nixexpr.hh b/src/libexpr/include/nix/expr/nixexpr.hh
+index 85a6c0c3e..8b635be92 100644
+--- a/src/libexpr/include/nix/expr/nixexpr.hh
++++ b/src/libexpr/include/nix/expr/nixexpr.hh
+@@ -7,6 +7,8 @@
+ #include <vector>
+ #include <memory_resource>
+ #include <algorithm>
++#include <initializer_list>
++#include <limits>
+ 
+ #include "nix/expr/value.hh"
+ #include "nix/expr/symbol-table.hh"
+@@ -102,11 +104,33 @@ struct Expr
+ 
+     static Counter nrExprs;
+ 
++    /**
++     * An estimate of the cost of reducing this expression to weak head
++     * normal form, in AST nodes. Lambda bodies, attribute values and
++     * list elements are not counted, since those become thunks of
++     * their own. Computed bottom-up by `bindVars()`. Used to decide
++     * whether a thunk is worth evaluating speculatively (see
++     * `EvalState::speculate()`).
++     */
++    uint32_t size = 1;
++
+     Expr()
+     {
+         nrExprs++;
+     }
+ 
++    /**
++     * Compute `size` from the sizes of the given children (saturating).
++     */
++    void setSize(std::initializer_list<const Expr *> children)
++    {
++        uint64_t n = 1;
++        for (auto child : children)
++            if (child)
++                n += child->size;
++        size = std::min<uint64_t>(n, std::numeric_limits<uint32_t>::max());
++    }
++
+     virtual ~Expr() {};
+     virtual void show(const SymbolTable & symbols, std::ostream & str) const;
+     virtual void bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env);
+@@ -347,6 +371,14 @@ struct ExprOpHasAttr : Expr
+ struct ExprAttrs : Expr
+ {
+     bool recursive;
++
++    /**
++     * Whether at least one attribute value is substantial enough to
++     * be evaluated speculatively (see `EvalState::speculate()`).
++     * Computed by `bindVars()`.
++     */
++    bool speculable = false;
++
+     PosIdx pos;
+ 
+     struct AttrDef
+@@ -427,12 +459,33 @@ struct ExprAttrs : Expr
+ 
+     std::shared_ptr<const StaticEnv> bindInheritSources(EvalState & es, const std::shared_ptr<const StaticEnv> & env);
+     Env * buildInheritFromEnv(EvalState & state, Env & up);
++
++    /**
++     * Compute `size` and `speculable` from the already-bound
++     * children. Called by `bindVars()` and by `ExprLet::bindVars()`.
++     */
++    void computeSize(EvalState & es);
+     void showBindings(const SymbolTable & symbols, std::ostream & str) const;
+     void moveDataToAllocator(std::pmr::polymorphic_allocator<char> & alloc);
+ };
+ 
+ struct ExprList : Expr
+ {
++    /**
++     * Whether at least one element is substantial enough to be
++     * evaluated speculatively (see `EvalState::speculate()`).
++     * Computed by `bindVars()`.
++     */
++    bool speculable = false;
++
++    /**
++     * Whether this list consists (largely) of path literals, like a
++     * NixOS module list, whose files are worth parsing and evaluating
++     * ahead of time (see `EvalState::prefetchImports()`). Computed by
++     * `bindVars()`.
++     */
++    bool prefetchImports = false;
++
+     std::span<Expr *> elems;
+ 
+     ExprList(std::pmr::polymorphic_allocator<char> & alloc, std::span<Expr *> exprs)
+@@ -590,6 +643,20 @@ struct ExprCall : Expr
+     PosIdx pos;
+     std::optional<PosIdx> cursedOrEndPos; // used during parsing to warn about https://github.com/NixOS/nix/issues/11118
+ 
++    /**
++     * Whether at least one argument is substantial enough to be
++     * evaluated speculatively (see `EvalState::speculate()`).
++     * Computed by `bindVars()`.
++     */
++    bool speculable = false;
++
++    /**
++     * Whether this is a call of `import` on a path literal, whose file
++     * is worth parsing and evaluating ahead of time (see
++     * `EvalState::prefetchImports()`). Computed by `bindVars()`.
++     */
++    bool prefetchImport = false;
++
+     ExprCall(const PosIdx & pos, Expr * fun, std::pmr::vector<Expr *> && args)
+         : fun(fun)
+         , args(args)
+@@ -717,6 +784,7 @@ struct ExprOpNot : Expr
+     {                                                                                    \
+         e1->bindVars(es, env);                                                           \
+         e2->bindVars(es, env);                                                           \
++        setSize({e1, e2});                                                               \
+     }                                                                                    \
+     void eval(EvalState & state, Env & env, Value & v) override;                         \
+     PosIdx getPos() const override                                                       \
+diff --git a/src/libexpr/include/nix/expr/parallel-eval.hh b/src/libexpr/include/nix/expr/parallel-eval.hh
+index b6a27c83c..a942dc24f 100644
+--- a/src/libexpr/include/nix/expr/parallel-eval.hh
++++ b/src/libexpr/include/nix/expr/parallel-eval.hh
+@@ -17,6 +17,16 @@
+ 
+ namespace nix {
+ 
++/**
++ * The two kinds of speculative work, each with its own budget of
++ * outstanding items: the speculative evaluation of substantial thunks
++ * (`EvalState::speculate()`), and the speculative instantiation of the
++ * dependencies of a derivation (the `derivationStrict` hook). The
++ * latter recurses through the dependency graph, so it is not subject
++ * to the brake that keeps the former from cascading.
++ */
++enum class SpeculationKind { Thunk, Instantiation };
++
+ struct Executor
+ {
+     using work_t = MoveOnlyFunction<void()>;
+@@ -25,8 +35,28 @@ struct Executor
+     {
+         std::promise<void> promise;
+         work_t work;
++
++        /**
++         * Whether this is speculative work (see
++         * `EvalState::speculate()` and the `derivationStrict` hook):
++         * work that runs at the lowest priority, is not counted as
++         * backlog, may not start thunk speculation of its own, and is
++         * subject to the fiber reserve for demand work.
++         */
++        bool speculative = false;
++
++        /**
++         * For speculative work: which budget it is charged to (see
++         * `SpeculationKind`).
++         */
++        bool instantiation = false;
+     };
+ 
++    /**
++     * The priority of speculative work items, i.e. the lowest one.
++     */
++    static constexpr uint8_t speculativePriority = 255;
++
+     /**
+      * A work item running on its own stack. Defined in
+      * `parallel-eval.cc`; opaque here to keep the Boost.Context
+@@ -142,6 +172,29 @@ struct Executor
+     std::atomic<uint64_t> maxLiveFibers{0};
+     std::atomic<uint64_t> nrFiberStacksAllocated{0};
+ 
++    /**
++     * The number of queued, non-speculative work items, and the
++     * number of ready fibers. Maintained outside the state lock so
++     * that `hasBacklog()` is lock-free.
++     */
++    std::atomic<uint32_t> nrQueuedDemand{0};
++    std::atomic<uint32_t> nrReadyFibers{0};
++
++    /**
++     * The number of speculative work items of each kind that have
++     * been submitted but not yet finished (or dropped), and their
++     * high-water marks.
++     */
++    std::atomic<uint32_t> nrSpeculativeOutstanding{0};
++    std::atomic<uint32_t> maxSpeculativeOutstanding{0};
++    std::atomic<uint32_t> nrInstantiationsOutstanding{0};
++    std::atomic<uint32_t> maxInstantiationsOutstanding{0};
++
++    std::atomic<uint32_t> & outstanding(SpeculationKind kind)
++    {
++        return kind == SpeculationKind::Thunk ? nrSpeculativeOutstanding : nrInstantiationsOutstanding;
++    }
++
+     static unsigned int getEvalCores(const EvalSettings & evalSettings);
+ 
+     static unsigned int getMaxFibersPerWorker(const EvalSettings & evalSettings, unsigned int evalCores);
+@@ -198,6 +251,19 @@ struct Executor
+         return worker.nrLiveFibers < maxFibersPerWorker;
+     }
+ 
++    /**
++     * Whether a worker may start a fresh speculative work item. The
++     * last fiber slot of each worker is reserved for demand work:
++     * otherwise suspended speculative fibers could occupy all slots
++     * and keep demand items (which always sort before speculative
++     * ones) from starting. A worker that hits the reserve sleeps
++     * until one of its fibers finishes or a demand item arrives.
++     */
++    bool canStartSpeculativeFiber(const Worker & worker) const
++    {
++        return worker.nrLiveFibers + 1 < maxFibersPerWorker;
++    }
++
+     /**
+      * Put a previously suspended fiber back onto its owner's ready
+      * queue, and wake up the owner if necessary. Called when the thunk
+@@ -217,15 +283,44 @@ struct Executor
+     std::vector<std::future<void>> spawn(WorkItems && items);
+ 
+     /**
+-     * Whether there is already at least one queued work item or ready
+-     * fiber per worker thread. Optional background work (such as the
+-     * speculative instantiation of dependencies in
++     * Submit a speculative work item (see `Item::speculative`) of the
++     * given kind. Its result is not awaited by anyone, so exceptions
++     * other than `Interrupted` are discarded. The caller is responsible
++     * for checking the kind's budget (`outstanding(kind)`) beforehand.
++     */
++    void spawnSpeculative(work_t && work, SpeculationKind kind);
++
++    /**
++     * Whether there is already at least one queued non-speculative
++     * work item or ready fiber per worker thread. Optional background
++     * work (such as the speculative instantiation of dependencies in
+      * `derivationStrict`) should be skipped in that case: it cannot
+      * add parallelism, only scheduling overhead.
+      */
+-    bool hasBacklog();
++    bool hasBacklog() const
++    {
++        return nrQueuedDemand.load(std::memory_order_relaxed) + nrReadyFibers.load(std::memory_order_relaxed)
++               >= evalCores;
++    }
++
++    /**
++     * Whether the current execution context is running speculative
++     * work. Speculative work must not spawn speculation of its own
++     * (to bound the cascade), and later this will also be the
++     * predicate for bailing out of side effects.
++     */
++    static bool speculating()
++    {
++        return inSpeculation;
++    }
+ 
+     [[gnu::tls_model("initial-exec")]] static thread_local bool amWorkerThread;
++
++    /**
++     * Whether the fiber running on this thread is speculative.
++     * Swapped by `runFiber()` on every switch-in/out.
++     */
++    [[gnu::tls_model("initial-exec")]] static thread_local bool inSpeculation;
+ };
+ 
+ /**
+diff --git a/src/libexpr/nixexpr.cc b/src/libexpr/nixexpr.cc
+index b52370816..24b747b7c 100644
+--- a/src/libexpr/nixexpr.cc
++++ b/src/libexpr/nixexpr.cc
+@@ -360,9 +360,13 @@ void ExprSelect::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv>
+     e->bindVars(es, env);
+     if (def)
+         def->bindVars(es, env);
++    uint64_t n = 1 + e->size + (def ? def->size : 0);
+     for (auto & i : getAttrPath())
+-        if (!i.symbol)
++        if (!i.symbol) {
+             i.expr->bindVars(es, env);
++            n += i.expr->size;
++        }
++    size = std::min<uint64_t>(n, std::numeric_limits<uint32_t>::max());
+ }
+ 
+ void ExprOpHasAttr::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -371,9 +375,13 @@ void ExprOpHasAttr::bindVars(EvalState & es, const std::shared_ptr<const StaticE
+         es.exprEnvs.insert(std::make_pair(this, env));
+ 
+     e->bindVars(es, env);
++    uint64_t n = 1 + e->size;
+     for (auto & i : attrPath)
+-        if (!i.symbol)
++        if (!i.symbol) {
+             i.expr->bindVars(es, env);
++            n += i.expr->size;
++        }
++    size = std::min<uint64_t>(n, std::numeric_limits<uint32_t>::max());
+ }
+ 
+ std::shared_ptr<const StaticEnv>
+@@ -445,6 +453,32 @@ void ExprAttrs::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv>
+             i.valueExpr->bindVars(es, env);
+         }
+     }
++
++    computeSize(es);
++}
++
++void ExprAttrs::computeSize(EvalState & es)
++{
++    /* Evaluating an attrset to WHNF creates a thunk per attribute and
++       evaluates the dynamic attribute names and the `inherit (...)`
++       sources. The attribute values themselves become thunks. */
++    uint64_t n = 1;
++    if (inheritFromExprs)
++        for (auto from : *inheritFromExprs)
++            n += from->size;
++    for (auto & i : *dynamicAttrs)
++        n += i.nameExpr->size;
++    size = std::min<uint64_t>(n, std::numeric_limits<uint32_t>::max());
++
++    speculable = false;
++    if (auto threshold = es.speculationThreshold) {
++        for (auto & i : *attrs)
++            if (i.second.kind == AttrDef::Kind::Plain && i.second.e->size >= threshold)
++                speculable = true;
++        for (auto & i : *dynamicAttrs)
++            if (i.valueExpr->size >= threshold)
++                speculable = true;
++    }
+ }
+ 
+ void ExprList::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -452,8 +486,24 @@ void ExprList::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> &
+     if (es.debugRepl)
+         es.exprEnvs.insert(std::make_pair(this, env));
+ 
+-    for (auto & i : elems)
++    speculable = false;
++    auto threshold = es.speculationThreshold;
++    size_t nrPaths = 0;
++    for (auto & i : elems) {
+         i->bindVars(es, env);
++        if (threshold && i->size >= threshold)
++            speculable = true;
++        if (dynamic_cast<ExprPath *>(i))
++            nrPaths++;
++    }
++    /* The elements become thunks, so `size` stays 1. */
++
++    /* A list of path literals is most likely a list of files to be
++       imported (e.g. a NixOS module list). Note: bare path literals
++       elsewhere (e.g. `callPackage ../foo { }`) deliberately don't
++       qualify, since those are typically imported right away by
++       demand anyway, and there are thousands of them in nixpkgs. */
++    prefetchImports = threshold && nrPaths >= EvalState::minPrefetchImports;
+ }
+ 
+ void ExprLambda::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -496,8 +546,24 @@ void ExprCall::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> &
+         es.exprEnvs.insert(std::make_pair(this, env));
+ 
+     fun->bindVars(es, env);
+-    for (auto e : *args)
++    speculable = false;
++    auto threshold = es.speculationThreshold;
++
++    /* `import ./some/path`: worth parsing ahead of time. */
++    if (threshold && args->size() == 1 && dynamic_cast<ExprPath *>((*args)[0]))
++        if (auto var = dynamic_cast<ExprVar *>(fun); var && !var->fromWith && es.symbols[var->name] == "import")
++            prefetchImport = true;
++
++    uint64_t n = 1 + fun->size;
++    for (auto e : *args) {
+         e->bindVars(es, env);
++        /* The arguments become thunks, but their creation is per-call
++           work, and calls are the only static cost signal we have. */
++        n += e->size;
++        if (threshold && e->size >= threshold)
++            speculable = true;
++    }
++    size = std::min<uint64_t>(n, std::numeric_limits<uint32_t>::max());
+ }
+ 
+ void ExprLet::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -518,10 +584,15 @@ void ExprLet::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> &
+     for (auto & i : *attrs->attrs)
+         i.second.e->bindVars(es, i.second.chooseByKind(newEnv, env, inheritFromEnv));
+ 
++    /* Note: `attrs` is not bound via `ExprAttrs::bindVars()`, so
++       compute its size and `speculable` flag here. */
++    attrs->computeSize(es);
++
+     if (es.debugRepl)
+         es.exprEnvs.insert(std::make_pair(this, newEnv));
+ 
+     body->bindVars(es, newEnv);
++    setSize({attrs, body});
+ }
+ 
+ void ExprWith::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -549,6 +620,7 @@ void ExprWith::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> &
+     attrs->bindVars(es, env);
+     auto newEnv = std::make_shared<StaticEnv>(this, env);
+     body->bindVars(es, newEnv);
++    setSize({attrs, body});
+ }
+ 
+ void ExprIf::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -559,6 +631,7 @@ void ExprIf::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & e
+     cond->bindVars(es, env);
+     then->bindVars(es, env);
+     else_->bindVars(es, env);
++    setSize({cond, then, else_});
+ }
+ 
+ void ExprAssert::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -568,6 +641,7 @@ void ExprAssert::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv>
+ 
+     cond->bindVars(es, env);
+     body->bindVars(es, env);
++    setSize({cond, body});
+ }
+ 
+ void ExprOpNot::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -576,6 +650,7 @@ void ExprOpNot::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv>
+         es.exprEnvs.insert(std::make_pair(this, env));
+ 
+     e->bindVars(es, env);
++    setSize({e});
+ }
+ 
+ void ExprConcatStrings::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+@@ -583,8 +658,12 @@ void ExprConcatStrings::bindVars(EvalState & es, const std::shared_ptr<const Sta
+     if (es.debugRepl)
+         es.exprEnvs.insert(std::make_pair(this, env));
+ 
+-    for (auto & i : this->es)
++    uint64_t n = 1;
++    for (auto & i : this->es) {
+         i.second->bindVars(es, env);
++        n += i.second->size;
++    }
++    size = std::min<uint64_t>(n, std::numeric_limits<uint32_t>::max());
+ }
+ 
+ void ExprPos::bindVars(EvalState & es, const std::shared_ptr<const StaticEnv> & env)
+diff --git a/src/libexpr/parallel-eval.cc b/src/libexpr/parallel-eval.cc
+index f4eacb6f7..e43fced54 100644
+--- a/src/libexpr/parallel-eval.cc
++++ b/src/libexpr/parallel-eval.cc
+@@ -6,6 +6,8 @@
+ #include <boost/context/fiber.hpp>
+ #include <boost/context/protected_fixedsize_stack.hpp>
+ 
++#include "nix/util/finally.hh"
++
+ #include <optional>
+ #include <unordered_map>
+ 
+@@ -20,6 +22,7 @@ namespace nix {
+ struct WaiterDomain;
+ 
+ [[gnu::tls_model("initial-exec")]] thread_local bool Executor::amWorkerThread{false};
++[[gnu::tls_model("initial-exec")]] thread_local bool Executor::inSpeculation{false};
+ 
+ static std::atomic<uint32_t> nextEvalThreadId{1};
+ [[gnu::tls_model("initial-exec")]] thread_local uint32_t myEvalThreadId(nextEvalThreadId++);
+@@ -85,6 +88,12 @@ struct Executor::Fiber
+      */
+     unsigned int noSuspendDepth = 0;
+ 
++    /**
++     * See `Item::speculative`.
++     */
++    const bool speculative;
++    const bool instantiation;
++
+     /**
+      * The fiber's continuation. Valid while the fiber is queued or
+      * suspended; invalid while it's running or after it has finished.
+@@ -117,6 +126,8 @@ struct Executor::Fiber
+         , evalThreadId(nextEvalThreadId++)
+         , promise(std::move(item.promise))
+         , work(std::move(item.work))
++        , speculative(item.speculative)
++        , instantiation(item.instantiation)
+     {
+     }
+ 
+@@ -443,9 +454,11 @@ bool Executor::runFiber(FiberPtr fiber)
+ 
+     auto savedThreadId = myEvalThreadId;
+     auto savedCallDepth = CallDepth::callDepth;
++    auto savedInSpeculation = inSpeculation;
+     currentFiber = fib;
+     myEvalThreadId = fib->evalThreadId;
+     CallDepth::callDepth = fib->callDepth;
++    inSpeculation = fib->speculative;
+     std::swap(EvalState::evalContext, fib->evalContext);
+ 
+ #if NIX_USE_BOEHMGC
+@@ -471,6 +484,7 @@ bool Executor::runFiber(FiberPtr fiber)
+     myEvalThreadId = savedThreadId;
+     fib->callDepth = CallDepth::callDepth;
+     CallDepth::callDepth = savedCallDepth;
++    inSpeculation = savedInSpeculation;
+     std::swap(EvalState::evalContext, fib->evalContext);
+ 
+     if (fib->ctx) {
+@@ -507,6 +521,7 @@ void Executor::enqueueFiber(FiberPtr fiber)
+     auto & owner = fiber->owner;
+     auto state(state_.lock());
+     owner.readyFibers.push_back(std::move(fiber));
++    nrReadyFibers++;
+     /* Note: `sleeping` is maintained under the state lock, so the
+        owner either sees our push in its queue check, or is already
+        blocked on `wakeup` and gets notified — no lost wakeups. */
+@@ -518,15 +533,23 @@ void Executor::enqueueFiber(FiberPtr fiber)
+  * exception, so we get a nicer error than "std::future_error: Broken
+  * promise". Note: a fresh exception per item, not a shared one.
+  */
+-static void failItems(std::multimap<uint64_t, Executor::Item> && items)
++static void failItems(Executor & executor, std::multimap<uint64_t, Executor::Item> && items)
+ {
+-    for (auto & [_, item] : items)
++    for (auto & [_, item] : items) {
++        /* Speculative items are dropped without running, so their
++           wrapper in `spawnSpeculative()` never decrements the
++           outstanding count. */
++        if (item.speculative)
++            executor.outstanding(item.instantiation ? SpeculationKind::Instantiation : SpeculationKind::Thunk)--;
++        else
++            executor.nrQueuedDemand--;
+         item.promise.set_exception(std::make_exception_ptr(Interrupted("interrupted by the user")));
++    }
+ }
+ 
+ void Executor::failQueuedItems()
+ {
+-    failItems(std::exchange(state_.lock()->queue, {}));
++    failItems(*this, std::exchange(state_.lock()->queue, {}));
+ }
+ 
+ void Executor::worker(Worker & self)
+@@ -567,6 +590,7 @@ void Executor::worker(Worker & self)
+             if (!self.readyFibers.empty()) {
+                 fiber = std::move(self.readyFibers.front());
+                 self.readyFibers.pop_front();
++                nrReadyFibers--;
+                 break;
+             }
+ 
+@@ -574,20 +598,30 @@ void Executor::worker(Worker & self)
+                 /* Fail queued work items that haven't started, so that
+                    threads blocked on their futures are unblocked
+                    promptly. */
+-                failItems(std::exchange(state->queue, {}));
++                failItems(*this, std::exchange(state->queue, {}));
+                 /* Don't exit while we still own fibers: they're
+                    suspended in a wait list and will be handed back to
+                    us by `flushWaiters()`. */
+                 if (self.nrLiveFibers == 0)
+                     return;
+             } else if (!state->queue.empty() && canStartFiber(self)) {
+-                item = std::move(state->queue.begin()->second);
+-                state->queue.erase(state->queue.begin());
+-                self.nrLiveFibers++;
+-                state->nrLiveFibers++;
+-                if (state->nrLiveFibers > maxLiveFibers)
+-                    maxLiveFibers = state->nrLiveFibers;
+-                break;
++                auto & head = state->queue.begin()->second;
++                /* Speculative work may not use our last fiber slot,
++                   which is reserved for demand work (see
++                   `canStartSpeculativeFiber()`). Demand items always
++                   sort before speculative ones, so if the head is
++                   speculative, there is nothing else to start. */
++                if (!head.speculative || canStartSpeculativeFiber(self)) {
++                    item = std::move(head);
++                    state->queue.erase(state->queue.begin());
++                    if (!item->speculative)
++                        nrQueuedDemand--;
++                    self.nrLiveFibers++;
++                    state->nrLiveFibers++;
++                    if (state->nrLiveFibers > maxLiveFibers)
++                        maxLiveFibers = state->nrLiveFibers;
++                    break;
++                }
+             }
+ 
+             /* Nothing to do (or our fiber limit has been reached);
+@@ -601,10 +635,14 @@ void Executor::worker(Worker & self)
+         }
+ 
+         if (item) {
++            auto speculative = item->speculative;
++            auto kind = item->instantiation ? SpeculationKind::Instantiation : SpeculationKind::Thunk;
+             fiber = makeFiber(self, std::move(*item));
+             if (!fiber) {
+                 /* Stack allocation failure; the item's promise has
+                    received the exception. Release the fiber slot. */
++                if (speculative)
++                    outstanding(kind)--;
+                 finished = true;
+                 continue;
+             }
+@@ -614,15 +652,6 @@ void Executor::worker(Worker & self)
+     }
+ }
+ 
+-bool Executor::hasBacklog()
+-{
+-    auto state(state_.lock());
+-    auto n = state->queue.size();
+-    for (auto & worker : workers)
+-        n += worker->readyFibers.size();
+-    return n >= evalCores;
+-}
+-
+ std::vector<std::future<void>> Executor::spawn(WorkItems && items)
+ {
+     if (items.empty())
+@@ -649,6 +678,7 @@ std::vector<std::future<void>> Executor::spawn(WorkItems && items)
+         static thread_local uint32_t local = 0;
+         auto key = (uint64_t(item.second) << 48) | local++;
+         state->queue.emplace(key, Item{.promise = std::move(promise), .work = std::move(item.first)});
++        nrQueuedDemand++;
+     }
+ 
+     /* Wake up one worker per item, but only workers that are asleep
+@@ -666,6 +696,46 @@ std::vector<std::future<void>> Executor::spawn(WorkItems && items)
+     return futures;
+ }
+ 
++void Executor::spawnSpeculative(work_t && work, SpeculationKind kind)
++{
++    auto & counter = outstanding(kind);
++    auto & max = kind == SpeculationKind::Thunk ? maxSpeculativeOutstanding : maxInstantiationsOutstanding;
++    auto n = ++counter;
++    if (n > max)
++        max = n;
++
++    /* Wrap the work so that the outstanding count is decremented when
++       it finishes, however it finishes. (Items that are dropped
++       without running are handled in `failItems()`.) */
++    Item item{
++        .work =
++            [&counter, work(std::move(work))]() mutable {
++                Finally decr([&counter]() { counter--; });
++                work();
++            },
++        .speculative = true,
++        .instantiation = kind == SpeculationKind::Instantiation,
++    };
++
++    auto state(state_.lock());
++
++    /* The workers may have exited already, so nobody would ever pick
++       up this item. Nobody awaits its result, so just drop it. */
++    if (quit) {
++        counter--;
++        return;
++    }
++
++    static thread_local uint32_t local = 0;
++    auto key = (uint64_t(speculativePriority) << 48) | local++;
++    state->queue.emplace(key, std::move(item));
++
++    /* Wake up one sleeping worker that may start speculative work. */
++    for (auto & worker : workers)
++        if (canStartSpeculativeFiber(*worker) && wakeWorker(*worker))
++            break;
++}
++
+ FiberNoSuspend::FiberNoSuspend()
+     : fiber(currentFiber)
+ {
+@@ -945,6 +1015,153 @@ static RegisterPrimOp r_parallel({
+ 
+ #pragma GCC diagnostic ignored "-Wswitch-enum"
+ 
++void EvalState::speculate(Value * const * candidates, size_t n, SpeculationSite site)
++{
++    assert(n <= maxSpeculationCandidates);
++
++    /* Speculative work must not spawn speculation of its own, to
++       bound the cascade. */
++    if (Executor::speculating()) {
++        nrSpeculationsRejectedBrake++;
++        return;
++    }
++
++    if (!speculationBudgetAvailable(SpeculationKind::Thunk)) {
++        nrSpeculationsRejectedBacklog++;
++        return;
++    }
++
++    /* If the workers already have a backlog of demand work, there is
++       no idle capacity for speculation. */
++    if (executor->hasBacklog()) {
++        nrSpeculationsRejectedBusy++;
++        return;
++    }
++
++    /* Collect the candidates that are actually thunks (e.g. a
++       variable reference may already have been resolved) into a GC
++       list, so that a single root keeps all of them alive while the
++       work item is queued. Note: the candidates are live values that
++       other threads may be forcing concurrently, so `isThunk()` is
++       only a snapshot; test it once per candidate. */
++    Value * thunks[maxSpeculationCandidates];
++    size_t k = 0;
++    for (size_t i = 0; i < n; ++i)
++        if (candidates[i]->isThunk())
++            thunks[k++] = candidates[i];
++    if (!k)
++        return;
++
++    auto list = buildList(k);
++    for (size_t i = 0; i < k; ++i)
++        list.elems[i] = thunks[i];
++    auto vList = allocValue();
++    vList->mkList(list);
++
++    nrThunksSpeculated += k;
++    nrSpeculationItems++;
++    switch (site) {
++    case SpeculationSite::Attrs:
++        nrSpeculatedFromAttrs += k;
++        break;
++    case SpeculationSite::Let:
++        nrSpeculatedFromLet += k;
++        break;
++    case SpeculationSite::List:
++        nrSpeculatedFromList += k;
++        break;
++    case SpeculationSite::Call:
++        nrSpeculatedFromCall += k;
++        break;
++    }
++
++    executor->spawnSpeculative(
++        makeWork([root(RootValue(vList)), this]() {
++            for (auto v : (*root)->listView()) {
++                if (executor->quit)
++                    return;
++                if (v->isFinished()) {
++                    /* Demand (or another speculation) got there first. */
++                    nrSpeculatedAlreadyFinished++;
++                    continue;
++                }
++                try {
++                    forceValue(*v, noPos);
++                } catch (Interrupted &) {
++                    throw;
++                } catch (...) {
++                    /* The error has been stored in the thunk and will be
++                       reported if the value is ever demanded. */
++                    nrSpeculatedFailed++;
++                }
++            }
++        }),
++        SpeculationKind::Thunk);
++}
++
++void EvalState::prefetchImports(std::span<Expr * const> exprs)
++{
++    if (Executor::speculating() || executor->hasBacklog()) {
++        nrImportPrefetchesRejected++;
++        return;
++    }
++
++    std::vector<ExprPath *> paths;
++    for (auto e : exprs)
++        if (auto p = dynamic_cast<ExprPath *>(e))
++            paths.push_back(p);
++
++    /* Parse several files per work item, since parsing a file is much
++       cheaper than a fiber switch. */
++    constexpr size_t batchSize = 64;
++
++    for (size_t start = 0; start < paths.size(); start += batchSize) {
++        if (!speculationBudgetAvailable(SpeculationKind::Thunk)) {
++            nrImportPrefetchesRejected++;
++            return;
++        }
++
++        std::vector<ExprPath *> batch(paths.begin() + start, paths.begin() + std::min(paths.size(), start + batchSize));
++        nrImportPrefetchItems++;
++        nrImportsPrefetched += batch.size();
++
++        /* Note: `Expr`s are never freed and not GC-allocated, so the
++           batch needs no rooting. */
++        executor->spawnSpeculative(
++            makeWork([batch(std::move(batch)), this]() {
++                for (auto p : batch) {
++                    if (executor->quit)
++                        return;
++                    try {
++                        /* Only prefetch Nix files (or directories
++                           containing a `default.nix`), not e.g. data
++                           files. The path is context-free, so this
++                           resolves and caches exactly like `import`. */
++                        auto path = p->v.path();
++                        if (!hasSuffix(resolveExprPath(path).path.abs(), ".nix"))
++                            continue;
++                        Value v;
++                        evalFile(path, v);
++                    } catch (Interrupted &) {
++                        throw;
++                    } catch (...) {
++                        /* E.g. a non-existent file or a parse error.
++                           Demand will report it if it ever imports the
++                           file. */
++                        nrImportsPrefetchFailed++;
++                    }
++                }
++            }),
++            SpeculationKind::Thunk);
++    }
++}
++
++bool EvalState::speculationBudgetAvailable(SpeculationKind kind) const
++{
++    auto cap = settings.evalSpeculationBacklog.get() * std::max(1U, executor->evalCores - 1);
++    return executor->outstanding(kind).load(std::memory_order_relaxed) < cap;
++}
++
+ void EvalState::forceValueDeepParallel(Value & vRoot, PosIdx pos, bool spawnThunks)
+ {
+     if (!executor->enabled)
+diff --git a/src/libexpr/primops.cc b/src/libexpr/primops.cc
+index 82bca6a02..8ac68c66c 100644
+--- a/src/libexpr/primops.cc
++++ b/src/libexpr/primops.cc
+@@ -1436,18 +1436,19 @@ static void prim_derivationStrictGeneric(EvalState & state, const PosIdx pos, Va
+ 
+     /* If parallel eval is enabled, then start instantiating the
+        dependencies of this derivation in the background: a single
+-       work item walks the attributes (forcing them itself, since
+-       they're typically cheap) and spawns the instantiation of every
+-       derivation it finds, which in turn does the same for *its*
+-       dependencies. Skip this when the workers already have a backlog
+-       (e.g. `nix flake show` on a big flake): the background work
+-       would then only compete with the main evaluation for the same
+-       thunks and cores. */
+-    if (state.executor->enabled && !state.executor->hasBacklog()) {
+-        Executor::WorkItems work;
+-        state.addWork(work, 0, [v(RootValue(args[0])), &state]() { state.forceValueDeepParallel(**v, noPos, false); });
+-        state.executor->spawn(std::move(work));
+-    }
++       speculative work item walks the attributes (forcing them itself,
++       since they're typically cheap) and spawns the instantiation of
++       every derivation it finds, which in turn does the same for *its*
++       dependencies. This runs at the lowest priority and within its
++       own budget of outstanding items. Skip it when the workers
++       already have a backlog of demand work (e.g. `nix flake show` on
++       a big flake): the background work would then only compete with
++       the main evaluation for the same thunks and cores. */
++    if (state.executor->enabled && !state.executor->hasBacklog()
++        && state.speculationBudgetAvailable(SpeculationKind::Instantiation))
++        state.executor->spawnSpeculative(
++            state.makeWork([v(RootValue(args[0])), &state]() { state.forceValueDeepParallel(**v, noPos, false); }),
++            SpeculationKind::Instantiation);
+ 
+     /* Figure out the name first (for stack backtraces). */
+     auto nameAttr =
+diff --git a/tests/functional/eval-speculation.sh b/tests/functional/eval-speculation.sh
+new file mode 100755
+index 000000000..8b8a9c42f
+--- /dev/null
++++ b/tests/functional/eval-speculation.sh
+@@ -0,0 +1,67 @@
++#!/usr/bin/env bash
++
++# Tests for speculative evaluation in the multi-threaded evaluator
++# (`eval-speculation-threshold`).
++
++source common.sh
++
++# A never-demanded attribute with a substantial body that throws must
++# not affect the result, even though it is evaluated speculatively
++# (its error is stored in the thunk and only reported on demand).
++expr='
++let
++  big = n: builtins.foldl'"'"' (a: b: a + b) 0 (builtins.genList (i: i * n) 100);
++  xs = builtins.genList (i: {
++    a = big i + big (i + 1) + big (i + 2) + big (i + 3);
++    b = if i >= 0 then throw ("never demanded " + toString i) else big i;
++  }) 50;
++in
++  builtins.foldl'"'"' (a: x: a + x.a) 0 xs
++'
++
++expected=$(nix eval --eval-cores 1 --expr "$expr")
++
++# Maximal speculation: every thunk with a body of at least one node.
++actual=$(NIX_SHOW_STATS=1 NIX_SHOW_STATS_PATH="$TEST_ROOT/stats.json" nix eval --eval-cores 4 --eval-speculation-threshold 1 --expr "$expr")
++[[ "$actual" = "$expected" ]]
++
++# Something was actually speculated.
++speculated=$(jq .nrThunksSpeculated "$TEST_ROOT/stats.json")
++[[ "$speculated" -gt 0 ]]
++
++# Speculating a throwing thunk doesn't hide the error when it *is*
++# demanded.
++expectStderr 1 nix eval --eval-cores 4 --eval-speculation-threshold 1 --expr '
++let
++  xs = builtins.genList (i: { a = if i > 100 then i else throw ("demanded " + toString i); }) 5;
++in
++  builtins.foldl'"'"' (a: x: a + x.a) 0 xs
++' | grepQuiet "demanded 0"
++
++# The setting can be disabled.
++NIX_SHOW_STATS=1 NIX_SHOW_STATS_PATH="$TEST_ROOT/stats0.json" nix eval --eval-cores 4 --eval-speculation-threshold 0 --expr "$expr" > /dev/null
++[[ "$(jq .nrThunksSpeculated "$TEST_ROOT/stats0.json")" = 0 ]]
++
++# Import prefetching: a list of path literals (like a NixOS module
++# list) gets its files parsed and evaluated ahead of time. Non-existent
++# and non-Nix files in the list must be harmless.
++mkdir -p "$TEST_ROOT/mods"
++for i in $(seq 0 9); do
++    echo "{ x }: x + $i" > "$TEST_ROOT/mods/m$i.nix"
++done
++echo "not nix" > "$TEST_ROOT/mods/data.txt"
++cat > "$TEST_ROOT/mods/default.nix" <<EOF
++let
++  mods = [ ./m0.nix ./m1.nix ./m2.nix ./m3.nix ./m4.nix ./m5.nix ./m6.nix ./m7.nix ./m8.nix ./m9.nix ./data.txt ./does-not-exist.nix ];
++  imported = builtins.filter builtins.isFunction (map (m: if builtins.pathExists m && builtins.match ".*[.]nix" (toString m) != null then import m else null) mods);
++in
++  builtins.foldl' (a: f: f { x = a; }) 0 imported
++EOF
++expected=$(nix eval --eval-cores 1 --file "$TEST_ROOT/mods")
++actual=$(NIX_SHOW_STATS=1 NIX_SHOW_STATS_PATH="$TEST_ROOT/stats2.json" nix eval --eval-cores 4 --eval-speculation-threshold 1 --file "$TEST_ROOT/mods")
++[[ "$actual" = "$expected" ]]
++[[ "$(jq .nrImportsPrefetched "$TEST_ROOT/stats2.json")" -ge 10 ]]
++
++# It has no effect in single-threaded mode.
++NIX_SHOW_STATS=1 NIX_SHOW_STATS_PATH="$TEST_ROOT/stats1.json" nix eval --eval-cores 1 --eval-speculation-threshold 1 --expr "$expr" > /dev/null
++[[ "$(jq .nrThunksSpeculated "$TEST_ROOT/stats1.json")" = 0 ]]
+diff --git a/tests/functional/meson.build b/tests/functional/meson.build
+index 1e43c2000..e1d412b29 100644
+--- a/tests/functional/meson.build
++++ b/tests/functional/meson.build
+@@ -85,6 +85,7 @@ suites = [
+       'derivation-advanced-attributes.sh',
+       'derivation-json.sh',
+       'dump-db.sh',
++      'eval-speculation.sh',
+       'eval-store.sh',
+       'eval.sh',
+       'experimental-features.sh',
