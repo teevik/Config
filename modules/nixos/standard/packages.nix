@@ -77,6 +77,7 @@
       # Dev tools - Typst
       typst
       typstyle
+      harper
 
       solidtime-desktop
       ticktick
