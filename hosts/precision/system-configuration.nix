@@ -7,7 +7,7 @@
   ...
 }:
 let
-  hyprlandPackage = perSystem.hyprland.hyprland;
+  hyprlandPackage = pkgs.hyprland;
   hyprlandModuleDir = ../../modules/nixos/standard/hyprland;
   hostPamModuleDir = "/usr/lib/x86_64-linux-gnu/security";
 

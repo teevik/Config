@@ -2,8 +2,6 @@
   config,
   flake,
   inputs,
-  lib,
-  perSystem,
   ...
 }:
 {
@@ -21,14 +19,6 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   networking.hostName = "desktop";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme1n1" ]; };
-
-  # Reuse C/C++ compilation across Hyprland rebuilds using the persistent
-  # cache exposed by the standard module. Keep upstream's compiler and flags.
-  programs.hyprland.package = lib.mkForce (
-    perSystem.self.hyprland-cached.override {
-      ccacheDir = config.programs.ccache.cacheDir;
-    }
-  );
 
   services.hypridle.settings = {
     general = {

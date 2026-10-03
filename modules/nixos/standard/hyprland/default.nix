@@ -6,8 +6,6 @@
   ...
 }:
 let
-  hyprlandPackage = perSystem.hyprland.hyprland;
-  portalPackage = perSystem.hyprland.xdg-desktop-portal-hyprland;
   mkHyprlockConfig =
     pamModule:
     pkgs.writeText "hyprlock-${pamModule}.conf" (
@@ -52,16 +50,11 @@ let
   '';
 in
 {
-  imports = [
-    inputs.hyprland.nixosModules.default
-    ./hypridle.nix
-  ];
+  imports = [ ./hypridle.nix ];
 
   programs.hyprland = {
     enable = true;
     withUWSM = true;
-    package = hyprlandPackage;
-    inherit portalPackage;
   };
 
   programs.uwsm.enable = true;
