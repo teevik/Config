@@ -84,6 +84,22 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    agent-skills = {
+      url = "github:Kyure-A/agent-skills-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+    anthropic-skills = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+    cursor-plugins = {
+      url = "github:cursor/plugins";
+      flake = false;
+    };
 
     # opencode = {
     #   url = "github:sst/opencode";
@@ -94,12 +110,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Temporary pin: the next commit crashes when xdg-system-bell rings
-    # without an associated surface (hyprwm/Hyprland#15502).
-    hyprland.url = "github:hyprwm/Hyprland/db95de4f5b4ce446984d873e5b51ebdc380dc76c";
     split-monitor-workspaces = {
       url = "github:zjeffer/split-monitor-workspaces";
-      inputs.hyprland.follows = "hyprland";
+      flake = false;
     };
   };
 

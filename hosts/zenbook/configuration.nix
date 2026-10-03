@@ -164,10 +164,10 @@
   programs.solaar.enable = true;
 
   # Virt manager
-  programs.virt-manager.enable = true;
-  users.groups.libvirtd.members = [ "teevik" ];
-  virtualisation.libvirtd.enable = true;
-  virtualisation.spiceUSBRedirection.enable = true;
+  # programs.virt-manager.enable = true;
+  # users.groups.libvirtd.members = [ "teevik" ];
+  # virtualisation.libvirtd.enable = true;
+  # virtualisation.spiceUSBRedirection.enable = true;
 
   # services.mullvad-vpn.enable = true;
   # services.mullvad-vpn.package = pkgs.mullvad-vpn;

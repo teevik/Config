@@ -201,6 +201,7 @@ in
     inputs.sops-nix.nixosModules.sops
     flake.modules.shared.noctalia-calendar
     flake.modules.shared.packages
+    flake.modules.shared.agent-skills
     (inputs.nixpkgs + "/nixos/modules/security/chromium-suid-sandbox.nix")
   ];
 
@@ -211,6 +212,11 @@ in
 
   system-manager.allowAnyDistro = true;
   system-graphics.enable = true;
+
+  agentSkills = {
+    user = "teemu.vikoeren";
+    home = "/home/teemu.vikoeren";
+  };
 
   security.chromiumSuidSandbox.enable = true;
 

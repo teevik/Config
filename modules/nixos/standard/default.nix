@@ -20,7 +20,13 @@
     ./shells.nix
     ./tailscale.nix
     ./rustdesk.nix
+    ../../shared/agent-skills.nix
   ];
+
+  agentSkills = {
+    user = "teevik";
+    inherit (config.users.users.teevik) home;
+  };
 
   nix = {
     extraOptions = ''
