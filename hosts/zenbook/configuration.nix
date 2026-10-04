@@ -65,7 +65,7 @@
         # The wrapper makes repeated lock requests idempotent.
         lock_cmd = "hyprland-idle-lock";
         before_sleep_cmd = "loginctl lock-session";
-        after_sleep_cmd = "hyprctl dispatch dpms on";
+        after_sleep_cmd = "hyprctl dispatch 'hl.dsp.dpms({ action = \"on\" })'";
       };
       # No suspend listener: background jobs keep running while locked.
       listener = [
@@ -80,8 +80,8 @@
         }
         {
           timeout = 620;
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on";
+          on-timeout = "hyprctl dispatch 'hl.dsp.dpms({ action = \"off\" })'";
+          on-resume = "hyprctl dispatch 'hl.dsp.dpms({ action = \"on\" })'";
         }
       ];
     };
