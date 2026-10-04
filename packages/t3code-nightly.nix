@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.0.46-nightly.20261003.2623";
+  version = "0.0.46-nightly.20261004.2644";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-Nnqq7M4ssJiq9cVF71RjCb/aA5wFJsM3noSASIuWh5c=";
+    hash = "sha256-+CV+/XIwAy692NtQ2NM2Wne3k2I3cM8lTbkDo+4PhrI=";
   };
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
@@ -86,7 +86,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-IvBYaCbOYy/5Sf5hziU9bCkrcm5SZJHwTQsXiYW7dMo=";
+    hash = "sha256-WZSV8+ugCLfls7jW7hPFoL4wYAffpER71zt2VhaTVzQ=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
