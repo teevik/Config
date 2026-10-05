@@ -84,6 +84,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    codex-desktop-linux = {
+      url = "github:ilysenko/codex-desktop-linux";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     agent-skills = {
       url = "github:Kyure-A/agent-skills-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -142,6 +146,7 @@
         permittedInsecurePackages = [
           # Temporary: solidtime-desktop's usocket dependency fails on Electron 42.
           "electron-41.10.6"
+          "electron-41.10.7"
           "qtwebengine-5.15.19"
         ];
       };

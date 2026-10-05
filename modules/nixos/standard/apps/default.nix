@@ -6,8 +6,10 @@
 {
   imports = [
     # ./android-studio.nix
+    ./codex-desktop.nix
     ./nautilus.nix
     ./firefox.nix
+    ./google-chrome.nix
     ./nh-eval-cache.nix
   ];
 

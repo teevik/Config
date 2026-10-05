@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.0.46-nightly.20261004.2644";
+  version = "0.0.46-nightly.20261005.2667";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-+CV+/XIwAy692NtQ2NM2Wne3k2I3cM8lTbkDo+4PhrI=";
+    hash = "sha256-M8Ya6b+/YbDrpQjDboMOj/LTLy4UUQg2+rRSNG9GYcQ=";
   };
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
@@ -139,6 +139,11 @@ let
           "$desktop/libexec/t3code/apps/desktop/prod-resources/hyprland-capture/t3-hyprland-snap-shot"
         cp -r native/hyprland-snap-shot/protocols \
           "$desktop/libexec/t3code/apps/desktop/prod-resources/hyprland-capture/protocols"
+
+        # Stock Electron reports isPackaged=false and setup uses the native
+        # build path under appRoot. It requires a regular file, not a symlink.
+        install -Dm755 ${hyprlandCapture}/bin/t3-hyprland-snap-shot \
+          "$desktop/libexec/t3code/native/hyprland-snap-shot/target/release/t3-hyprland-snap-shot"
       '';
 
     # Electron does not preload libstdc++ like Node.js does. The vendored tree
@@ -160,6 +165,8 @@ let
             env -u LD_LIBRARY_PATH ELECTRON_RUN_AS_NODE=1 \
               T3CODE_PACKAGE_ROOT="$out" T3CODE_TEST_SHELL=${pkgs.stdenv.shell} \
               ${pkgs.lib.getExe electron} ${../tests/t3code-native.cjs}
+            T3CODE_DESKTOP_ROOT="$desktop" \
+              ${pkgs.lib.getExe pkgs.nodejs_24} ${../tests/t3code-hyprland.cjs}
           '';
 
     passthru = (oldAttrs.passthru or { }) // {

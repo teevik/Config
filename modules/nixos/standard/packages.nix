@@ -21,7 +21,11 @@
     command-not-found.enable = false;
   };
 
-  users.users.teevik.extraGroups = [ "input" ];
+  users.users.teevik.extraGroups = [
+    "input"
+    # Serial access to ZMK keyboards (/dev/ttyACM*) for ZMK Studio
+    "dialout"
+  ];
 
   system.userActivationScripts.clearTofiDrunCache.text = ''
     cacheHome="''${XDG_CACHE_HOME:-$HOME/.cache}"
@@ -81,6 +85,7 @@
 
       solidtime-desktop
       ticktick
+      zmk-studio
     ])
     ++ [
       perSystem.openconnect-sso.default

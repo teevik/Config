@@ -16,7 +16,6 @@ let
     "less"
     "man"
     "nano"
-    "nix"
     "npm"
     "op"
     "pnpm"

@@ -152,7 +152,6 @@ in
       perSystem.self.opencode
 
       # Desktop apps
-      chromium
       graphviz
       koji
       libreoffice-qt-stable
