@@ -17,7 +17,7 @@ def export-update [root: path, destination: path, files: list<string>] {
 }
 
 # Refresh every flake input and maintained package, then validate them together.
-# Failures stop the workflow and retain completed edits for inspection/reruns.
+# Failures skip validation and retain completed edits for inspection/reruns.
 def main [
     --no-build # Refresh sources without validation builds.
     --skip-inputs # Reuse flake.lock after an input update already completed.
@@ -31,18 +31,28 @@ def main [
         if not ($destination | path dirname | path exists) { error make {msg: 'Export parent directory must exist'} }
     }
     let catalog = (open ($env.FILE_PWD | path join update-packages.json))
+    # T3 Code builds against the locked llm-agents input, so it waits for the
+    # input refresh. OpenCode and Roc only query release metadata and run
+    # alongside. Each chain writes disjoint files.
+    let inputs = if $skip_inputs { [] } else { [{label: 'all flake inputs', script: update-inputs.nu, args: []}] }
+    let chains = [
+        ($inputs | append {label: 'T3 Code nightly', script: update-t3code.nu, args: [--no-build]})
+        [{label: 'OpenCode CLI and desktop', script: update-opencode.nu, args: []}]
+        [{label: 'Roc nightly', script: update-roc.nu, args: []}]
+    ]
     cd $root
     try {
-        if not $skip_inputs {
-            print 'Updating all flake inputs'
-            ^$nu.current-exe --no-config-file packages/update-inputs.nu
-        }
-        print 'Updating OpenCode CLI and desktop'
-        ^$nu.current-exe --no-config-file packages/update-opencode.nu
-        print 'Updating Roc nightly'
-        ^$nu.current-exe --no-config-file packages/update-roc.nu
-        print 'Updating T3 Code nightly'
-        ^$nu.current-exe --no-config-file packages/update-t3code.nu --no-build
+        # Let every chain finish so independent edits are kept, then report all failures.
+        let failures = ($chains | par-each {|chain|
+            try {
+                for step in $chain {
+                    print $"Updating ($step.label)"
+                    ^$nu.current-exe --no-config-file ('packages' | path join $step.script) ...$step.args
+                }
+                null
+            } catch {|err| $err.msg }
+        } | compact)
+        if ($failures | is-not-empty) { error make {msg: ($failures | str join "\n")} }
         if not $no_build {
             print 'Validating updated packages'
             ^nix build --no-link --print-build-logs --file packages/update-targets.nix ...($catalog | columns)

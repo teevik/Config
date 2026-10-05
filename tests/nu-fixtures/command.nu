@@ -1,14 +1,118 @@
 # Offline command double: never contacts a network or calls a real Nix daemon.
 use std/assert
 
+# Fixture hashes are derived from content, like real fixed-output hashes, so
+# unchanged inputs keep both their hash and their fake store path.
+def fixture-hash [text: string] {
+    'sha256-' + ($text | hash sha256 --binary | encode base64)
+}
+
+def t3-file [args: list<string>] {
+    let index = ($args | enumerate | where item == --file | first).index
+    ($args | get ($index + 1) | path dirname | path join t3code-nightly.nix)
+}
+
+# Version and hashes as currently declared in the T3 Code definition.
+def t3-declared [file: path] {
+    let source = (open --raw $file)
+    let field = {|pattern| ($source | parse --regex $pattern | first).hash }
+    {
+        version: ($source | parse --regex 'version = "(?<version>[^"]+)";' | first).version
+        src: (do $field '(?s)fetchFromGitHub \{.*?hash = "(?<hash>[^"]+)"')
+        licenseNotices: (do $field '(?s)licenseNotices = .*?outputHash = "(?<hash>[^"]+)"')
+        pnpmDeps: (do $field '(?s)fetchPnpmDeps \{.*?hash = "(?<hash>[^"]+)"')
+    }
+}
+
+def t3-source [version: string] { $env.MOCK_T3 | path join sources $version }
+
+# The hash each input really has for a fixture source tree.
+def t3-expected [attr: string, version: string] {
+    let source = (t3-source $version)
+    match $attr {
+        src => (fixture-hash $"src:($version)")
+        pnpmDeps => (fixture-hash ('pnpmDeps:' + (open --raw ($source | path join pnpm-lock.yaml))))
+        licenseNotices => (fixture-hash ('licenseNotices:' + (open --raw ($source | path join third-party-licenses.config.json))))
+    }
+}
+
+def t3-output [attr: string, hash: string] {
+    $env.MOCK_T3 | path join store $"($attr)-($hash | hash sha256)"
+}
+
+def t3-out-path [declared: record, attr: string] {
+    let hash = ($declared | get $attr)
+    if $attr == src {
+        # Only a correctly declared source resolves to the fixture tree.
+        if $hash == (t3-expected src $declared.version) { t3-source $declared.version } else { t3-output src $hash }
+    } else {
+        t3-output $attr $hash
+    }
+}
+
+# Model Nix for the T3 Code updater's evaluations and dependency builds;
+# returns false for other commands, including validation builds.
+def t3-nix [args: list<string>] {
+    if not ($args | any {|arg| $arg =~ '^t3code-nightly($|\.)' }) { return false }
+    if $args.0 == 'build' and '--keep-going' not-in $args { return false }
+    let declared = (t3-declared (t3-file $args))
+    let failure = ($env.MOCK_FAILURE? | default '')
+    match $args.0 {
+        'eval' => {
+            let apply = ($args | last)
+            if $apply == 't3code-nightly.src.outPath' {
+                print --no-newline (t3-out-path $declared src)
+            } else if ($apply | str contains srcPath) {
+                {
+                    version: $declared.version
+                    srcPath: (t3-out-path $declared src)
+                    hashes: ($declared | select src pnpmDeps licenseNotices)
+                } | to json | print
+            } else {
+                let attrs = ($apply | parse --regex '"(?<attr>[A-Za-z]+)"' | get attr)
+                $attrs | each {|attr| t3-out-path $declared $attr } | to json | print
+            }
+        }
+        'build' => {
+            mut failed = false
+            for attr in ($args | where {|arg| $arg starts-with 't3code-nightly.' } | each { str replace 't3code-nightly.' '' }) {
+                let declared_hash = ($declared | get $attr)
+                if ((t3-out-path $declared $attr) | path exists) { continue }
+                {tool: fetch, args: [$attr]} | to json --raw | $in + "\n" | save --append $env.MOCK_LOG
+                if $failure == 'fetch' {
+                    print --stderr $"error: builder for ($attr) failed"
+                    $failed = true
+                    continue
+                }
+                let actual = (t3-expected $attr $declared.version)
+                mkdir (if $attr == src { t3-source $declared.version } else { t3-output $attr $actual })
+                if $actual != $declared_hash {
+                    print --stderr $"error: hash mismatch in fixed-output derivation '($attr).drv':\n         specified: ($declared_hash)\n            got:    ($actual)"
+                    $failed = true
+                }
+            }
+            if $failed { exit 1 }
+        }
+        _ => { error make {msg: $"Unexpected T3 Code Nix command: ($args)"} }
+    }
+    true
+}
+
+def git-command [args: list<string>] {
+    assert equal ($args | first 3) [ls-remote --tags --refs]
+    assert equal ($args | skip 3) [https://github.com/pingdotgg/t3code 'v*-nightly.*']
+    print ($env.MOCK_TAGS? | default '')
+}
+
 # Model command effects in a writable checkout; production update scripts still
 # perform their real fetching, parsing, replacement, sequencing, and export.
 def update-command [tool: string, args: list<string>] {
     let failure = ($env.MOCK_FAILURE? | default '')
     let release_mode = ($env.MOCK_RELEASE? | default 'valid')
-    if $failure == $tool and $tool != 'nix-update' { exit 17 }
+    if $failure == $tool { exit 17 }
     match $tool {
         'nix' => {
+            if (t3-nix $args) { return }
             if $args.0 == 'eval' {
                 # Exercise the native fallback here; the parallel path is
                 # checked against real Nix in tests/update-inputs.py.
@@ -19,18 +123,12 @@ def update-command [tool: string, args: list<string>] {
             } else if $args.0 == 'build' {
                 assert (open --raw packages/opencode.nix | str contains '1.2.3-beta-fixture')
                 assert (open --raw packages/roc-nightly.nix | str contains '2026-10-01-abcdef0')
-                assert (open --raw packages/t3code-nightly.nix | str contains '# fixture: t3 source refreshed')
+                assert (open --raw packages/t3code-nightly.nix | str contains '0.0.99-nightly.20261001.42')
                 assert equal (open --raw flake.lock | from json).fixture updated
                 if $failure == 'build' { exit 17 }
             } else { error make {msg: $"Unexpected Nix command: ($args)"} }
         }
-        'nix-update' => {
-            let file = 'packages/t3code-nightly.nix'
-            if not (open --raw $file | str contains '# fixture: t3 source refreshed') {
-                "\n# fixture: t3 source refreshed\n" | save --append $file
-            }
-            if $failure == 'nix-update' { exit 17 }
-        }
+        'git' => { git-command $args }
         'npm' => {
             if $args.2 == 'version' {
                 print '1.2.3-beta-fixture'
@@ -97,6 +195,8 @@ def --wrapped main [...raw_args] {
         return
     }
     if ($env.MOCK_FAILURE? | default '') == $env.MOCK_TOOL { exit 17 }
+    if $env.MOCK_TOOL == 'nix' and (t3-nix $args) { return }
+    if $env.MOCK_TOOL == 'git' { git-command $args; return }
 
     if $env.MOCK_TOOL == 'nix' and $args.0 == 'eval' {
         let prefix = [eval --option eval-cache 'false' --option warn-dirty 'false' --option eval-speculation-threshold '0' --abort-on-warn --show-trace --raw]

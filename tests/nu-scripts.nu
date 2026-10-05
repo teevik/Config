@@ -1,12 +1,11 @@
 use std/assert
-use test-utils.nu [with-scratch assert-success]
+use test-utils.nu [with-scratch assert-success fixture-hash t3-source t3-tags]
 
 def main [source: path, probe: path] {
     let source = ($source | path expand)
     let probe = ($probe | path expand)
     let checker = ($source | path join packages/nu-scripts/check.nu)
     let warnings = ($source | path join tests/nix-warnings.nu)
-    let t3code = ($source | path join packages/update-t3code.nu)
     let opencode = ($source | path join packages/update-opencode.nu)
     let scripts = (glob $"($source)/packages/**/*.nu" | append (glob $"($source)/tests/**/*.nu"))
     assert-success (^$nu.current-exe --no-config-file $checker ...$scripts | complete)
@@ -41,31 +40,75 @@ def main [source: path, probe: path] {
         assert ($result.stdout =~ 'PASS: info')
         print 'PASS: warning detection, failed evaluations and continued host coverage'
 
-        '' | save --force $env.MOCK_LOG
-        assert-success (^$nu.current-exe --no-config-file $t3code --no-build | complete)
-        let calls = (open --raw $env.MOCK_LOG | lines | each { from json })
-        assert equal $calls.tool [nix-update]
-        assert equal $calls.0.args [
-            --file ($source | path join packages/update-targets.nix)
-            --version unstable
-            --version-regex '^v([0-9]+\.[0-9]+\.[0-9]+-nightly\.[0-9]{8}\.[0-9]+)$'
-            --use-github-releases --subpackage resourceMonitor --subpackage licenseNotices t3code-nightly
-        ]
-        '' | save --force $env.MOCK_LOG
-        assert-success (^$nu.current-exe --no-config-file $t3code | complete)
-        let calls = (open --raw $env.MOCK_LOG | lines | each { from json })
-        assert equal $calls.tool [nix-update nix]
-        assert equal $calls.1.args [build --no-link --print-build-logs --file ($source | path join packages/update-targets.nix) t3code-nightly]
+        # The T3 updater writes beside itself, so run a writable copy.
+        let checkout = ($scratch | path join t3-checkout)
+        mkdir $checkout
+        cp --recursive ($source | path join packages) $checkout
+        ^chmod -R u+w $checkout
+        let t3code = ($checkout | path join packages/update-t3code.nu)
+        let targets = ($checkout | path join packages/update-targets.nix)
+        let file = ($checkout | path join packages/t3code-nightly.nix)
+        $env.MOCK_T3 = ($scratch | path join t3-fixture)
+        let fetches = {|| open --raw $env.MOCK_LOG | lines | each { from json } | where tool == fetch | get args | flatten }
+        let t3_run = {|...args|
+            '' | save --force $env.MOCK_LOG
+            ^$nu.current-exe --no-config-file $t3code ...$args | complete
+        }
+        let assert_declared = {|version lock licenses|
+            let source = (open --raw $file)
+            assert ($source | str contains $'version = "($version)";')
+            assert ($source | str contains (fixture-hash $"src:($version)"))
+            assert ($source | str contains (fixture-hash $"pnpmDeps:($lock)"))
+            assert ($source | str contains (fixture-hash $"licenseNotices:($licenses)"))
+        }
 
-        '' | save --force $env.MOCK_LOG
-        $env.MOCK_FAILURE = 'nix-update'
-        assert ((^$nu.current-exe --no-config-file $t3code | complete).exit_code != 0)
-        assert equal (open --raw $env.MOCK_LOG | lines | each { from json } | get tool) [nix-update]
-        $env.MOCK_FAILURE = 'nix'
-        assert ((^$nu.current-exe --no-config-file $t3code | complete).exit_code != 0)
+        # Newest by date and build, not tag order; stable releases are ignored.
+        # The previous source is not in the store, so every input is refetched.
+        t3-source $env.MOCK_T3 0.0.47-nightly.20261007.2701 'lock a' 'licenses a'
+        $env.MOCK_TAGS = (t3-tags [v0.0.47 v0.0.47-nightly.20261007.2701 v0.0.47-nightly.20261006.2690 v0.0.46-nightly.20261005.2667])
+        assert-success (do $t3_run '--no-build')
+        do $assert_declared 0.0.47-nightly.20261007.2701 'lock a' 'licenses a'
+        assert equal (do $fetches) [src pnpmDeps licenseNotices]
+        let calls = (open --raw $env.MOCK_LOG | lines | each { from json } | where tool == nix)
+        # Each corrected hash gets a confirming build, which reuses the output.
+        let src = [build --no-link --keep-going --file $targets t3code-nightly.src]
+        let dependencies = [build --no-link --keep-going --file $targets t3code-nightly.pnpmDeps t3code-nightly.licenseNotices]
+        assert equal ($calls | where {|call| $call.args.0 == build } | get args) [$src $src $dependencies $dependencies]
+        print 'PASS: T3 nightly selection and hash refresh from mismatch reports'
+
+        # Only inputs whose source files changed get a placeholder and refetch.
+        t3-source $env.MOCK_T3 0.0.47-nightly.20261008.2710 'lock a' 'licenses b'
+        $env.MOCK_TAGS = (t3-tags [v0.0.47-nightly.20261008.2710 v0.0.47-nightly.20261007.2701])
+        let result = (do $t3_run '--no-build')
+        assert-success $result
+        assert ($result.stdout =~ 'reusing: pnpmDeps')
+        do $assert_declared 0.0.47-nightly.20261008.2710 'lock a' 'licenses b'
+        assert equal (do $fetches) [src licenseNotices]
+
+        let current = (open --raw $file)
+        assert-success (do $t3_run '--no-build')
+        assert equal (open --raw $file) $current
+        assert equal (open --raw $env.MOCK_LOG | lines | each { from json } | get tool) [git nix]
+        assert-success (do $t3_run)
+        assert equal (open --raw $env.MOCK_LOG | lines | each { from json } | last | get args) [
+            build --no-link --print-build-logs --file $targets t3code-nightly
+        ]
+        print 'PASS: T3 unchanged inputs are reused and current nightlies are left alone'
+
+        t3-source $env.MOCK_T3 0.0.47-nightly.20261009.2720 'lock b' 'licenses b'
+        $env.MOCK_TAGS = (t3-tags [v0.0.47-nightly.20261009.2720])
+        $env.MOCK_FAILURE = 'fetch'
+        assert ((do $t3_run '--no-build').exit_code != 0)
+        assert equal (open --raw $file) $current
+        for failure in [git nix] {
+            $env.MOCK_FAILURE = $failure
+            assert ((do $t3_run '--no-build').exit_code != 0)
+            assert equal (open --raw $file) $current
+        }
+        assert equal (open --raw $env.MOCK_LOG | lines | each { from json } | get tool) [git nix]
         $env.MOCK_FAILURE = ''
-        assert ((^$nu.current-exe --no-config-file $t3code --unknown | complete).exit_code != 0)
-        print 'PASS: T3 update flags, no-build mode, and failure propagation'
+        assert ((do $t3_run '--unknown').exit_code != 0)
+        print 'PASS: T3 failures restore the definition, and unknown flags are rejected'
 
     }
 }

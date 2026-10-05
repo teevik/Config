@@ -2,8 +2,8 @@
   pkgs ? import ../nix-lint/pkgs.nix,
   ...
 }:
-# A binary launcher, not another shell script. Keep the caller's selected Nix
-# and nix-update; only pin Nu and the non-Nix tools used by the scripts.
+# A binary launcher, not another shell script. Keep the caller's selected Nix;
+# only pin Nu and the non-Nix tools used by the scripts.
 pkgs.runCommandLocal "config-nu"
   {
     nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
@@ -17,6 +17,7 @@ pkgs.runCommandLocal "config-nu"
         pkgs.lib.makeBinPath [
           pkgs.coreutils
           pkgs.curl
+          pkgs.git
           pkgs.nodejs
         ]
       }

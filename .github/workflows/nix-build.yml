@@ -128,7 +128,7 @@ jobs:
           # Resolve just from the same locked nixpkgs as this checkout.
           nixpkgs_rev=$(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)
           python3 .github/cache/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
-            nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" .#nix-update \
+            nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" \
             -c just update --export "$RUNNER_TEMP/nightly-update"
           echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
 

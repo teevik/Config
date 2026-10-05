@@ -1,5 +1,5 @@
 use std/assert
-use test-utils.nu [with-scratch assert-success]
+use test-utils.nu [with-scratch assert-success t3-source t3-tags]
 
 def owned-files [] {
     [flake.lock packages/opencode-desktop.nix packages/opencode.nix packages/roc-nightly.nix packages/t3code-nightly.nix]
@@ -11,7 +11,12 @@ def contents [root: path] {
 
 def calls [] { open --raw $env.MOCK_LOG | lines | each { from json } }
 
-def nix-actions [] { calls | where {|call| $call.tool == 'nix' and $call.args.0 != 'eval' } | get args }
+# Nix commands other than evaluations and T3 Code's dependency builds.
+def nix-actions [] {
+    calls | where {|call| $call.tool == 'nix' and $call.args.0 != 'eval' and '--keep-going' not-in $call.args } | get args
+}
+
+def opencode-files [entries: list] { $entries | where file =~ opencode }
 
 def run-update [checkout: path, args: list<string>, failure: string = '', release: string = 'valid'] {
     '' | save --force $env.MOCK_LOG
@@ -24,6 +29,9 @@ def main [source: path] {
     let source = ($source | path expand)
     with-scratch {|scratch|
         $env.MOCK_LOG = ($scratch | path join calls.jsonl)
+        $env.MOCK_T3 = ($scratch | path join t3-fixture)
+        $env.MOCK_TAGS = (t3-tags [v0.0.99-nightly.20261001.42])
+        t3-source $env.MOCK_T3 0.0.99-nightly.20261001.42 'fixture lock' 'fixture licenses'
         let baseline = ($scratch | path join 'starting checkout')
         mkdir $baseline
         cp --recursive ($source | path join packages) $baseline
@@ -43,10 +51,12 @@ def main [source: path] {
             [flake update]
             [build --no-link --print-build-logs --file packages/update-targets.nix opencode opencode-desktop omp roc-nightly t3code-nightly]
         ])
-        assert equal (calls | where tool == nix-update | length) 1
+        assert equal (calls | where tool == fetch | get args | flatten) [src pnpmDeps licenseNotices]
         let after = (contents $checkout)
         assert ($after != $before)
-        assert (open --raw ($checkout | path join packages/t3code-nightly.nix) | str contains '# preexisting user edit')
+        let t3 = (open --raw ($checkout | path join packages/t3code-nightly.nix))
+        assert ($t3 | str contains '# preexisting user edit')
+        assert ($t3 | str contains 'version = "0.0.99-nightly.20261001.42";')
         assert equal (open --raw ($checkout | path join unrelated.txt)) 'unrelated user file'
         let cli = (open --raw ($checkout | path join packages/opencode.nix))
         let desktop = (open --raw ($checkout | path join packages/opencode-desktop.nix))
@@ -92,12 +102,22 @@ def main [source: path] {
         let skipped = ($scratch | path join 'inputs already refreshed')
         cp --recursive $baseline $skipped
         assert-success (run-update $skipped [--skip-inputs --no-build])
-        assert equal (calls | where tool == nix | length) 0
+        assert ([flake update] not-in (calls | where tool == nix | get args))
         assert equal (open --raw ($skipped | path join flake.lock)) $before.0.content
         assert equal (contents $skipped | skip 1) ($after | skip 1)
         print 'PASS: --skip-inputs keeps the existing lock and still refreshes package sources'
 
-        for failure in [flake npm curl integrity nix-update build] {
+        # Chains run in parallel, so a failure keeps the other chains' edits. T3
+        # Code waits for the input refresh; validation waits for everything.
+        let untouched = {
+            flake: [flake.lock packages/t3code-nightly.nix]
+            npm: [packages/opencode-desktop.nix packages/opencode.nix]
+            integrity: [packages/opencode-desktop.nix packages/opencode.nix]
+            curl: [packages/opencode-desktop.nix packages/opencode.nix packages/roc-nightly.nix]
+            git: [packages/t3code-nightly.nix]
+            build: []
+        }
+        for failure in ($untouched | columns) {
             let work = ($scratch | path join $"failed-($failure)")
             let output = ($scratch | path join $"export-($failure)")
             cp --recursive $baseline $work
@@ -107,36 +127,27 @@ def main [source: path] {
             assert not ($output | path exists)
             assert equal (open --raw ($work | path join unrelated.txt)) 'unrelated user file'
             assert (open --raw ($work | path join packages/t3code-nightly.nix) | str contains '# preexisting user edit')
-            if $failure == 'flake' {
-                assert equal (contents $work) $before
-            } else {
-                assert equal (open --raw ($work | path join flake.lock) | from json).fixture updated
-            }
-            if $failure in [flake npm curl integrity] {
-                assert equal (open --raw ($work | path join packages/opencode.nix)) $before.2.content
-                assert equal (calls | where tool == nix-update | length) 0
-            } else {
-                assert equal (contents $work) $after
-            }
+            let kept = ($untouched | get $failure)
+            let expected = ($before | zip $after | each {|pair| if $pair.0.file in $kept { $pair.0 } else { $pair.1 } })
+            assert equal (contents $work) $expected
             if $failure != 'build' {
-                assert equal (calls | where {|call| $call.tool == 'nix' and $call.args.0 == 'build' } | length) 0
+                assert equal (nix-actions | where {|args| $args.0 == 'build' } | length) 0
             }
         }
-        print 'PASS: failures at each stage stop later work, retain completed edits, and produce no export'
+        print 'PASS: failures keep independent edits, skip validation, and produce no export'
 
         for release in [mismatch missing-assets invalid-digest missing-digest invalid-integrity invalid-json] {
             let work = ($scratch | path join $release)
             cp --recursive $baseline $work
             assert ((run-update $work [] '' $release).exit_code != 0)
-            assert equal (contents $work | skip 1) ($before | skip 1)
-            assert equal (calls | where tool == nix-update | length) 0
+            assert equal (opencode-files (contents $work)) (opencode-files $before)
         }
         let drift = ($scratch | path join drift)
         cp --recursive $baseline $drift
         $before.2.content | save --append ($drift | path join packages/opencode.nix)
-        let drift_before = (contents $drift | skip 1)
+        let drift_before = (opencode-files (contents $drift))
         assert ((run-update $drift []).exit_code != 0)
-        assert equal (contents $drift | skip 1) $drift_before
+        assert equal (opencode-files (contents $drift)) $drift_before
         print 'PASS: release mismatch, missing assets/digests, malformed hashes/JSON, and source-layout drift preserve package files'
 
         for release in [roc-invalid-tag roc-missing-arm64 roc-invalid-digest roc-missing-digest roc-duplicate-asset] {
@@ -144,7 +155,6 @@ def main [source: path] {
             cp --recursive $baseline $work
             assert ((run-update $work [] '' $release).exit_code != 0)
             assert equal (open --raw ($work | path join packages/roc-nightly.nix)) $before.3.content
-            assert equal (calls | where tool == nix-update | length) 0
         }
         let roc_drift = ($scratch | path join roc-drift)
         cp --recursive $baseline $roc_drift

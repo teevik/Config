@@ -32,7 +32,7 @@ pkgs.runCommand "nu-scripts-check"
   {
     nativeBuildInputs = map mockCommand [
       "nix"
-      "nix-update"
+      "git"
       "npm"
       "curl"
     ];

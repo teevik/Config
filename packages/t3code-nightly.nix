@@ -41,11 +41,12 @@ let
   };
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
-  # separately so the application build stays offline; nix-update refreshes
-  # this hash whenever the nightly changes the revision or required licenses.
+  # separately so the application build stays offline. The name omits the
+  # version so nightlies with unchanged license inputs reuse the same output;
+  # update-t3code.nu refreshes the hash when those inputs change.
   licenseNotices = pkgs.stdenvNoCC.mkDerivation {
-    pname = "t3code-license-notices";
-    inherit version src;
+    name = "t3code-license-notices";
+    inherit src;
     nativeBuildInputs = [
       pkgs.nodejs_24
       pkgs.cacert
@@ -70,7 +71,7 @@ let
     pname = "t3code-resource-monitor";
     inherit version src;
     sourceRoot = "${src.name}/native/resource-monitor";
-    cargoHash = "sha256-5cmG2daM1bVOA23gjjoalbx0fEL1hmqV6WZov0sUZp8=";
+    cargoLock.lockFile = "${src}/native/resource-monitor/Cargo.lock";
   };
 
   hyprlandCapture = pkgs.rustPlatform.buildRustPackage {
@@ -171,7 +172,7 @@ let
 
     passthru = (oldAttrs.passthru or { }) // {
       inherit electron hyprlandCapture;
-      # Exposed as subpackages so nix-update refreshes both dependency hashes.
+      # Exposed so update-t3code.nu can refresh the dependency hashes.
       inherit licenseNotices resourceMonitor;
     };
 
@@ -187,8 +188,8 @@ let
         inherit providerPackages;
       }).overrideAttrs
         (oldAttrs: {
-          # The wrapper exposes these build inputs through passthru. Define them
-          # here so nix-update sees this editable file as their source position.
+          # Expose the unwrapped build inputs on the wrapper as well, so the
+          # updater and tests can address them as t3code-nightly.<input>.
           passthru = (oldAttrs.passthru or { }) // {
             inherit (nightlyUnwrapped)
               hyprlandCapture
