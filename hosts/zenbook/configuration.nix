@@ -55,6 +55,7 @@
       [
         intel-media-driver
         vpl-gpu-rt
+        intel-compute-runtime
       ]
     );
   };
@@ -181,6 +182,9 @@
 
   boot = {
     kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
+    # Log suspend/resume details, including the IRQ that woke an s2idle
+    # suspend, to debug spurious wakeups and deaths while lid-closed.
+    kernelParams = [ "pm_debug_messages" ];
   };
 
   system.stateVersion = "24.11";
