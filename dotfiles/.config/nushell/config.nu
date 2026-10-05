@@ -107,6 +107,24 @@ let fish_completer = {|spans: list<string>|
     }
 }
 
+# Nix ships its own completion protocol, which knows flake outputs and
+# installables such as `nixpkgs#ripgrep`. The first output line is the type.
+let nix_completer = {|spans: list<string>|
+    let lines = with-env { NIX_GET_COMPLETIONS: (($spans | length) - 1) } {
+        ^nix ...($spans | skip 1) | complete
+    } | get stdout | lines
+
+    match ($lines | get -o 0) {
+        normal | attrs => {
+            $lines
+            | skip 1
+            | split column --number 2 "\t" value description
+            | insert append_whitespace ($lines.0 == normal)
+        }
+        _ => null
+    }
+}
+
 let external_completer = {|spans: list<string>|
     # External completers see the alias name, so expand its first command.
     let expanded_alias = scope aliases
@@ -123,6 +141,7 @@ let external_completer = {|spans: list<string>|
     match $spans.0 {
         # Fish is more accurate for Nushell itself and git refs.
         nu | git | asdf => $fish_completer
+        nix => $nix_completer
         _ => $carapace_completer
     } | do $in $spans
 }
