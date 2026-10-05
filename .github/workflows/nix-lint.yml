@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3.22.5
+      - uses: DeterminateSystems/determinate-nix-action@4d65ea9cab522b6d9f29a170aed23ededc1b27af # v3.23.0
       # Same derivation as checks.x86_64-linux.nix-lint, without discovering
       # every Blueprint package/host or fetching private flake inputs.
       - name: Check Nix/Nu sources and lint regression tests
