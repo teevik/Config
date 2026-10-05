@@ -182,8 +182,7 @@ hl.bind("SUPER + A", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "t
 hl.bind("SUPER + Space", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("SUPER + SHIFT + Q", exec("poweroff"))
 
-hl.bind("SUPER + L", exec("hyprland-lock"))
-hl.bind("SUPER + SHIFT + L", exec("hyprctl keyword general:layout master"))
+hl.bind("SUPER + Escape", exec("hyprland-lock"))
 
 hl.bind("XF86MonBrightnessUp", exec("brightnessctl s --min-value=10 --exponent=2 7%+"), { repeating = true })
 hl.bind("XF86MonBrightnessDown", exec("brightnessctl s --min-value=10 --exponent=2 7%-"), { repeating = true })
@@ -199,23 +198,44 @@ hl.bind("SUPER + mouse_down", smw.cycle_workspaces("prev"))
 hl.bind("SUPER + mouse_up", smw.cycle_workspaces("next"))
 hl.bind("mouse_right", smw.cycle_workspaces("next"))
 hl.bind("mouse_left", smw.cycle_workspaces("prev"))
+hl.bind("SUPER + Tab", smw.cycle_workspaces("next"))
+hl.bind("SUPER + SHIFT + Tab", smw.cycle_workspaces("prev"))
 
-hl.bind("SUPER + left", hl.dsp.focus({ direction = "l" }))
-hl.bind("SUPER + right", hl.dsp.focus({ direction = "r" }))
-hl.bind("SUPER + up", hl.dsp.focus({ direction = "u" }))
-hl.bind("SUPER + down", hl.dsp.focus({ direction = "d" }))
+-- Vim keys alongside arrows, so a split keyboard needs no arrow layer
+local resize_step = 60
+local directions = {
+  { keys = { "left", "H" }, dir = "l", x = -resize_step, y = 0 },
+  { keys = { "down", "J" }, dir = "d", x = 0, y = resize_step },
+  { keys = { "up", "K" }, dir = "u", x = 0, y = -resize_step },
+  { keys = { "right", "L" }, dir = "r", x = resize_step, y = 0 },
+}
 
-hl.bind("SUPER + SHIFT + left", hl.dsp.window.move({ direction = "l" }))
-hl.bind("SUPER + SHIFT + right", hl.dsp.window.move({ direction = "r" }))
-hl.bind("SUPER + SHIFT + up", hl.dsp.window.move({ direction = "u" }))
-hl.bind("SUPER + SHIFT + down", hl.dsp.window.move({ direction = "d" }))
+for _, d in ipairs(directions) do
+  for _, key in ipairs(d.keys) do
+    hl.bind("SUPER + " .. key, hl.dsp.focus({ direction = d.dir }))
+    hl.bind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ direction = d.dir }))
+    hl.bind(
+      "SUPER + CTRL + " .. key,
+      hl.dsp.window.resize({ x = d.x, y = d.y, relative = true }),
+      { repeating = true }
+    )
+  end
+end
+
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind("SUPER + SHIFT + mouse:272", hl.dsp.window.resize(), { mouse = true })
 
-hl.bind("SUPER + CTRL + left", hl.dsp.window.resize({ x = -20, y = 0, relative = true }))
-hl.bind("SUPER + CTRL + right", hl.dsp.window.resize({ x = 20, y = 0, relative = true }))
-hl.bind("SUPER + CTRL + up", hl.dsp.window.resize({ x = 0, y = -20, relative = true }))
-hl.bind("SUPER + CTRL + down", hl.dsp.window.resize({ x = 0, y = 20, relative = true }))
+-- Resize mode: SUPER + R, then hjkl/arrows without holding anything; Escape or Return to leave
+hl.bind("SUPER + R", hl.dsp.submap("resize"))
+hl.define_submap("resize", function()
+  for _, d in ipairs(directions) do
+    for _, key in ipairs(d.keys) do
+      hl.bind(key, hl.dsp.window.resize({ x = d.x, y = d.y, relative = true }), { repeating = true })
+    end
+  end
+  hl.bind("Escape", hl.dsp.submap("reset"))
+  hl.bind("Return", hl.dsp.submap("reset"))
+end)
 
 for i = 1, smw.get_amount_of_workspaces() do
   local workspace = tostring(i)
