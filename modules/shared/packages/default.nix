@@ -53,6 +53,7 @@ in
       # CLI utilities
       bubblewrap
       btop
+      expect
       fd
       fastfetch
       fzf
@@ -140,6 +141,7 @@ in
 
       # Work tools
       agent-browser
+      perSystem.self.fox
       perSystem.self.agent-workspace-linux
       pi-coding-agent
       perSystem.llm-agents.chatgpt

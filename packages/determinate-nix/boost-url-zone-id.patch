@@ -1,0 +1,13 @@
+--- a/url.cc
++++ b/url.cc
+@@ -47,7 +47,9 @@
+
+     return {
+         .hostType = hostType,
+-        .host = parsed->host_address(),
++        // Boost 1.91 caches an incorrect decoded length for IPv6 zone IDs.
++        // Revalidate the encoded address rather than preserving that length.
++        .host = percentDecode(parsed->encoded_host_address()),
+         .user = parsed->has_userinfo() ? parsed->user() : std::optional<std::string>{},
+         .password = parsed->has_password() ? parsed->password() : std::optional<std::string>{},
+         .port = port,

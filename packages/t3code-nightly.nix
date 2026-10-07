@@ -43,7 +43,12 @@ let
   # Opt-in LaTeX math rendering (Settings -> Appearance -> Render math), from
   # pingdotgg/t3code#14574. It also edits pnpm-lock.yaml, so the dependency
   # fetch is patched too; refresh pnpmDeps by hand when replacing the patch.
-  patches = [ ./t3code-math.patch ];
+  # Codex follow-up chips from pingdotgg/t3code#15252, pinned to its reviewed
+  # desktop/shared changes. Apply after math; it adds no dependencies.
+  patches = [
+    ./t3code-math.patch
+    ./t3code-followup.patch
+  ];
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
   # separately so the application build stays offline. The name omits the

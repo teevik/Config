@@ -88,7 +88,7 @@
       zmk-studio
     ])
     ++ [
-      perSystem.openconnect-sso.default
+      perSystem.self.openconnect-sso
       pkgs.zoom-us
     ]
     ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [

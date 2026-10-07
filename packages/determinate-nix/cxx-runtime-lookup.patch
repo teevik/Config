@@ -1,0 +1,27 @@
+--- a/nix-meson-build-support/common/cxa-throw/interpose-cxa-throw.cc
++++ b/nix-meson-build-support/common/cxa-throw/interpose-cxa-throw.cc
+@@ -11,6 +11,23 @@
+     if (is_logic_error(tinfo))
+         abort_on_exception(exc, tinfo);
+
+-    static auto * orig = (cxa_throw_type) dlsym(RTLD_NEXT, "__cxa_throw");
++    static auto * orig = [] {
++        auto result = (cxa_throw_type) dlsym(RTLD_NEXT, "__cxa_throw");
++        if (result)
++            return result;
++
++        // External consumers can load the C++ runtime before libnixutil.
++        // Locate that already-loaded runtime through an ABI function we do
++        // not interpose, then resolve __cxa_throw directly from it.
++        Dl_info info;
++        if (!dladdr((void *) &__cxxabiv1::__cxa_allocate_exception, &info))
++            return (cxa_throw_type) nullptr;
++        auto handle = dlopen(info.dli_fname, RTLD_LAZY | RTLD_NOLOAD);
++        if (!handle)
++            return (cxa_throw_type) nullptr;
++        result = (cxa_throw_type) dlsym(handle, "__cxa_throw");
++        dlclose(handle);
++        return result;
++    }();
+     if (!orig)
+         abort();

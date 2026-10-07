@@ -61,7 +61,10 @@
       url = "github:noctalia-dev/community-plugins";
       flake = false;
     };
-    determinate-nix.url = "github:DeterminateSystems/nix-src";
+    determinate-nix = {
+      url = "github:DeterminateSystems/nix-src";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # Unmerged nix-src PRs applied by packages/determinate-nix.nix. Pinned to
     # PR commits; a patch stops applying once its PR lands on main.
     # https://github.com/DeterminateSystems/nix-src/pull/572
@@ -78,7 +81,10 @@
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    openconnect-sso.url = "github:active-group/openconnect-sso";
+    openconnect-sso = {
+      url = "github:active-group/openconnect-sso";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     titdb = {
       url = "github:GarrettGR/titdb-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -147,7 +153,6 @@
           # Temporary: solidtime-desktop's usocket dependency fails on Electron 42.
           "electron-41.10.6"
           "electron-41.10.7"
-          "qtwebengine-5.15.19"
         ];
       };
       systems = [

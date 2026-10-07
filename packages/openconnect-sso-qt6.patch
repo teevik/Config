@@ -1,0 +1,113 @@
+--- a/openconnect_sso/browser/webengine_process.py
++++ b/openconnect_sso/browser/webengine_process.py
+@@ -6,14 +6,15 @@
+ from urllib.parse import urlparse
+
+ import attr
+-import pkg_resources
++from importlib.resources import files
+ import logging
+ import structlog
+
+-from PyQt5.QtCore import QUrl, QTimer, pyqtSlot, Qt
+-from PyQt5.QtNetwork import QNetworkCookie, QNetworkProxy
+-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineScript, QWebEngineProfile
+-from PyQt5.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout
++from PyQt6.QtCore import QUrl, QTimer, pyqtSlot, Qt
++from PyQt6.QtNetwork import QNetworkCookie, QNetworkProxy
++from PyQt6.QtWebEngineWidgets import QWebEngineView
++from PyQt6.QtWebEngineCore import QWebEnginePage, QWebEngineScript, QWebEngineProfile
++from PyQt6.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout
+
+ from openconnect_sso import config
+
+@@ -95,16 +96,16 @@
+
+         argv = sys.argv.copy()
+         if self.display_mode == config.DisplayMode.HIDDEN:
+-            argv += ["-platform", "minimal"]
++            argv += ["-platform", "offscreen"]
+         app = QApplication(argv)
+         profile = QWebEngineProfile("openconnect-sso")
+
+         if self.proxy:
+             parsed = urlparse(self.proxy)
+             if parsed.scheme.startswith("socks5"):
+-                proxy_type = QNetworkProxy.Socks5Proxy
++                proxy_type = QNetworkProxy.ProxyType.Socks5Proxy
+             elif parsed.scheme.startswith("http"):
+-                proxy_type = QNetworkProxy.HttpProxy
++                proxy_type = QNetworkProxy.ProxyType.HttpProxy
+             else:
+                 raise ValueError("Unsupported proxy type", parsed.scheme)
+             proxy = QNetworkProxy(proxy_type, parsed.hostname, parsed.port)
+@@ -170,15 +171,15 @@
+         self.page().loadFinished.connect(self._on_load_finished)
+
+     def createWindow(self, type):
+-        if type == QWebEnginePage.WebBrowserWindow:
++        if type == QWebEnginePage.WebWindowType.WebBrowserWindow:
+             self._popupWindow = WebPopupWindow(self.page().profile())
+             return self._popupWindow.view()
+
+     def authenticate_at(self, url, credentials):
+-        script_source = pkg_resources.resource_string(__name__, "user.js").decode()
++        script_source = files("openconnect_sso.browser").joinpath("user.js").read_text()
+         script = QWebEngineScript()
+-        script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+-        script.setWorldId(QWebEngineScript.ApplicationWorld)
++        script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
++        script.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld.value)
+         script.setSourceCode(script_source)
+         self.page().scripts().insert(script)
+
+@@ -186,8 +187,8 @@
+             logger.info("Initiating autologin", cred=credentials)
+             for url_pattern, rules in self._auto_fill_rules.items():
+                 script = QWebEngineScript()
+-                script.setInjectionPoint(QWebEngineScript.DocumentReady)
+-                script.setWorldId(QWebEngineScript.ApplicationWorld)
++                script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
++                script.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld.value)
+                 script.setSourceCode(
+                     f"""
+ // ==UserScript==
+@@ -221,8 +222,8 @@
+         super().__init__()
+         self._view = QWebEngineView(self)
+
+-        super().setAttribute(Qt.WA_DeleteOnClose)
+-        super().setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
++        super().setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
++        super().setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+         layout = QVBoxLayout()
+         super().setLayout(layout)
+--- a/openconnect_sso/app.py
++++ b/openconnect_sso/app.py
+@@ -30,11 +30,7 @@
+     cfg = config.load()
+
+     try:
+-        if os.name == "nt":
+-            asyncio.set_event_loop(asyncio.ProactorEventLoop())
+-        auth_response, selected_profile = asyncio.get_event_loop().run_until_complete(
+-            _run(args, cfg)
+-        )
++        auth_response, selected_profile = asyncio.run(_run(args, cfg))
+     except KeyboardInterrupt:
+         logger.warn("CTRL-C pressed, exiting")
+         return 130
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -33,8 +33,8 @@
+ toml = "^0.10"
+ setuptools = ">40.0"
+ PySocks = "^1.7.1"
+-PyQt5 = "^5.15"
+-PyQtWebEngine = "^5.15"
++PyQt6 = "^6"
++PyQt6-WebEngine = "^6"
+ pyotp = "^2.7.0"
+
+ [tool.poetry.dev-dependencies]
