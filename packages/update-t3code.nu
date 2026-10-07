@@ -129,7 +129,7 @@ def update [targets: path, file: path, current: record, version: string] {
 }
 
 def main [--no-build] {
-    let targets = ($env.FILE_PWD | path join update-targets.nix)
+    let targets = ($env.FILE_PWD | path join nu-scripts/update-targets.nix)
     let file = ($env.FILE_PWD | path join t3code-nightly.nix)
     let version = (latest-version)
     let current = (current-state $targets)

@@ -18,7 +18,6 @@ pkgs.runCommandLocal "config-nu"
           pkgs.coreutils
           pkgs.curl
           pkgs.git
-          pkgs.nodejs
         ]
       }
   ''

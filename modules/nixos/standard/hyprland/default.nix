@@ -75,8 +75,7 @@ in
     # ships its lua under /share/hyprland (plural), so we must opt-in.
     pathsToLink = [ "/share/hyprland" ];
 
-    # HACK: Workaround for https://github.com/NixOS/nixpkgs/issues/485123
-    # Launch Hyprland directly via UWSM with -F to bypass broken desktop file lookup
+    # Start the Hyprland session through UWSM on the first virtual terminal.
     loginShellInit = ''
       if [ "$(tty)" == /dev/tty1 ] && uwsm check may-start; then
         uwsm start hyprland.desktop
@@ -85,7 +84,7 @@ in
   };
 
   # Hyprlock uses this PAM service for password authentication. Individual
-  # hosts can add another PAM method (the Zenbook adds Howdy) without changing
+  # hosts can add another PAM method (the Zenbook adds Gaze) without changing
   # the lock screen itself.
   security.pam.services = {
     hyprlock = { };

@@ -12,6 +12,10 @@ let
   skillsLib = inputs.agent-skills.lib.agent-skills;
 
   sources = {
+    anthropic = {
+      path = inputs.anthropic-skills;
+      subdir = "skills";
+    };
     mattpocock = {
       path = inputs.mattpocock-skills;
       subdir = "skills";
@@ -72,6 +76,10 @@ let
     ]
     // fromDir "cursor" "." [ "deslop" ]
     // {
+      frontend-design = {
+        from = "anthropic";
+        path = "frontend-design";
+      };
       impeccable-rust = {
         from = "impeccable-rust";
         path = "skill";

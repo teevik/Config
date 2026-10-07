@@ -1,2 +1,0 @@
-[commit.generation]
-command = "opencode run -m opencode/claude-haiku-4-5 | vipe"

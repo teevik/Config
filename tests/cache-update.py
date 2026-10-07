@@ -1,6 +1,7 @@
 """Check the update artifact boundary to the write-enabled PR job."""
 
 import importlib.util
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -14,11 +15,14 @@ spec.loader.exec_module(update)
 class UpdateArtifactTests(unittest.TestCase):
     def fixture(self, root, artifact):
         (root / "packages").mkdir()
-        (root / "packages/update-packages.json").write_text('{"test":"flake.lock"}')
+        (root / "packages/update-packages.json").write_text('{"test":"packages/test.nix"}')
+        (root / "packages/test.nix").write_text("old package")
         (root / "flake.lock").write_text("old")
         (artifact / "sources").mkdir(parents=True)
         (artifact / "sources/flake.lock").write_text("new")
-        (artifact / "files.txt").write_text("flake.lock\n")
+        (artifact / "sources/packages").mkdir()
+        (artifact / "sources/packages/test.nix").write_text("new package")
+        (artifact / "files.txt").write_text("flake.lock\npackages/test.nix\n")
 
     def test_installs_only_catalog_files(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -26,6 +30,24 @@ class UpdateArtifactTests(unittest.TestCase):
             self.fixture(root, artifact)
             update.install(root, artifact)
             self.assertEqual((root / "flake.lock").read_text(), "new")
+            self.assertEqual((root / "packages/test.nix").read_text(), "new package")
+
+    def test_accepts_export_manifest_for_repository_catalog(self):
+        catalog = (ROOT / "packages/update-packages.json").read_text()
+        files = sorted({"flake.lock", *json.loads(catalog).values()})
+        with tempfile.TemporaryDirectory() as directory:
+            root, artifact = Path(directory), Path(directory) / "artifact"
+            (root / "packages").mkdir()
+            (root / "packages/update-packages.json").write_text(catalog)
+            for name in files:
+                (root / name).write_text("old")
+                source = artifact / "sources" / name
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text("new " + name)
+            (artifact / "files.txt").write_text("\n".join(files) + "\n")
+            update.install(root, artifact)
+            for name in files:
+                self.assertEqual((root / name).read_text(), "new " + name)
 
     def test_rejects_git_injection_symlinks_and_changed_catalog(self):
         for attack in ["git", "symlink", "manifest", "catalog"]:
@@ -41,11 +63,11 @@ class UpdateArtifactTests(unittest.TestCase):
                 elif attack == "manifest":
                     (artifact / "files.txt").write_text("../outside\n")
                 else:
-                    (artifact / "sources/packages").mkdir()
                     (artifact / "sources/packages/update-packages.json").write_text("{}")
                 with self.assertRaises(ValueError):
                     update.install(root, artifact)
                 self.assertEqual((root / "flake.lock").read_text(), "old")
+                self.assertEqual((root / "packages/test.nix").read_text(), "old package")
 
 
 if __name__ == "__main__":

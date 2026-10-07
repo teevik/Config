@@ -8,46 +8,6 @@ plugin use skim
 use /etc/nushell/scripts/ultimate_extractor.nu *
 use /etc/nushell/scripts/completions.nu *
 
-def current-project-root [] {
-    let git_root = (^git rev-parse --show-toplevel | complete)
-
-    if $git_root.exit_code == 0 {
-        $git_root.stdout | str trim | path expand
-    } else {
-        $env.PWD | path expand
-    }
-}
-
-def --env ensure-project-index [] {
-    let root = (current-project-root)
-    let status = (idx status)
-    let indexed_root = ($status.base_path? | default "")
-
-    if (not $status.initialized) or (($indexed_root | path expand) != $root) {
-        idx init $root --wait | ignore
-    }
-
-    $root
-}
-
-def --env index-project [path: directory = .] {
-    idx init ($path | path expand) --wait
-}
-
-def --env insert-fuzzy-file [] {
-    ensure-project-index | ignore
-
-    let selected = (
-        idx files
-        | sk --format relative_path --height "40%" --reverse
-        | get -o 0.full_path
-    )
-
-    if $selected != null {
-        commandline edit --insert ($selected | to nuon)
-    }
-}
-
 let history = {
     max_size: 100_000 # Session has to be reloaded for this to take effect
     sync_on_enter: true # Enable to share history between multiple sessions, else you have to close the session to write history to file
@@ -441,25 +401,18 @@ def with-clean-term [cmd: string, ...args] {
         return
     }
 
-    kitty @ set-spacing padding=0
-    kitty @ set-background-opacity 1
-
     try {
+        kitty @ set-spacing padding=0
+        kitty @ set-background-opacity 1
         ^$cmd ...$args
+    } finally {
+        kitty @ set-spacing padding=default
+        kitty @ set-background-opacity 0.5
     }
-
-    kitty @ set-spacing padding=default
-    kitty @ set-background-opacity 0.5
 }
 
 @complete external
 def --wrapped hx [...args] { with-clean-term "hx" ...$args }
-
-@complete external
-def --wrapped opencode [...args] { with-clean-term "opencode" ...$args }
-
-@complete external
-def --wrapped opencode2 [...args] { with-clean-term "opencode2" ...$args }
 
 @complete external
 def --wrapped nvim [...args] { with-clean-term "nvim" ...$args }

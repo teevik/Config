@@ -127,6 +127,8 @@
     in
     inputs.blueprint {
       inherit inputs;
+      # Keep module and template paths as Nix paths for flake schema checks.
+      prefix = ./.;
       nixpkgs.config = {
         allowUnfree = true;
         permittedInsecurePackages = [

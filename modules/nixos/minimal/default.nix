@@ -146,6 +146,7 @@ in
       stow
     ];
 
-    environment.variables.EDITOR = "nvim";
+    # Override NixOS's Nano default; the standard profile can select Neovim.
+    environment.variables.EDITOR = lib.mkOverride 900 "hx";
   };
 }

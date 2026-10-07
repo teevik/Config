@@ -1,6 +1,6 @@
 # nix build --no-link --print-build-logs --file tests/t3code-followup.nix
 let
-  t3code = (import ../packages/update-targets.nix { }).t3code-nightly.unwrapped;
+  t3code = (import ../packages/nu-scripts/update-targets.nix { }).t3code-nightly.unwrapped;
 in
 t3code.overrideAttrs (_: {
   pname = "t3code-followup-check";

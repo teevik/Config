@@ -3,6 +3,8 @@ vim.pack.add({
 	"https://github.com/dundalek/lazy-lsp.nvim",
 }, { confirm = false })
 
+vim.lsp.config("*", { capabilities = require("cmp_nvim_lsp").default_capabilities() })
+
 require("lazy-lsp").setup({
 	use_vim_lsp_config = true,
 

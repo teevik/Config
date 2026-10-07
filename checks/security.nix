@@ -8,6 +8,7 @@ let
     fileset = pkgs.lib.fileset.unions [
       ../.github
       ../packages/security
+      ../packages/update-packages.json
       ../tests/security.py
       ../tests/cache-upload.py
       ../tests/cache-hosts.py

@@ -112,20 +112,6 @@
     }
   },
   {
-    "bindings": {
-      "ctrl-alt-o": [
-        "agent::NewExternalAgentThread",
-        {
-          "agent": {
-            "custom": {
-              "name": "OpenCode"
-            }
-          }
-        }
-      ]
-    }
-  },
-  {
     "context": "Terminal",
     "bindings": {
       "alt-f": null

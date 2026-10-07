@@ -1,6 +1,6 @@
 {
   system ? builtins.currentSystem,
-  lockFile ? ../flake.lock,
+  lockFile ? ../../flake.lock,
 }:
 let
   lock = builtins.fromJSON (builtins.readFile lockFile);
@@ -20,16 +20,12 @@ let
   agentPkgs = import llmAgents.inputs.nixpkgs { inherit system; };
   perSystem = {
     inherit (llmAgents.overlays.shared-nixpkgs agentPkgs agentPkgs) llm-agents;
-    self.opencode = opencode;
   };
-  opencode = import ./opencode.nix { inherit pkgs; };
   targets = {
-    inherit opencode;
-    opencode-desktop = import ./opencode-desktop.nix { inherit perSystem pkgs; };
-    roc-nightly = import ./roc-nightly.nix { inherit pkgs; };
-    t3code-nightly = import ./t3code-nightly.nix { inherit perSystem pkgs; };
+    roc-nightly = import ../roc-nightly.nix { inherit pkgs; };
+    t3code-nightly = import ../t3code-nightly.nix { inherit perSystem pkgs; };
   };
 in
 builtins.mapAttrs (name: _: targets.${name}) (
-  builtins.fromJSON (builtins.readFile ./update-packages.json)
+  builtins.fromJSON (builtins.readFile ../update-packages.json)
 )

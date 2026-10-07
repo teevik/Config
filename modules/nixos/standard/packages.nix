@@ -48,6 +48,8 @@ let
   );
 in
 {
+  environment.variables.EDITOR = "nvim";
+
   programs = {
     ydotool = {
       enable = true;
@@ -171,7 +173,6 @@ in
       perSystem.llm-agents.codex
       perSystem.self.t3code-nightly
       t3code-desktop-nightly
-      perSystem.self.opencode
 
       # Desktop apps
       graphviz
@@ -182,7 +183,6 @@ in
       ngrok
       obs-studio
       obsidian
-      perSystem.self.opencode-desktop
       rounded
       vesktop
       xournalpp
@@ -192,7 +192,6 @@ in
       # Wayland tools
       perSystem.hyprland-contrib.grimblast
       cliphist
-      fuzzel
       nwg-displays
       perSystem.self.peck
       swaybg

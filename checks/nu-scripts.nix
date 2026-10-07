@@ -25,6 +25,7 @@ let
     fileset = pkgs.lib.fileset.unions [
       ../packages
       ../tests
+      ../dotfiles/.config/nushell/config.nu
     ];
   };
 in
@@ -33,7 +34,6 @@ pkgs.runCommand "nu-scripts-check"
     nativeBuildInputs = map mockCommand [
       "nix"
       "git"
-      "npm"
       "curl"
     ];
   }
@@ -42,5 +42,7 @@ pkgs.runCommand "nu-scripts-check"
       ${source}/tests/nu-scripts.nu ${source} ${pkgs.lib.getExe probe}
     ${pkgs.lib.getExe pkgs.nushell} --no-config-file \
       ${source}/tests/package-update.nu ${source}
+    PATH=${pkgs.lib.makeBinPath [ pkgs.nushell ]}:$PATH \
+      ${pkgs.lib.getExe pkgs.python3} ${source}/tests/terminal-wrapper.py
     touch "$out"
   ''

@@ -14,7 +14,7 @@ def main [root: path = .] {
     # Keep these source roots aligned with checks/nix-lint.nix.
     mut files = [flake.nix formatter.nix]
     mut scripts = []
-    for directory in [checks hosts modules packages templates tests] {
+    for directory in [checks hosts modules packages tests] {
         if not ($directory | path exists) {
             error make {msg: $"Missing source directory: ($directory)"}
         }

@@ -1,5 +1,5 @@
 # Share the source boundary between the registry and optional cached rebuilds.
-# Include new Nix source directories here if the flake grows any.
+# Include directories used by modules, packages, and checks as the flake grows.
 {
   lib,
   root ? ../../..,
@@ -7,6 +7,7 @@
 lib.fileset.toSource {
   inherit root;
   fileset = lib.fileset.unions [
+    (root + "/.github")
     (root + "/flake.nix")
     (root + "/flake.lock")
     (root + "/formatter.nix")
@@ -16,6 +17,7 @@ lib.fileset.toSource {
     (root + "/hosts")
     (root + "/modules")
     (root + "/packages")
+    (root + "/scripts")
     (root + "/tests")
   ];
 }

@@ -26,8 +26,8 @@ let
       }
     )
   );
-  regularTargets = import ../packages/update-targets.nix { };
-  lazyTargets = import ../packages/update-targets.nix { lockFile = lazyLock; };
+  regularTargets = import ../packages/nu-scripts/update-targets.nix { };
+  lazyTargets = import ../packages/nu-scripts/update-targets.nix { lockFile = lazyLock; };
   sameUpdateTargets = builtins.all (
     name: regularTargets.${name}.drvPath == lazyTargets.${name}.drvPath
   ) (builtins.attrNames regularTargets);

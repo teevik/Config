@@ -2,7 +2,7 @@
 let
   pkgs = import ../packages/nix-lint/pkgs.nix;
   inherit (pkgs) lib;
-  targets = import ../packages/update-targets.nix { };
+  targets = import ../packages/nu-scripts/update-targets.nix { };
   current = targets.t3code-nightly.unwrapped;
 
   # Exercise the package's real override boundary with a renamed upstream

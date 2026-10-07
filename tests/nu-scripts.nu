@@ -6,7 +6,6 @@ def main [source: path, probe: path] {
     let probe = ($probe | path expand)
     let checker = ($source | path join packages/nu-scripts/check.nu)
     let warnings = ($source | path join tests/nix-warnings.nu)
-    let opencode = ($source | path join packages/update-opencode.nu)
     let scripts = (glob $"($source)/packages/**/*.nu" | append (glob $"($source)/tests/**/*.nu"))
     assert-success (^$nu.current-exe --no-config-file $checker ...$scripts | complete)
 
@@ -46,7 +45,7 @@ def main [source: path, probe: path] {
         cp --recursive ($source | path join packages) $checkout
         ^chmod -R u+w $checkout
         let t3code = ($checkout | path join packages/update-t3code.nu)
-        let targets = ($checkout | path join packages/update-targets.nix)
+        let targets = ($checkout | path join packages/nu-scripts/update-targets.nix)
         let file = ($checkout | path join packages/t3code-nightly.nix)
         $env.MOCK_T3 = ($scratch | path join t3-fixture)
         let fetches = {|| open --raw $env.MOCK_LOG | lines | each { from json } | where tool == fetch | get args | flatten }

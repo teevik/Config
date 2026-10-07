@@ -1,4 +1,5 @@
 result
 target/
+__pycache__/
 /dotfiles/.config/nvim/Session.vim
 /dotfiles/.config/nvim/Sessionx.vim

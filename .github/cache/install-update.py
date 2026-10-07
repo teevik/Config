@@ -8,7 +8,8 @@ import sys
 
 
 def install(root, artifact):
-    allowed = sorted(set(json.loads((root / "packages/update-packages.json").read_text()).values()))
+    catalog = json.loads((root / "packages/update-packages.json").read_text())
+    allowed = sorted({"flake.lock", *catalog.values()})
     manifest = artifact / "files.txt"
     if manifest.is_symlink() or not manifest.is_file():
         raise ValueError("Invalid update manifest")

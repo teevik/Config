@@ -17,7 +17,6 @@ let
             ../hosts
             ../modules
             ../packages
-            ../templates
             ../tests
           ]
         );

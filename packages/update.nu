@@ -32,12 +32,11 @@ def main [
     }
     let catalog = (open ($env.FILE_PWD | path join update-packages.json))
     # T3 Code builds against the locked llm-agents input, so it waits for the
-    # input refresh. OpenCode and Roc only query release metadata and run
-    # alongside. Each chain writes disjoint files.
+    # input refresh. Roc only queries release metadata and runs alongside.
+    # Each chain writes disjoint files.
     let inputs = if $skip_inputs { [] } else { [{label: 'all flake inputs', script: update-inputs.nu, args: []}] }
     let chains = [
         ($inputs | append {label: 'T3 Code nightly', script: update-t3code.nu, args: [--no-build]})
-        [{label: 'OpenCode CLI and desktop', script: update-opencode.nu, args: []}]
         [{label: 'Roc nightly', script: update-roc.nu, args: []}]
     ]
     cd $root
@@ -55,7 +54,7 @@ def main [
         if ($failures | is-not-empty) { error make {msg: ($failures | str join "\n")} }
         if not $no_build {
             print 'Validating updated packages'
-            ^nix build --no-link --print-build-logs --file packages/update-targets.nix ...($catalog | columns)
+            ^nix build --no-link --print-build-logs --file packages/nu-scripts/update-targets.nix ...($catalog | columns)
         }
         if $destination != null {
             export-update $root $destination ([flake.lock] | append ($catalog | values) | uniq | sort)

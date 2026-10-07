@@ -1,7 +1,0 @@
-# direnv
-.direnv/
-.venv
-
-# nix
-result
-result-*

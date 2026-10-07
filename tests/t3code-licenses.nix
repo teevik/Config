@@ -1,7 +1,7 @@
 # nix build --no-link --file tests/t3code-licenses.nix
 let
   pkgs = import ../packages/nix-lint/pkgs.nix;
-  t3code = (import ../packages/update-targets.nix { }).t3code-nightly.unwrapped;
+  t3code = (import ../packages/nu-scripts/update-targets.nix { }).t3code-nightly.unwrapped;
 in
 pkgs.runCommand "t3code-license-cache-check" { nativeBuildInputs = [ pkgs.nodejs_24 ]; } ''
   cp -r ${t3code.src} source

@@ -9,7 +9,7 @@ def fixture-hash [text: string] {
 
 def t3-file [args: list<string>] {
     let index = ($args | enumerate | where item == --file | first).index
-    ($args | get ($index + 1) | path dirname | path join t3code-nightly.nix)
+    ($args | get ($index + 1) | path dirname | path dirname | path join t3code-nightly.nix)
 }
 
 # Version and hashes as currently declared in the T3 Code definition.
@@ -121,7 +121,6 @@ def update-command [tool: string, args: list<string>] {
                 if $failure == 'flake' { exit 17 }
                 {fixture: updated} | to json | save --force flake.lock
             } else if $args.0 == 'build' {
-                assert (open --raw packages/opencode.nix | str contains '1.2.3-beta-fixture')
                 assert (open --raw packages/roc-nightly.nix | str contains '2026-10-01-abcdef0')
                 assert (open --raw packages/t3code-nightly.nix | str contains '0.0.99-nightly.20261001.42')
                 assert equal (open --raw flake.lock | from json).fixture updated
@@ -129,22 +128,9 @@ def update-command [tool: string, args: list<string>] {
             } else { error make {msg: $"Unexpected Nix command: ($args)"} }
         }
         'git' => { git-command $args }
-        'npm' => {
-            if $args.2 == 'version' {
-                print '1.2.3-beta-fixture'
-            } else {
-                if $failure == 'integrity' and ($args.1 | str contains arm64) { exit 17 }
-                if $release_mode == 'invalid-integrity' { print invalid; return }
-                let arch = if ($args.1 | str contains x64) { 'x64' } else { 'arm64' }
-                print ('sha256-' + ($arch | hash sha256 --binary | encode base64))
-            }
-        }
         'curl' => {
             let url = ($args | last)
-            assert ($url in [
-                'https://api.github.com/repos/anomalyco/opencode-beta/releases/tags/v1.2.3-beta-fixture'
-                'https://api.github.com/repos/roc-lang/nightlies/releases/latest'
-            ])
+            assert equal $url 'https://api.github.com/repos/roc-lang/nightlies/releases/latest'
             if $release_mode == 'require-auth' {
                 let input = if '@-' in $args { ^cat } else { '' }
                 if '--header' not-in $args or '@-' not-in $args or ($input | default '' | str trim) != 'Authorization: Bearer fixture-read-only-token' {
@@ -152,34 +138,19 @@ def update-command [tool: string, args: list<string>] {
                     exit 22
                 }
             }
-            if $url == 'https://api.github.com/repos/roc-lang/nightlies/releases/latest' {
-                mut release = {
-                    tag_name: nightly-2026-10-01-abcdef0
-                    assets: [
-                        {name: roc_nightly-linux_x86_64-2026-10-01-abcdef0.tar.gz, digest: ('sha256:' + ('x64' | hash sha256))}
-                        {name: roc_nightly-linux_arm64-2026-10-01-abcdef0.tar.gz, digest: ('sha256:' + ('arm64' | hash sha256))}
-                    ]
-                }
-                if $release_mode == 'roc-invalid-tag' { $release = ($release | update tag_name 'alpha4-rolling') }
-                if $release_mode == 'roc-missing-arm64' { $release = ($release | update assets ($release.assets | first 1)) }
-                if $release_mode == 'roc-invalid-digest' { $release = ($release | update assets.1.digest 'sha256:bad') }
-                if $release_mode == 'roc-missing-digest' { $release = ($release | reject assets.1.digest) }
-                if $release_mode == 'roc-duplicate-asset' { $release = ($release | update assets ($release.assets | append $release.assets.0)) }
-                $release | to json | print
-                return
-            }
-            if $release_mode == 'invalid-json' { print 'not JSON'; return }
+            if $release_mode == 'roc-invalid-json' { print 'not JSON'; return }
             mut release = {
-                tag_name: v1.2.3-beta-fixture
+                tag_name: nightly-2026-10-01-abcdef0
                 assets: [
-                    {name: opencode-desktop-linux-x86_64.AppImage, digest: ('sha256:' + ('x64' | hash sha256))}
-                    {name: opencode-desktop-linux-arm64.AppImage, digest: ('sha256:' + ('arm64' | hash sha256))}
+                    {name: roc_nightly-linux_x86_64-2026-10-01-abcdef0.tar.gz, digest: ('sha256:' + ('x64' | hash sha256))}
+                    {name: roc_nightly-linux_arm64-2026-10-01-abcdef0.tar.gz, digest: ('sha256:' + ('arm64' | hash sha256))}
                 ]
             }
-            if $release_mode == 'mismatch' { $release = ($release | update tag_name v0.0.0) }
-            if $release_mode == 'missing-assets' { $release = ($release | update assets []) }
-            if $release_mode == 'invalid-digest' { $release = ($release | update assets.0.digest 'sha256:bad') }
-            if $release_mode == 'missing-digest' { $release = ($release | reject assets.0.digest) }
+            if $release_mode == 'roc-invalid-tag' { $release = ($release | update tag_name 'alpha4-rolling') }
+            if $release_mode == 'roc-missing-arm64' { $release = ($release | update assets ($release.assets | first 1)) }
+            if $release_mode == 'roc-invalid-digest' { $release = ($release | update assets.1.digest 'sha256:bad') }
+            if $release_mode == 'roc-missing-digest' { $release = ($release | reject assets.1.digest) }
+            if $release_mode == 'roc-duplicate-asset' { $release = ($release | update assets ($release.assets | append $release.assets.0)) }
             $release | to json | print
         }
         _ => { error make {msg: $"Unexpected update tool: ($tool)"} }
