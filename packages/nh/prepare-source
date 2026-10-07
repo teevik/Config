@@ -3,14 +3,13 @@
 # this checkout use the existing Git-aware snapshot; other references pass through.
 set -euo pipefail
 
-if (( $# != 1 )); then
-    printf 'Usage: nh-prepare-source FLAKE_REFERENCE\n' >&2
+if (( $# != 2 )); then
+    printf 'Usage: nh-prepare-source CONFIG_ROOT FLAKE_REFERENCE\n' >&2
     exit 64
 fi
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-config_root="$(realpath -- "$script_dir/../..")"
-reference=$1
+config_root="$(realpath -- "$1")"
+reference=$2
 
 if [[ -d "$reference" && "$(realpath -- "$reference")" == "$config_root" ]]; then
     snapshot="$(nix eval --impure --raw --file "$config_root/modules/nixos/minimal/source-snapshot.nix")"

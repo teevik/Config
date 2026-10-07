@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the patched nh CLI with recording commands; no builds or activation.
 
-Usage: python3 tests/nh-source-hook.py /path/to/patched/nh
+Usage: python3 tests/nh-source-hook.py /path/to/patched/nh [CONFIGURED_NH CONFIG_ROOT]
 """
 
 import json
@@ -35,7 +35,12 @@ with open(os.environ['NH_TEST_LOG'], 'a') as log:
 if sys.argv[1:3] == ['flake', 'update']:
     Path(os.environ['NH_TEST_CHECKOUT'], 'flake.lock').write_text('updated')
 elif sys.argv[1:2] != ['build']:
-    raise SystemExit('Unexpected Nix command')
+    if sys.argv[1:] == ['eval', '--impure', '--raw', '--file',
+                        str(Path(os.environ['NH_TEST_CONFIG_ROOT'],
+                                 'modules/nixos/minimal/source-snapshot.nix'))]:
+        print('/nix/store/prepared-source')
+    else:
+        raise SystemExit('Unexpected Nix command')
 """)
     hook = executable(root / "prepare source", common + """
 if os.environ.get('NH_TEST_EXPECT_UPDATE'):
@@ -94,5 +99,33 @@ if os.environ.get('NH_TEST_FAIL'):
     events = run([str(checkout)])
     assert [event[0] for event in events] == ["nix"], events
     assert str(checkout) + attribute in events[0][1], events
+
+    if len(sys.argv) > 2:
+        base[0] = str(Path(sys.argv[2]).resolve())
+        config_root = Path(sys.argv[3])
+        env['NH_TEST_CONFIG_ROOT'] = str(checkout)
+        stale_env = {"NH_OS_FLAKE_SOURCE_COMMAND": str(root / "deleted-hook")}
+        config_root.symlink_to(checkout, target_is_directory=True)
+        try:
+            # The installed package owns its helper, even in a stale login session.
+            events = run([str(config_root)], stale_env)
+            assert [event[0] for event in events] == ["nix", "nix"], events
+            assert events[0][1][0] == "eval", events
+            assert "path:/nix/store/prepared-source" + attribute in events[-1][1], events
+
+            # Other checkouts pass through without snapshot evaluation.
+            other = root / "other checkout"
+            other.mkdir()
+            (other / "flake.nix").write_text("{ outputs = _: {}; }\n")
+            events = run([str(other)], stale_env)
+            assert [event[0] for event in events] == ["nix"], events
+            assert str(other) + attribute in events[0][1], events
+
+            # An explicit CLI hook still overrides the packaged default.
+            events = run([str(checkout), "--flake-source-command", hook], stale_env)
+            assert [event[0] for event in events] == ["prepare source", "nix"], events
+        finally:
+            config_root.unlink()
+        print("PASS: packaged helper (stale environment, other checkout, CLI override)")
 
 print("PASS: 7 nh CLI cases (updates, arguments, defaults, failure, legacy, no hook)")
