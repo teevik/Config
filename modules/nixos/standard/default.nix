@@ -20,7 +20,7 @@
     ./shells.nix
     ./tailscale.nix
     ./rustdesk.nix
-    ../../shared/agent-skills.nix
+    ./agent-skills.nix
   ];
 
   agentSkills = {

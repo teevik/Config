@@ -61,7 +61,7 @@ in
 {
   inherit packages;
   nixosModules = pathsIn (src + "/modules/nixos");
-  modules = lib.genAttrs [ "nixos" "shared" ] (name: pathsIn (src + "/modules/${name}"));
+  modules.nixos = pathsIn (src + "/modules/nixos");
   nixosConfigurations = lib.genAttrs hostNames (
     hostName:
     inputs.nixpkgs.lib.nixosSystem {
