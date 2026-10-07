@@ -1,0 +1,27 @@
+name: Nix flake check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  # Share the nightly queue so two cold runs don't build Zotero in parallel.
+  group: nix-cache-nightly-flake-update
+  # Let a completed test build finish uploading before another run.
+  cancel-in-progress: false
+
+jobs:
+  check:
+    uses: ./.github/workflows/nix-build.yml
+    with:
+      build-hosts: false
+      check-flake: true
+      publish-cache: true
+    secrets:
+      NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+      NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}

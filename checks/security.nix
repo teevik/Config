@@ -38,6 +38,7 @@ pkgs.runCommand "security-check"
     python3 tests/cache-update.py
     python3 tests/provision.py
     shellcheck .github/cache/host.sh
+    shellcheck .github/cache/check.sh
     shellcheck scripts/provision.sh
     actionlint -oneline .github/workflows/*.yml
     touch "$out"

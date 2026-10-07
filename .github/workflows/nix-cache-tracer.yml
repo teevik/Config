@@ -27,6 +27,7 @@ jobs:
     with:
       update-packages: true
       publish-cache: true
+      check-flake: true
     secrets:
       NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
       NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
@@ -73,7 +74,7 @@ jobs:
 
           {
             echo 'body<<EOF'
-            echo 'Automated flake input and package update. Desktop and zenbook were built and scanned using these exact files. Complete system closures were retained and verified in the private homelab cache.'
+            echo 'Automated flake input and package update. Desktop and zenbook were built and scanned, and nix flake check passed using these exact files. System closures and successful check outputs were retained and verified in the private homelab cache.'
             echo
             echo 'Security scans are informational; see the per-host job summaries and encrypted security artifacts.'
             echo 'Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'

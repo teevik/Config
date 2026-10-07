@@ -49,3 +49,12 @@ jobs:
         run: nix build --file checks/nu-plugin-skim.nix --no-link --print-build-logs
       - name: Check security reporting and workflow definitions
         run: nix build --file checks/security.nix --no-link --print-build-logs
+      - name: Check flake cache substitution and retention
+        # These checks exercise Determinate Nix's flake-check out links.
+        run: python3 tests/cache-checks.py
+      - name: Evaluate flake outputs without building checks
+        run: |
+          # Prepare derivations and IFD sources before --no-build enables
+          # read-only evaluation. This does not build the check results.
+          nix eval --json .#checks.x86_64-linux --apply 'builtins.mapAttrs (_: p: p.drvPath)' > /dev/null
+          nix flake check --no-build

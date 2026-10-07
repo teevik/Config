@@ -14,6 +14,14 @@ on:
       publish-cache:
         default: false
         type: boolean
+      build-hosts:
+        description: Build and scan the selected hosts
+        default: true
+        type: boolean
+      check-flake:
+        description: Run all checks for the runner's system
+        default: false
+        type: boolean
     secrets:
       NIX_CACHE_SSH_KEY:
         required: false
@@ -26,8 +34,8 @@ permissions:
 
 jobs:
   build:
-    name: ${{ inputs.host == '' && 'Build and scan desktop then zenbook' || format('Build and scan {0}', inputs.host) }}
-    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    name: ${{ !inputs.build-hosts && 'Check flake' || (inputs.host == '' && 'Build and scan desktop then zenbook' || format('Build and scan {0}', inputs.host)) }}
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
@@ -143,6 +151,7 @@ jobs:
 
       - name: Build pinned security tools
         id: tools
+        if: inputs.build-hosts
         env:
           HOST: ${{ inputs.host }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
@@ -159,7 +168,7 @@ jobs:
 
       - name: Build, retain and scan desktop
         id: desktop
-        if: ${{ !cancelled() && steps.tools.outcome == 'success' && (inputs.host == '' || inputs.host == 'desktop') }}
+        if: ${{ !cancelled() && inputs.build-hosts && steps.tools.outcome == 'success' && (inputs.host == '' || inputs.host == 'desktop') }}
         env:
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
@@ -181,7 +190,7 @@ jobs:
 
       - name: Build, retain and scan zenbook
         id: zenbook
-        if: ${{ !cancelled() && steps.tools.outcome == 'success' && (inputs.host == '' || inputs.host == 'zenbook') }}
+        if: ${{ !cancelled() && inputs.build-hosts && steps.tools.outcome == 'success' && (inputs.host == '' || inputs.host == 'zenbook') }}
         env:
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
@@ -200,3 +209,10 @@ jobs:
             ${{ runner.temp }}/security-zenbook/summary.md
           if-no-files-found: error
           retention-days: 30
+
+      - name: Check flake and retain successful check outputs
+        if: ${{ !cancelled() && inputs.check-flake }}
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: bash .github/cache/check.sh
