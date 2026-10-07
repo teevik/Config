@@ -42,62 +42,6 @@ stow-adopt:
     stow -v -t ~ --adopt dotfiles
     @echo "Files adopted. Run 'git diff dotfiles/' to review changes."
 
-# Create required directories
-setup:
-    mkdir -p ~/.npm-packages/lib
-    mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
-
-# Refresh all flake inputs and package sources, then validate the packages.
-# Pass --no-build to refresh sources without validation builds.
 [positional-arguments]
 update *args:
-    @just nu packages/update.nu "$@"
-
-# Run a repository script with pinned Nu/tools and no personal shell config.
-[positional-arguments]
-nu +args:
-    @nix run --impure --expr 'import ./packages/nu-scripts {}' . -- "$@"
-
-# Pass input names for a targeted update, or omit them to update all inputs.
-[positional-arguments]
-update-inputs *args:
-    @just nu packages/update-inputs.nu "$@"
-
-# Compare parallel updates with native Nix using offline Git fixtures.
-update-inputs-check:
-    python3 tests/update-inputs.py
-
-# Fetch the locked input graph ahead of offline work; does not update pins.
-prefetch-inputs:
-    nix flake prefetch-inputs
-
-# Read-only Nix linting and Nu syntax checking; uses the pinned nixpkgs input.
-lint:
-    nix run --impure --expr 'import ./packages/nix-lint {}'
-
-# Run the same source lint plus its regression tests in a sandbox (CI entry).
-lint-check:
-    nix build --file checks/nix-lint.nix --no-link --print-build-logs
-
-# Offline regression tests for Nu helpers, evaluation checks, and update scripts.
-script-check:
-    nix build --file checks/nu-scripts.nix --no-link --print-build-logs
-
-# Exercise the patched nh CLI without building or activating a NixOS system.
-nh-check:
-    nix build --file checks/nh.nix --no-link --print-build-logs
-
-# Scan the running generation; detailed reports use the existing age recipient.
-security-scan output="/tmp/nix-security-report":
-    nix run --impure --expr 'import ./packages/security {}' . -- /run/current-system --scope deployed --output {{ quote(output) }}
-
-# Rescan a previously decrypted CycloneDX inventory with current advisories.
-security-rescan sbom output="/tmp/nix-security-rescan":
-    nix run --impure --expr 'import ./packages/security {}' . -- {{ quote(sbom) }} --sbom --scope inventory --output {{ quote(output) }}
-
-# Verify security report privacy, failure handling, and Actions definitions.
-security-check:
-    nix build --file checks/security.nix --no-link --print-build-logs
-
-build-iso:
-    nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"
+    @nix run --impure --expr 'import ./packages/nu-scripts {}' . -- packages/update.nu "$@"
