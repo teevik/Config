@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.0.46-nightly.20261005.2667";
+  version = "0.0.46-nightly.20261007.2761";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-M8Ya6b+/YbDrpQjDboMOj/LTLy4UUQg2+rRSNG9GYcQ=";
+    hash = "sha256-JQo4Aokab1PvmuAdD6m6XTo1zZdzaMNS6p/ttN7JDwc=";
   };
 
   # Opt-in LaTeX math rendering (Settings -> Appearance -> Render math), from
@@ -93,7 +93,7 @@ let
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     inherit patches;
     fetcherVersion = 4;
-    hash = "sha256-WeK2Od/Q/xnbwytym1TjmNnYOHTfp+mYBKeNeu8KV7Y=";
+    hash = "sha256-YKAToOaOv/2YzgK7gEn4Gnp4H7z19siVcdDIbTZ6PuQ=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
