@@ -61,11 +61,6 @@
       url = "file+https://github.com/DeterminateSystems/nix-src/compare/7ed15851f9ff328b9f8c42099a4b7f7ed174974b...3f13349a527b6aa3096e7a36b21f61886c552a95.diff";
       flake = false;
     };
-    cargo-nix-plugin = {
-      # Match the library currently used by master-thesis (resolver API 4).
-      url = "github:anthropics/cargo-nix-plugin/191bf8e7bd086e96759362817e4fa6c06fa6359b";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     hyprland-contrib = {
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
