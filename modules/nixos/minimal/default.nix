@@ -104,7 +104,7 @@ in
       };
 
       # Keep a reproducible registry snapshot, but don't make the system
-      # closure depend on unrelated stowed dotfiles or research documents.
+      # closure depend on unrelated files such as research documents.
       registry.teevik.to = {
         type = "path";
         path = import ./flake-source.nix { inherit lib; };

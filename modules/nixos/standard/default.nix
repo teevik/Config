@@ -21,6 +21,7 @@
     ./tailscale.nix
     ./rustdesk.nix
     ./agent-skills.nix
+    ./dotfiles.nix
   ];
 
   agentSkills = {

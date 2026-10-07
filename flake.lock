@@ -378,6 +378,26 @@
         "url": "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941"
       }
     },
+    "hjem": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791289048,
+        "narHash": "sha256-JdmZVrzGDRRcOAwsYujnE7f/d1YZ9Xtk4z/1MWmQXxM=",
+        "owner": "feel-co",
+        "repo": "hjem",
+        "rev": "2b155694ce412300f240de06735c93779f9e19a4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "feel-co",
+        "repo": "hjem",
+        "type": "github"
+      }
+    },
     "hyprland-contrib": {
       "inputs": {
         "nixpkgs": [
@@ -721,6 +741,7 @@
         "determinate-nix-pr-572": "determinate-nix-pr-572",
         "disko": "disko",
         "gaze": "gaze",
+        "hjem": "hjem",
         "hyprland-contrib": "hyprland-contrib",
         "hyprland-scratchpad": "hyprland-scratchpad",
         "impeccable-rust": "impeccable-rust",

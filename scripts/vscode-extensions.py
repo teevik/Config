@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare or install VS Code or Cursor extensions from their stowed list."""
+"""Compare or install VS Code extensions from the dotfiles list."""
 
 import argparse
 from pathlib import Path
@@ -10,10 +10,8 @@ import subprocess
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("status", "install"), nargs="?", default="status")
-    parser.add_argument("--editor", choices=("code", "cursor"), default="code")
     args = parser.parse_args()
-    config = "Code" if args.editor == "code" else "Cursor"
-    manifest = Path(__file__).resolve().parents[1] / f"dotfiles/.config/{config}/extensions.txt"
+    manifest = Path(__file__).resolve().parents[1] / "dotfiles/.config/Code/extensions.txt"
     wanted = set()
     for number, line in enumerate(manifest.read_text().splitlines(), 1):
         extension = line.partition("#")[0].strip().lower()
@@ -28,7 +26,7 @@ def main():
         parser.error(f"{manifest}: extension list is empty")
 
     result = subprocess.run(
-        [args.editor, "--list-extensions"], check=True, text=True, stdout=subprocess.PIPE
+        ["code", "--list-extensions"], check=True, text=True, stdout=subprocess.PIPE
     )
     installed = set(result.stdout.lower().splitlines())
     missing = sorted(wanted - installed)
@@ -39,7 +37,7 @@ def main():
         print("\n".join(f"  {extension}" for extension in extensions) or "  (none)", flush=True)
 
     if args.action == "install" and missing:
-        command = [args.editor]
+        command = ["code"]
         for extension in missing:
             command.extend(["--install-extension", extension])
         subprocess.run(command, check=True)

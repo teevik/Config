@@ -36,6 +36,10 @@
       url = "github:GunduLabs/gaze";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hjem = {
+      url = "github:feel-co/hjem";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Packages
     noctalia-official-plugins = {

@@ -108,7 +108,6 @@ in
       zoxide
 
       # Editors
-      code-cursor
       helix
       neovim
       zed-editor

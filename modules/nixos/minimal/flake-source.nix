@@ -11,10 +11,11 @@ lib.fileset.toSource {
     (root + "/flake.lock")
     (root + "/formatter.nix")
     (root + "/checks")
+    # Hjem lists this tree at evaluation time to build the symlink set.
+    (root + "/dotfiles")
     (root + "/hosts")
     (root + "/modules")
     (root + "/packages")
-    (root + "/templates")
     (root + "/tests")
   ];
 }
