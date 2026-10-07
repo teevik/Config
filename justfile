@@ -25,9 +25,6 @@ install TARGET-IP HOST:
     # Stow dotfiles
     ssh teevik@{{ TARGET-IP }} "cd /mnt/home/teevik/Documents/Config && stow -t /mnt/home/teevik dotfiles"
 
-    # Reboot
-    # ssh root@{{ TARGET-IP }} "reboot"
-
 # Stow dotfiles into home directory
 stow:
     stow -v -t ~ dotfiles
@@ -51,13 +48,10 @@ setup:
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
 # Refresh all flake inputs and package sources, then validate the packages.
+# Pass --no-build to refresh sources without validation builds.
 [positional-arguments]
 update *args:
     @just nu packages/update.nu "$@"
-
-# Quick source-only update; use `just update` to also validate the builds.
-update-sources:
-    @just nu packages/update.nu --no-build
 
 # Run a repository script with pinned Nu/tools and no personal shell config.
 [positional-arguments]
@@ -76,18 +70,6 @@ update-inputs-check:
 # Fetch the locked input graph ahead of offline work; does not update pins.
 prefetch-inputs:
     nix flake prefetch-inputs
-
-# Fail on evaluation warnings, with a stack trace for builtins.warn.
-[positional-arguments]
-eval-warnings *hosts="zenbook":
-    @just nu tests/nix-warnings.nu "$@"
-
-# Reveal evaluation-time builds and unusually broad source copies.
-eval-diagnostics host="zenbook":
-    nix eval --option eval-cache false --option warn-dirty false \
-      --option trace-import-from-derivation true \
-      --option warn-large-path-threshold 100M \
-      --raw '.#nixosConfigurations.{{ host }}.config.system.build.toplevel.drvPath'
 
 # Read-only Nix linting and Nu syntax checking; uses the pinned nixpkgs input.
 lint:
@@ -116,24 +98,6 @@ security-rescan sbom output="/tmp/nix-security-rescan":
 # Verify security report privacy, failure handling, and Actions definitions.
 security-check:
     nix build --file checks/security.nix --no-link --print-build-logs
-
-# Compare evaluator threads against the same source snapshot used by nh.
-benchmark-eval-cores host=`hostname` runs="5":
-    #!/usr/bin/env bash
-    set -euo pipefail
-    flake_source="$(nix eval --impure --raw --file modules/nixos/minimal/source-snapshot.nix)"
-    hyperfine --warmup 1 --runs {{ runs }} --parameter-list cores 1,2,4,8,16 \
-      "nix eval --option eval-cache false --option eval-cores {cores} --raw 'path:$flake_source#nixosConfigurations.{{ host }}.config.system.build.toplevel.drvPath'"
-
-# Snapshot tracked Nix sources, preserving cache hits across unrelated dotfile edits.
-# nh prepares this automatically; this recipe is useful for manual cache lookups.
-flake-source:
-    @nix eval --impure --raw --file modules/nixos/minimal/source-snapshot.nix
-
-# Compare a derivation lookup with and without Nix's evaluation cache; no builds.
-benchmark-eval-cache host="zenbook" runs="5":
-    hyperfine --warmup 1 --runs {{ runs }} --parameter-list cache false,true \
-      'nix path-info --derivation --option eval-cache {cache} .#nixosConfigurations.{{ host }}.config.system.build.toplevel'
 
 build-iso:
     nix run "nixpkgs#nixos-generators" -- --format iso --flake ".#minimal"

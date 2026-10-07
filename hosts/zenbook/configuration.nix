@@ -35,8 +35,7 @@
   nix.settings = {
     # One evaluator thread per Lunar Lake P-core. Four beat eight in the
     # uncached toplevel benchmark; the LP E-cores sit on a separate cache
-    # island and stall the shared heap. Re-check with nix-src #572 using
-    # `just benchmark-eval-cores zenbook`.
+    # island and stall the shared heap. Re-check with nix-src #572.
     eval-cores = 4;
     max-jobs = 2;
     cores = 4;
