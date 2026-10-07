@@ -1,0 +1,1110 @@
+T3 Code PR #14574: opt-in LaTeX math rendering in chat
+https://github.com/pingdotgg/t3code/pull/14574 at b7de94066ef221c528e1ec0e5ddfb307340fb05d
+
+diff --git a/apps/web/package.json b/apps/web/package.json
+index ffccf206f910..69b77b210b78 100644
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -48,8 +48,10 @@
+     "jose": "catalog:",
+     "jsonc-parser": "3.3.1",
+     "jszip": "3.10.1",
++    "katex": "^0.16.47",
+     "lucide": "^0.564.0",
+     "lucide-react": "^0.564.0",
++    "mdast-util-math": "^3.0.0",
+     "mermaid": "^11.17.2",
+     "morphicons": "^1.7.1",
+     "react": "19.2.6",
+@@ -80,6 +82,8 @@
+     "babel-plugin-react-compiler": "1.0.0",
+     "compression": "^1.8.1",
+     "jsdom": "^30.0.1",
++    "mdast-util-from-markdown": "^2.0.3",
++    "micromark-util-types": "^2.0.2",
+     "react-test-renderer": "19.2.6",
+     "tailwindcss": "^4.0.0",
+     "unified": "^11.0.5",
+diff --git a/apps/web/src/components/ChatMarkdown.test.tsx b/apps/web/src/components/ChatMarkdown.test.tsx
+index 5585dc3ddf40..8abec6fa7104 100644
+--- a/apps/web/src/components/ChatMarkdown.test.tsx
++++ b/apps/web/src/components/ChatMarkdown.test.tsx
+@@ -11,13 +11,16 @@ import { setMarkdownTaskChecked } from "./files/filePreviewMode";
+ 
+ vi.mock("@effect/atom-react", () => ({ useAtomValue: () => null }));
+ vi.mock("../hooks/useTheme", () => ({ useTheme: () => ({ resolvedTheme: "dark" }) }));
++const settingsOverrides = vi.hoisted(() => ({ mathRenderingEnabled: false }));
+ vi.mock("../hooks/useSettings", async (importOriginal) => {
+   const actual = await importOriginal<typeof import("../hooks/useSettings")>();
+   const settings = actual.getClientSettings();
+   return {
+     ...actual,
+-    useClientSettings: (select?: (value: typeof settings) => unknown) =>
+-      select ? select(settings) : settings,
++    useClientSettings: (select?: (value: typeof settings) => unknown) => {
++      const value = { ...settings, ...settingsOverrides };
++      return select ? select(value) : value;
++    },
+   };
+ });
+ vi.mock("./ui/tooltip", async () => {
+@@ -447,6 +450,74 @@ describe("ChatMarkdown streaming", () => {
+   });
+ });
+ 
++describe("ChatMarkdown math", () => {
++  it("typesets only when enabled, keeping prices and task offsets intact", async () => {
++    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
++    const text = "Area $\\pi r^2$ costs $5 and $10.\n\n\\[\nE = mc^2\n\\]\n\n- [ ] check \\(x\\)";
++    const renderers: ReactTestRenderer[] = [];
++    const render = async (parseRawHtml: boolean) => {
++      await act(async () => {
++        renderers.push(
++          create(<ChatMarkdown cwd="/tmp/project" text={text} parseRawHtml={parseRawHtml} />),
++        );
++      });
++      const renderer = renderers.at(-1)!;
++      return {
++        formulas: renderer.root
++          .findAll((node) => node.type === "span" && node.props["data-markdown-math"] === "")
++          .map((formula) => formula.props["data-markdown-copy"]),
++        markerOffset: Number(renderer.root.findByType("li").props["data-task-marker-offset"]),
++      };
++    };
++
++    try {
++      expect((await render(true)).formulas).toEqual([]);
++      // Raw HTML carrying the math classes stays code while the setting is off.
++      await act(async () => {
++        renderers.push(
++          create(
++            <ChatMarkdown
++              cwd="/tmp/project"
++              text={'<code class="language-math math-inline">x</code>'}
++            />,
++          ),
++        );
++      });
++      expect(
++        renderers.at(-1)!.root.findAll((node) => node.props["data-markdown-math"] === ""),
++      ).toEqual([]);
++      settingsOverrides.mathRenderingEnabled = true;
++      // Both the sanitized raw-HTML pipeline and the literal one keep the math classes.
++      for (const parseRawHtml of [true, false]) {
++        const { formulas, markerOffset } = await render(parseRawHtml);
++        expect(formulas).toEqual(["$\\pi r^2$", "$$\nE = mc^2\n$$\n\n", "$x$"]);
++        expect(setMarkdownTaskChecked(text, markerOffset, true)).toBe(
++          text.replace("- [ ]", "- [x]"),
++        );
++      }
++      // List indentation recovery parses blocks again; they still typeset.
++      const recovered = await act(async () =>
++        create(
++          <ChatMarkdown
++            cwd="/tmp/project"
++            text={"-       intro\n\n        $$\n        x^2\n        $$"}
++          />,
++        ),
++      );
++      renderers.push(recovered);
++      expect(
++        recovered.root
++          .findAll((node) => node.type === "span" && node.props["data-markdown-math"] === "")
++          .map((formula) => formula.props["data-markdown-copy"]),
++      ).toEqual(["$$\nx^2\n$$\n\n"]);
++    } finally {
++      settingsOverrides.mathRenderingEnabled = false;
++      await act(async () => renderers.forEach((renderer) => renderer.unmount()));
++      vi.unstubAllGlobals();
++    }
++  });
++});
++
+ describe("canUseMarkdownFileShellActions", () => {
+   const environmentId = EnvironmentId.make("environment-1");
+ 
+diff --git a/apps/web/src/components/ChatMarkdown.tsx b/apps/web/src/components/ChatMarkdown.tsx
+index 5358e253af4f..5aee631410b6 100644
+--- a/apps/web/src/components/ChatMarkdown.tsx
++++ b/apps/web/src/components/ChatMarkdown.tsx
+@@ -91,6 +91,7 @@ import remarkGfm from "remark-gfm";
+ import type { Processor } from "unified";
+ import { isWindowsAbsolutePath } from "@t3tools/shared/path";
+ import { remarkGithubAlerts } from "../markdown-github-alerts";
++import { mathKind, mayContainMath, remarkChatMath } from "../markdown-math";
+ import {
+   artifactTemplateFromHastProperties,
+   CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES,
+@@ -98,6 +99,7 @@ import {
+   renderCodexFileCitationsAsMarkdown,
+ } from "@t3tools/client-runtime/codex-markdown-directives";
+ import { renderSkillInlineMarkdownChildren } from "./chat/SkillInlineText";
++import { MarkdownMath } from "./chat/MarkdownMath";
+ import {
+   resolveMarkdownMediaPreview,
+   type ExpandedImagePreview,
+@@ -473,7 +475,12 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
+   attributes: {
+     ...defaultSchema.attributes,
+     "*": (defaultSchema.attributes?.["*"] ?? []).filter((attribute) => attribute !== "title"),
+-    code: [...(defaultSchema.attributes?.code ?? []), "dataCodeMeta", "dataInlineCode"],
++    // Fence languages plus the two math classes `remarkChatMath` emits.
++    code: [
++      ["className", /^language-./, "math-inline", "math-display"],
++      "dataCodeMeta",
++      "dataInlineCode",
++    ],
+     blockquote: [...(defaultSchema.attributes?.blockquote ?? []), "dataAlert"],
+     div: [...(defaultSchema.attributes?.div ?? []), ...CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES],
+     a: [...(defaultSchema.attributes?.a ?? []), "dataPullRequestAutolink"],
+@@ -512,6 +519,22 @@ const CHAT_MARKDOWN_REMARK_PLUGINS_WITH_BREAKS = [
+   remarkNormalizeLinksAndTagInlineCode,
+ ] satisfies NonNullable<ReactMarkdownOptions["remarkPlugins"]>;
+ 
++const CHAT_MARKDOWN_MATH_REMARK_PLUGINS = [remarkChatMath, ...CHAT_MARKDOWN_REMARK_PLUGINS];
++
++const CHAT_MARKDOWN_MATH_REMARK_PLUGINS_WITH_BREAKS = [
++  remarkChatMath,
++  ...CHAT_MARKDOWN_REMARK_PLUGINS_WITH_BREAKS,
++];
++
++function chatMarkdownRemarkPlugins(lineBreaks: boolean, math: boolean) {
++  if (math) {
++    return lineBreaks
++      ? CHAT_MARKDOWN_MATH_REMARK_PLUGINS_WITH_BREAKS
++      : CHAT_MARKDOWN_MATH_REMARK_PLUGINS;
++  }
++  return lineBreaks ? CHAT_MARKDOWN_REMARK_PLUGINS_WITH_BREAKS : CHAT_MARKDOWN_REMARK_PLUGINS;
++}
++
+ const CHAT_MARKDOWN_REHYPE_PLUGINS = [
+   rehypeRaw,
+   rehypePreserveImageSourceMeta,
+@@ -3463,6 +3486,19 @@ const CHAT_MARKDOWN_COMPONENTS = {
+   },
+ } satisfies Components;
+ 
++const MarkdownCodeOrMath: NonNullable<Components["code"]> = (props) => {
++  const math = mathKind(props.className);
++  if (!math) return CHAT_MARKDOWN_COMPONENTS.code(props);
++  return <MarkdownMath tex={nodeToPlainText(props.children)} display={math === "display"} />;
++};
++
++// Only messages parsed with math enabled can typeset, so raw HTML carrying the
++// math classes stays an ordinary code element while the setting is off.
++const CHAT_MARKDOWN_MATH_COMPONENTS = {
++  ...CHAT_MARKDOWN_COMPONENTS,
++  code: MarkdownCodeOrMath,
++} satisfies Components;
++
+ function ChatMarkdown({
+   text,
+   className,
+@@ -3483,13 +3519,15 @@ function ChatMarkdown({
+     props.isStreaming === true &&
+     extraRemarkPlugins.length === 0 &&
+     /(?:^|\n) {0,3}(?:`{3}|~{3})/.test(text);
++  const math =
++    useClientSettings((settings) => settings.mathRenderingEnabled) && mayContainMath(text);
+   const remarkPlugins = useMemo(
+     () => [
+-      ...(lineBreaks ? CHAT_MARKDOWN_REMARK_PLUGINS_WITH_BREAKS : CHAT_MARKDOWN_REMARK_PLUGINS),
++      ...chatMarkdownRemarkPlugins(lineBreaks, math),
+       ...extraRemarkPlugins,
+       ...(incrementalParsing ? [createIncrementalMarkdownPlugin()] : []),
+     ],
+-    [extraRemarkPlugins, incrementalParsing, lineBreaks],
++    [extraRemarkPlugins, incrementalParsing, lineBreaks, math],
+   );
+ 
+   // react-markdown converts unparsed HTML nodes to text when skipHtml is false.
+@@ -3511,7 +3549,7 @@ function ChatMarkdown({
+           remarkPlugins={remarkPlugins}
+           rehypePlugins={parseRawHtml ? CHAT_MARKDOWN_REHYPE_PLUGINS : undefined}
+           skipHtml={false}
+-          components={CHAT_MARKDOWN_COMPONENTS}
++          components={math ? CHAT_MARKDOWN_MATH_COMPONENTS : CHAT_MARKDOWN_COMPONENTS}
+           urlTransform={markdownUrlTransform}
+         >
+           {text}
+diff --git a/apps/web/src/components/chat/MarkdownMath.tsx b/apps/web/src/components/chat/MarkdownMath.tsx
+new file mode 100644
+index 000000000000..c3436947d41e
+--- /dev/null
++++ b/apps/web/src/components/chat/MarkdownMath.tsx
+@@ -0,0 +1,29 @@
++import { lazy, memo, Suspense } from "react";
++
++import { RenderErrorBoundary } from "../RenderErrorBoundary";
++
++const MathTypeset = lazy(() => import("./MathTypeset"));
++
++/**
++ * One formula from `remarkChatMath`. Shows its TeX until KaTeX loads, and
++ * keeps showing it when KaTeX cannot parse it, such as mid-stream. Copying
++ * any part of a formula copies its whole TeX source.
++ */
++export const MarkdownMath = memo(function MarkdownMath(props: { tex: string; display: boolean }) {
++  const tex = props.tex.trim();
++  const source = props.display ? `$$\n${tex}\n$$` : `$${tex}$`;
++  const fallback = <span className="chat-markdown-math-source">{source}</span>;
++  return (
++    <span
++      className={props.display ? "chat-markdown-math-display" : undefined}
++      data-markdown-math=""
++      data-markdown-copy={props.display ? `${source}\n\n` : source}
++    >
++      <RenderErrorBoundary resetKeys={[tex]} fallback={fallback}>
++        <Suspense fallback={fallback}>
++          <MathTypeset tex={tex} display={props.display} fallback={fallback} />
++        </Suspense>
++      </RenderErrorBoundary>
++    </span>
++  );
++});
+diff --git a/apps/web/src/components/chat/MathTypeset.tsx b/apps/web/src/components/chat/MathTypeset.tsx
+new file mode 100644
+index 000000000000..9934c1e33932
+--- /dev/null
++++ b/apps/web/src/components/chat/MathTypeset.tsx
+@@ -0,0 +1,40 @@
++import katex from "katex";
++import "katex/dist/katex.min.css";
++import type { ReactNode } from "react";
++
++import { LRUCache } from "../../lib/lruCache";
++
++// Virtualized threads remount messages while scrolling; cached markup keeps
++// that from typesetting the same formulas again. "" records a parse error.
++const typesetCache = new LRUCache<string>(1000, 4 * 1024 * 1024);
++
++function typeset(tex: string, display: boolean): string {
++  const key = `${display ? "display" : "inline"}:${tex}`;
++  const cached = typesetCache.get(key);
++  if (cached !== null) return cached;
++  let html = "";
++  try {
++    html = katex.renderToString(tex, {
++      displayMode: display,
++      output: "htmlAndMathml",
++      throwOnError: true,
++      // No \href, \url, \htmlClass, or other commands that emit active HTML.
++      trust: false,
++      strict: "ignore",
++      maxSize: 20,
++      maxExpand: 1000,
++    });
++  } catch {
++    // Unfinished or unsupported TeX stays readable as its source.
++  }
++  typesetCache.set(key, html, (key.length + html.length) * 2);
++  return html;
++}
++
++/** KaTeX lives in this lazily loaded chunk, so it is only fetched once a formula renders. */
++export default function MathTypeset(props: { tex: string; display: boolean; fallback: ReactNode }) {
++  const html = typeset(props.tex, props.display);
++  if (!html) return props.fallback;
++  // KaTeX escapes the TeX it renders, and `trust: false` keeps it from emitting links or attributes.
++  return <span dangerouslySetInnerHTML={{ __html: html }} />;
++}
+diff --git a/apps/web/src/components/settings/SettingsPanels.tsx b/apps/web/src/components/settings/SettingsPanels.tsx
+index 1104f875f6c5..d59c38d247a9 100644
+--- a/apps/web/src/components/settings/SettingsPanels.tsx
++++ b/apps/web/src/components/settings/SettingsPanels.tsx
+@@ -543,6 +543,9 @@ export function useSettingsRestore(onRestored?: () => void) {
+         ? ["Diff colors"]
+         : []),
+       ...(settings.chatWidth !== DEFAULT_UNIFIED_SETTINGS.chatWidth ? ["Chat width"] : []),
++      ...(settings.mathRenderingEnabled !== DEFAULT_UNIFIED_SETTINGS.mathRenderingEnabled
++        ? ["Render math"]
++        : []),
+       ...(settings.panelAnimationDurationMs !== DEFAULT_UNIFIED_SETTINGS.panelAnimationDurationMs
+         ? ["Panel animations"]
+         : []),
+@@ -670,6 +673,7 @@ export function useSettingsRestore(onRestored?: () => void) {
+       settings.appearanceContrast,
+       settings.diffColorScheme,
+       settings.chatWidth,
++      settings.mathRenderingEnabled,
+       settings.enableAgentBrowserAccess,
+       settings.confirmQuit,
+       settings.confirmThreadArchive,
+@@ -787,6 +791,7 @@ export function useSettingsRestore(onRestored?: () => void) {
+       appearanceContrast: DEFAULT_UNIFIED_SETTINGS.appearanceContrast,
+       diffColorScheme: DEFAULT_UNIFIED_SETTINGS.diffColorScheme,
+       chatWidth: DEFAULT_UNIFIED_SETTINGS.chatWidth,
++      mathRenderingEnabled: DEFAULT_UNIFIED_SETTINGS.mathRenderingEnabled,
+       timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
+       notificationMode: DEFAULT_UNIFIED_SETTINGS.notificationMode,
+       inAppNotificationsEnabled: DEFAULT_UNIFIED_SETTINGS.inAppNotificationsEnabled,
+@@ -1447,6 +1452,31 @@ export function AppearanceSettingsPanel() {
+             </div>
+           }
+         />
++        <SettingsRow
++          {...searchableSetting("math-rendering")}
++          description="Typeset LaTeX math, such as $x^2$ or \[x^2\], in messages and Markdown previews. Web and desktop only."
++          resetAction={
++            settings.mathRenderingEnabled !== DEFAULT_UNIFIED_SETTINGS.mathRenderingEnabled ? (
++              <SettingResetButton
++                label="math rendering"
++                onClick={() =>
++                  updateSettings({
++                    mathRenderingEnabled: DEFAULT_UNIFIED_SETTINGS.mathRenderingEnabled,
++                  })
++                }
++              />
++            ) : null
++          }
++          control={
++            <Switch
++              checked={settings.mathRenderingEnabled}
++              onCheckedChange={(checked) =>
++                updateSettings({ mathRenderingEnabled: Boolean(checked) })
++              }
++              aria-label="Render math"
++            />
++          }
++        />
+       </SettingsSection>
+ 
+       <SettingsSection id="motion" title="Motion">
+diff --git a/apps/web/src/components/settings/settingsSearch.ts b/apps/web/src/components/settings/settingsSearch.ts
+index ae55a327d163..af755250ffb5 100644
+--- a/apps/web/src/components/settings/settingsSearch.ts
++++ b/apps/web/src/components/settings/settingsSearch.ts
+@@ -219,6 +219,12 @@ export const SETTINGS_SEARCH_ITEMS = [
+     to: "/settings/appearance",
+     searchTerms: ["wide full width column layout messages composer monitor"],
+   },
++  {
++    id: "math-rendering",
++    title: "Render math",
++    to: "/settings/appearance",
++    searchTerms: ["latex tex katex equations formulas markdown"],
++  },
+   {
+     id: "panel-animations",
+     title: "Panel animations",
+diff --git a/apps/web/src/index.css b/apps/web/src/index.css
+index 65e2cef9c5d1..378557b4d5bc 100644
+--- a/apps/web/src/index.css
++++ b/apps/web/src/index.css
+@@ -1750,6 +1750,22 @@ code {
+   margin: 0.65rem 0;
+ }
+ 
++/* Wide display equations scroll instead of clipping or widening the message. */
++.chat-markdown .chat-markdown-math-display {
++  display: block;
++  margin: 0.65rem 0;
++  overflow-x: auto;
++  overflow-y: hidden;
++}
++
++.chat-markdown .chat-markdown-math-display .katex-display {
++  margin: 0;
++}
++
++.chat-markdown .chat-markdown-math-source {
++  white-space: pre-wrap;
++}
++
+ .chat-markdown h1,
+ .chat-markdown h2,
+ .chat-markdown h3,
+diff --git a/apps/web/src/markdown-clipboard.math.test.ts b/apps/web/src/markdown-clipboard.math.test.ts
+new file mode 100644
+index 000000000000..550bdf80e453
+--- /dev/null
++++ b/apps/web/src/markdown-clipboard.math.test.ts
+@@ -0,0 +1,28 @@
++// @vitest-environment jsdom
++
++import { describe, expect, it } from "vite-plus/test";
++
++import { chatMarkdownClipboardPayload } from "./markdown-clipboard";
++
++function select(start: Node, startOffset: number, end: Node, endOffset: number) {
++  const range = document.createRange();
++  range.setStart(start, startOffset);
++  range.setEnd(end, endOffset);
++  const selection = window.getSelection()!;
++  selection.removeAllRanges();
++  selection.addRange(range);
++  return selection;
++}
++
++describe("copying rendered math", () => {
++  it("copies a formula's TeX whether the selection spans it or starts inside it", () => {
++    document.body.innerHTML = `<div class="chat-markdown"><p>Area <span data-markdown-math="" data-markdown-copy="$\\pi r^2$"><span class="katex"><span class="katex-mathml">πr2</span><span class="katex-html" aria-hidden="true">πr2</span></span></span> grows.</p></div>`;
++    const paragraph = document.querySelector("p")!;
++    const glyphs = document.querySelector(".katex-mathml")!.firstChild!;
++
++    expect(
++      chatMarkdownClipboardPayload(select(paragraph.firstChild!, 0, paragraph.lastChild!, 7))?.text,
++    ).toBe("Area $\\pi r^2$ grows.");
++    expect(chatMarkdownClipboardPayload(select(glyphs, 0, glyphs, 1))?.text).toBe("$\\pi r^2$");
++  });
++});
+diff --git a/apps/web/src/markdown-clipboard.ts b/apps/web/src/markdown-clipboard.ts
+index 39b941801638..b1ff7522e205 100644
+--- a/apps/web/src/markdown-clipboard.ts
++++ b/apps/web/src/markdown-clipboard.ts
+@@ -393,6 +393,15 @@ export function chatMarkdownClipboardPayload(
+     const ancestor = range.commonAncestorContainer;
+     const ancestorElement =
+       ancestor.nodeType === Node.ELEMENT_NODE ? (ancestor as Element) : ancestor.parentElement;
++    // A selection inside one rendered formula copies its whole TeX source.
++    const formula = ancestorElement
++      ?.closest("[data-markdown-math]")
++      ?.getAttribute("data-markdown-copy");
++    if (formula) {
++      texts.push(formula.trim());
++      htmls.push(sanitizedHtmlFrom(container));
++      continue;
++    }
+     if (ancestorElement?.closest("pre")) {
+       const text = range.toString();
+       if (text) {
+diff --git a/apps/web/src/markdown-math.test.ts b/apps/web/src/markdown-math.test.ts
+new file mode 100644
+index 000000000000..34b277764891
+--- /dev/null
++++ b/apps/web/src/markdown-math.test.ts
+@@ -0,0 +1,127 @@
++import type { Nodes } from "mdast";
++import { fromMarkdown } from "mdast-util-from-markdown";
++import { describe, expect, it } from "vite-plus/test";
++
++import { chatMathFromMarkdown, chatMathSyntax, mathKind } from "./markdown-math";
++
++function parse(markdown: string) {
++  return fromMarkdown(markdown, {
++    extensions: [chatMathSyntax],
++    mdastExtensions: [chatMathFromMarkdown],
++  });
++}
++
++function collect(node: Nodes, out: Nodes[] = []): Nodes[] {
++  out.push(node);
++  if ("children" in node) for (const child of node.children) collect(child, out);
++  return out;
++}
++
++/** Formulas as `[kind, tex]`, in document order. */
++function formulas(markdown: string) {
++  return collect(parse(markdown)).flatMap((node) => {
++    if (node.type === "math") return [["display", node.value]];
++    if (node.type !== "inlineMath") return [];
++    const className = node.data?.hProperties?.className;
++    return [[mathKind(Array.isArray(className) ? className.join(" ") : undefined), node.value]];
++  });
++}
++
++function text(markdown: string) {
++  return collect(parse(markdown))
++    .flatMap((node) => (node.type === "text" ? [node.value] : []))
++    .join("");
++}
++
++describe("chat math parsing", () => {
++  it("reads the four delimiters models emit", () => {
++    expect(formulas("Inline $x^2$ and \\(y_1\\), display $$a+b$$ and \\[c\\].")).toEqual([
++      ["inline", "x^2"],
++      ["inline", "y_1"],
++      ["display", "a+b"],
++      ["display", "c"],
++    ]);
++  });
++
++  it("reads display blocks on their own lines", () => {
++    expect(formulas("$$\n\\frac{a}{b}\n$$")).toEqual([["display", "\\frac{a}{b}"]]);
++    expect(
++      formulas("Where\n\\[\n\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}\n\\]\nholds."),
++    ).toEqual([["display", "\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}"]]);
++  });
++
++  it("keeps block syntax inside display blocks as TeX", () => {
++    expect(formulas("\\[\nx\n- y\n# z\n\\]\nafter")).toEqual([["display", "x\n- y\n# z"]]);
++    expect(formulas("> $$\n> x\n> $$")).toEqual([["display", "x"]]);
++    // Same-line content is not a fence; it stays one formula.
++    expect(formulas("$$x^2\n+y^2$$")).toEqual([["display", "x^2\n+y^2"]]);
++    expect(text("$$E=mc^2")).toBe("$$E=mc^2");
++  });
++
++  it("keeps prices, shell variables, and skill tokens as prose", () => {
++    for (const prose of [
++      "It costs $5 and $10.",
++      "Budget $5-$10 per seat, or $20,000-$30,000 a year.",
++      "Plans are $5/$10 monthly.",
++      "Run $browser then $deploy on it.",
++      "Set $HOME before running.",
++    ]) {
++      expect(formulas(prose), prose).toEqual([]);
++      expect(text(prose), prose).toBe(prose);
++    }
++  });
++
++  it("leaves code, escapes, links, and citations alone", () => {
++    for (const [markdown, rendered] of [
++      ["Use `$x$` in code.", "Use  in code."],
++      ["```\n$x$ \\(y\\)\n```", ""],
++      ["Escaped \\$x\\$ stays.", "Escaped $x$ stays."],
++      ["Escaped \\\\(x\\\\) stays.", "Escaped \\(x\\) stays."],
++      ["See [docs](https://example.com/\\(a\\)) here.", "See docs here."],
++      ["As shown in \\[1\\] and \\[2, 3\\].", "As shown in [1] and [2, 3]."],
++    ] as const) {
++      expect(formulas(markdown), markdown).toEqual([]);
++      expect(text(markdown), markdown).toBe(rendered);
++    }
++  });
++
++  it("starts a formula right after an escaped dollar", () => {
++    expect(formulas("Pay \\$$x$ now.")).toEqual([["inline", "x"]]);
++  });
++
++  it("keeps TeX escapes inside formulas", () => {
++    expect(formulas("Cost $a\\$b$ and \\(\\left(x\\right)\\).")).toEqual([
++      ["inline", "a\\$b"],
++      ["inline", "\\left(x\\right)"],
++    ]);
++  });
++
++  it("keeps source offsets of the original message", () => {
++    const markdown = "- [ ] check \\(x\\)\n- [x] then $y$";
++    const offsets = collect(parse(markdown)).flatMap((node) =>
++      node.type === "inlineMath" || node.type === "listItem"
++        ? [[node.type, node.position?.start.offset]]
++        : [],
++    );
++    expect(offsets).toEqual([
++      ["listItem", 0],
++      ["inlineMath", markdown.indexOf("\\(")],
++      ["listItem", markdown.indexOf("- [x]")],
++      ["inlineMath", markdown.indexOf("$y$")],
++    ]);
++  });
++
++  it("shows unfinished formulas as text while a response streams", () => {
++    const message = "Energy \\(E = mc^2\\) and $$\\sum_i x_i$$ done.";
++    for (let end = 0; end <= message.length; end++) {
++      expect(() => parse(message.slice(0, end))).not.toThrow();
++    }
++    expect(text("Energy \\(E = mc")).toBe("Energy (E = mc");
++    expect(formulas("$$\nx^2")).toEqual([]);
++    expect(formulas("\\[\nx^2\n- y")).toEqual([]);
++    expect(formulas(message)).toEqual([
++      ["inline", "E = mc^2"],
++      ["display", "\\sum_i x_i"],
++    ]);
++  });
++});
+diff --git a/apps/web/src/markdown-math.ts b/apps/web/src/markdown-math.ts
+new file mode 100644
+index 000000000000..2787225ad6fe
+--- /dev/null
++++ b/apps/web/src/markdown-math.ts
+@@ -0,0 +1,375 @@
++import type { Root } from "mdast";
++import type { CompileContext, Extension as FromMarkdownExtension } from "mdast-util-from-markdown";
++import { mathFromMarkdown } from "mdast-util-math";
++import type {
++  Code,
++  Construct,
++  Effects,
++  Extension as MicromarkExtension,
++  State,
++  Token,
++  TokenizeContext,
++} from "micromark-util-types";
++import type { Plugin } from "unified";
++
++declare module "micromark-util-types" {
++  interface TokenTypeMap {
++    mathFlow: "mathFlow";
++    mathFlowFence: "mathFlowFence";
++    mathFlowFenceSequence: "mathFlowFenceSequence";
++    mathFlowValue: "mathFlowValue";
++    mathText: "mathText";
++    mathTextData: "mathTextData";
++    mathTextSequence: "mathTextSequence";
++  }
++}
++
++const DOLLAR = 36;
++const BACKSLASH = 92;
++const RIGHT_PAREN = 41;
++const RIGHT_BRACKET = 93;
++const COMMA = 44;
++const CLOSERS: Partial<Record<number, number>> = { 40: RIGHT_PAREN, 91: RIGHT_BRACKET };
++// ponytail: an opener gives up after this many characters, which keeps a message
++// full of unmatched `$` close to linear. Raise it if real formulas hit the cap.
++const MAX_MATH_LENGTH = 4096;
++
++// micromark encodes tabs, virtual spaces, and line endings as negative codes.
++const isLineEnding = (code: Code) => code !== null && code < -2;
++const isWhitespace = (code: Code) => code !== null && (code < 0 || code === 32);
++const isDigit = (code: Code) => code !== null && code >= 48 && code <= 57;
++
++/**
++ * Tokenizes `$…$`, `$$…$$`, `\(…\)`, and `\[…\]` inside paragraphs. Code spans,
++ * links, autolinks, and escapes keep their CommonMark meaning because the
++ * parser reaches them first, and source positions stay those of the message.
++ * Single-dollar math follows Pandoc so prices stay prose: it hugs its content,
++ * stays on one line, and its closing `$` is not followed by a digit.
++ */
++function mathText(delimiter: typeof DOLLAR | typeof BACKSLASH): Construct {
++  return {
++    name: delimiter === DOLLAR ? "chatDollarMath" : "chatBracketMath",
++    // A `$` right after another one is part of that run, unless the first was escaped.
++    ...(delimiter === DOLLAR
++      ? {
++          previous(this: TokenizeContext, code: Code) {
++            return code !== DOLLAR || this.events.at(-1)?.[1].type === "characterEscape";
++          },
++        }
++      : {}),
++    tokenize(effects, ok, nok) {
++      let size = 0;
++      let closer = DOLLAR;
++      let length = 0;
++      let last: Code = null;
++      // `\[1\]` is a citation, not an equation.
++      let citation = true;
++      const closing: Construct = { partial: true, tokenize: tokenizeClosing };
++
++      return function start(code) {
++        effects.enter("mathText");
++        effects.enter("mathTextSequence");
++        if (delimiter === DOLLAR) return dollarOpening(code);
++        effects.consume(code);
++        return bracketOpening;
++      };
++
++      function dollarOpening(code: Code): State | undefined {
++        if (code === DOLLAR) {
++          if (++size > 2) return nok(code);
++          effects.consume(code);
++          return dollarOpening;
++        }
++        if (size === 1 && (code === null || isWhitespace(code))) return nok(code);
++        effects.exit("mathTextSequence");
++        return between(code);
++      }
++
++      function bracketOpening(code: Code): State | undefined {
++        const close = code === null ? undefined : CLOSERS[code];
++        if (close === undefined) return nok(code);
++        closer = close;
++        effects.consume(code);
++        effects.exit("mathTextSequence");
++        return between;
++      }
++
++      function between(code: Code): State | undefined {
++        if (code === null || length > MAX_MATH_LENGTH) return nok(code);
++        if (isLineEnding(code)) {
++          if (delimiter === DOLLAR && size === 1) return nok(code);
++          effects.enter("lineEnding");
++          effects.consume(code);
++          effects.exit("lineEnding");
++          last = code;
++          return between;
++        }
++        if (code === delimiter) return effects.attempt(closing, after, data)(code);
++        return data(code);
++      }
++
++      function data(code: Code): State | undefined {
++        effects.enter("mathTextData");
++        return dataCharacter(code);
++      }
++
++      /** Consumes one character unconditionally; a backslash takes the next one along. */
++      function dataCharacter(code: Code): State | undefined {
++        consume(code);
++        return code === BACKSLASH ? escaped : inside;
++      }
++
++      function escaped(code: Code): State | undefined {
++        if (code === null || isLineEnding(code)) return inside(code);
++        consume(code);
++        // An escaped `\$` neither closes nor extends a dollar run.
++        last = null;
++        return inside;
++      }
++
++      function inside(code: Code): State | undefined {
++        const failedRun = code === DOLLAR && last === DOLLAR;
++        if (
++          code === null ||
++          isLineEnding(code) ||
++          length > MAX_MATH_LENGTH ||
++          (code === delimiter && !failedRun)
++        ) {
++          effects.exit("mathTextData");
++          return between(code);
++        }
++        return dataCharacter(code);
++      }
++
++      function consume(code: Code) {
++        if (!isWhitespace(code) && !isDigit(code) && code !== COMMA) citation = false;
++        effects.consume(code);
++        last = code;
++        length++;
++      }
++
++      function after(code: Code): State | undefined {
++        if (closer === RIGHT_BRACKET && citation) return nok(code);
++        effects.exit("mathText");
++        return ok(code);
++      }
++
++      function tokenizeClosing(effects: Effects, ok: State, nok: State): State {
++        let run = 0;
++        return function start(code) {
++          if (length === 0) return nok(code);
++          if (delimiter === DOLLAR && size === 1 && isWhitespace(last)) return nok(code);
++          effects.enter("mathTextSequence");
++          effects.consume(code);
++          if (delimiter === DOLLAR) {
++            run = 1;
++            return dollarRun;
++          }
++          return bracketClose;
++        };
++
++        function dollarRun(code: Code): State | undefined {
++          if (code === DOLLAR) {
++            run++;
++            effects.consume(code);
++            return dollarRun;
++          }
++          if (run !== size || (size === 1 && isDigit(code))) return nok(code);
++          effects.exit("mathTextSequence");
++          return ok(code);
++        }
++
++        function bracketClose(code: Code): State | undefined {
++          if (code !== closer) return nok(code);
++          effects.consume(code);
++          effects.exit("mathTextSequence");
++          return ok;
++        }
++      }
++    },
++  };
++}
++
++const FENCES: Partial<Record<number, { open: number[]; close: number[] }>> = {
++  [DOLLAR]: { open: [DOLLAR, DOLLAR], close: [DOLLAR, DOLLAR] },
++  [BACKSLASH]: { open: [BACKSLASH, 91], close: [BACKSLASH, RIGHT_BRACKET] },
++};
++
++/** Consumes `codes` exactly, then continues with `ok`. */
++function sequence(effects: Effects, codes: number[], ok: State, nok: State): State {
++  let index = 0;
++  return function next(code) {
++    if (index === codes.length) return ok(code);
++    if (code !== codes[index]) return nok(code);
++    effects.consume(code);
++    index++;
++    return next;
++  };
++}
++
++/**
++ * `$$` or `\[` alone on a line opens a display block that runs to the matching
++ * `$$` or `\]` line, like a code fence, so formula lines that start with `-`,
++ * `#`, or `1.` stay TeX instead of becoming lists or headings.
++ */
++const mathBlock: Construct = {
++  name: "chatMathBlock",
++  concrete: true,
++  tokenize(effects, ok, nok) {
++    const interrupt = this.interrupt;
++    let fence = FENCES[DOLLAR]!;
++    const nonLazyContinuation: Construct = { partial: true, tokenize: tokenizeNonLazy };
++    const closing: Construct = { partial: true, tokenize: tokenizeClosing };
++
++    return function start(code) {
++      const selected = code === null ? undefined : FENCES[code];
++      if (!selected) return nok(code);
++      fence = selected;
++      effects.enter("mathFlow");
++      effects.enter("mathFlowFence");
++      effects.enter("mathFlowFenceSequence");
++      return sequence(effects, fence.open, afterOpening, nok)(code);
++    };
++
++    function afterOpening(code: Code): State | undefined {
++      effects.exit("mathFlowFenceSequence");
++      return openingRest(code);
++    }
++
++    function openingRest(code: Code): State | undefined {
++      // Unlike a code fence, a block needs its closing line, so a formula
++      // still streaming in stays text instead of typesetting each prefix.
++      if (code === null) return nok(code);
++      if (isLineEnding(code)) {
++        effects.exit("mathFlowFence");
++        if (interrupt) return ok(code);
++        return effects.attempt(nonLazyContinuation, lineStart, after)(code);
++      }
++      if (!isWhitespace(code)) return nok(code);
++      effects.consume(code);
++      return openingRest;
++    }
++
++    function lineStart(code: Code): State | undefined {
++      return effects.attempt(closing, after, content)(code);
++    }
++
++    function content(code: Code): State | undefined {
++      if (code === null) return nok(code);
++      if (isLineEnding(code)) return effects.attempt(nonLazyContinuation, lineStart, after)(code);
++      effects.enter("mathFlowValue");
++      return value(code);
++    }
++
++    function value(code: Code): State | undefined {
++      if (code === null || isLineEnding(code)) {
++        effects.exit("mathFlowValue");
++        return content(code);
++      }
++      effects.consume(code);
++      return value;
++    }
++
++    function after(code: Code): State | undefined {
++      effects.exit("mathFlow");
++      return ok(code);
++    }
++
++    function tokenizeClosing(effects: Effects, ok: State, nok: State): State {
++      return function start(code) {
++        effects.enter("mathFlowFence");
++        return indent(code);
++      };
++
++      function indent(code: Code): State | undefined {
++        if (isWhitespace(code) && !isLineEnding(code)) {
++          effects.consume(code);
++          return indent;
++        }
++        effects.enter("mathFlowFenceSequence");
++        return sequence(effects, fence.close, afterSequence, nok)(code);
++      }
++
++      function afterSequence(code: Code): State | undefined {
++        effects.exit("mathFlowFenceSequence");
++        return rest(code);
++      }
++
++      function rest(code: Code): State | undefined {
++        if (code === null || isLineEnding(code)) {
++          effects.exit("mathFlowFence");
++          return ok(code);
++        }
++        if (!isWhitespace(code)) return nok(code);
++        effects.consume(code);
++        return rest;
++      }
++    }
++
++    /** Ends the block at a lazy line, such as one that leaves a blockquote. */
++    function tokenizeNonLazy(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
++      const isLazy = () => this.parser.lazy[this.now().line];
++      return function start(code: Code): State | undefined {
++        if (code === null) return ok(code);
++        effects.enter("lineEnding");
++        effects.consume(code);
++        effects.exit("lineEnding");
++        return (next: Code) => (isLazy() ? nok(next) : ok(next));
++      };
++    }
++  },
++};
++
++export const chatMathSyntax: MicromarkExtension = {
++  flow: { [DOLLAR]: mathBlock, [BACKSLASH]: mathBlock },
++  text: { [DOLLAR]: mathText(DOLLAR), [BACKSLASH]: mathText(BACKSLASH) },
++};
++
++const MATH_DISPLAY = ["language-math", "math-display"];
++const baseFromMarkdown = mathFromMarkdown();
++
++export const chatMathFromMarkdown: FromMarkdownExtension = {
++  ...baseFromMarkdown,
++  exit: {
++    ...baseFromMarkdown.exit,
++    /** Blocks render through the same `code` element as inline math, not a code fence. */
++    mathFlow(this: CompileContext, token: Token) {
++      baseFromMarkdown.exit?.mathFlow?.call(this, token);
++      const parent = this.stack.at(-1);
++      const node = parent && "children" in parent ? parent.children.at(-1) : undefined;
++      if (node?.type !== "math") return;
++      node.data = {
++        hName: "code",
++        hProperties: { className: MATH_DISPLAY },
++        hChildren: [{ type: "text", value: node.value }],
++      };
++    },
++    /** `$$…$$` and `\[…\]` display even when they share a line with prose. */
++    mathTextSequence(this: CompileContext, token: Token) {
++      const sequence = this.sliceSerialize(token);
++      if (sequence !== "$$" && sequence !== "\\[") return;
++      const node = this.stack.at(-2);
++      if (node?.type === "inlineMath" && node.data?.hProperties) {
++        node.data.hProperties.className = MATH_DISPLAY;
++      }
++    },
++  },
++};
++
++/** Parses TeX math in chat markdown. Rendered by `MarkdownMath` from `code.math-*` elements. */
++export const remarkChatMath: Plugin<[], Root> = function () {
++  const data = this.data();
++  (data.micromarkExtensions ??= []).push(chatMathSyntax);
++  (data.fromMarkdownExtensions ??= []).push(chatMathFromMarkdown);
++};
++
++/** Messages without these characters skip math parsing entirely. */
++export function mayContainMath(text: string): boolean {
++  return text.includes("$") || text.includes("\\(") || text.includes("\\[");
++}
++
++export function mathKind(className: string | undefined): "inline" | "display" | null {
++  if (!className?.includes("language-math")) return null;
++  if (className.includes("math-display")) return "display";
++  return className.includes("math-inline") ? "inline" : null;
++}
+diff --git a/docs/user/appearance.md b/docs/user/appearance.md
+index ec02a28ed787..c86a58bbb43a 100644
+--- a/docs/user/appearance.md
++++ b/docs/user/appearance.md
+@@ -29,6 +29,13 @@ The controls retreat as the composer docks after you send the first message.
+ Turn on **Composer context** to keep those controls visible after the thread starts. This preference
+ applies to the web and desktop clients.
+ 
++## Math
++
++On web and desktop, turn on **Render math** in **Settings → Appearance** to typeset LaTeX in
++messages and Markdown previews. It reads `$…$`, `$$…$$`, `\(…\)`, and `\[…\]`, outside of code.
++Dollar amounts such as `$5 and $10` stay text; write `\$` to keep any other dollar sign literal.
++Copying a formula copies its TeX. The mobile app shows the TeX source.
++
+ ## Motion
+ 
+ The main sidebar, right panel, and terminal drawer open and close immediately by default. Move the
+diff --git a/packages/contracts/src/settings.ts b/packages/contracts/src/settings.ts
+index 082459efc3df..a098acfe5c18 100644
+--- a/packages/contracts/src/settings.ts
++++ b/packages/contracts/src/settings.ts
+@@ -499,6 +499,9 @@ export const ClientSettingsSchema = Schema.Struct({
+   snapShotFlash: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
+   snapShotAnimations: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
+   wordWrap: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
++  // Opt-in TeX typesetting in rendered Markdown. Off keeps math parsing and
++  // KaTeX out of the render path entirely.
++  mathRenderingEnabled: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
+ });
+ export type ClientSettings = typeof ClientSettingsSchema.Type;
+ 
+@@ -1803,5 +1806,6 @@ export const ClientSettingsPatch = Schema.Struct({
+   snapShotFlash: Schema.optionalKey(Schema.Boolean),
+   snapShotAnimations: Schema.optionalKey(Schema.Boolean),
+   wordWrap: Schema.optionalKey(Schema.Boolean),
++  mathRenderingEnabled: Schema.optionalKey(Schema.Boolean),
+ });
+ export type ClientSettingsPatch = typeof ClientSettingsPatch.Type;
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index c45ca5713bd3..a31a34cd89cc 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -719,12 +719,18 @@ importers:
+       jszip:
+         specifier: 3.10.1
+         version: 3.10.1
++      katex:
++        specifier: ^0.16.47
++        version: 0.16.47
+       lucide:
+         specifier: ^0.564.0
+         version: 0.564.0
+       lucide-react:
+         specifier: ^0.564.0
+         version: 0.564.0(react@19.2.6)
++      mdast-util-math:
++        specifier: ^3.0.0
++        version: 3.0.0
+       mermaid:
+         specifier: ^11.17.2
+         version: 11.17.2
+@@ -810,6 +816,12 @@ importers:
+       jsdom:
+         specifier: ^30.0.1
+         version: 30.1.0(@noble/hashes@1.8.0)
++      mdast-util-from-markdown:
++        specifier: ^2.0.3
++        version: 2.0.3
++      micromark-util-types:
++        specifier: ^2.0.2
++        version: 2.0.2
+       react-test-renderer:
+         specifier: 19.2.6
+         version: 19.2.6(react@19.2.6)
+@@ -8894,6 +8906,9 @@ packages:
+   mdast-util-gfm@3.1.0:
+     resolution: {integrity: sha512-0ulfdQOM3ysHhCJ1p06l0b0VKlhU0wuQs3thxZQagjcjPrlFRqY215uZGHHJan9GEAXd9MbfPjFJz+qMkVR6zQ==}
+ 
++  mdast-util-math@3.0.0:
++    resolution: {integrity: sha512-Tl9GBNeG/AhJnQM221bJR2HPvLOSnLE/T9cJI9tlc6zwQk2nPk/4f0cHkOdEixQPC/j8UtKDdITswvLAy1OZ1w==}
++
+   mdast-util-mdx-expression@2.0.1:
+     resolution: {integrity: sha512-J6f+9hUp+ldTZqKRSg7Vw5V6MqjATc+3E4gf3CFNcuZNWD8XdyI6zQ8GqH7f8169MM6P7hMBRDVGnn7oHB9kXQ==}
+ 
+@@ -10878,6 +10893,9 @@ packages:
+   unist-util-position@5.0.0:
+     resolution: {integrity: sha512-fucsC7HjXvkB5R3kTCO7kUjRdrS0BJt3M/FPxmHMBOm8JQi2BsHAHFsy27E0EolP8rp0NzXsJ+jNPyDWvOJZPA==}
+ 
++  unist-util-remove-position@5.0.0:
++    resolution: {integrity: sha512-Hp5Kh3wLxv0PHj9m2yZhhLt58KzPtEYKQQ4yxfYFEO7EvHwzyDYnduhHnY1mDxoqr7VUwVuHXk9RXKIiYS1N8Q==}
++
+   unist-util-stringify-position@4.0.0:
+     resolution: {integrity: sha512-0ASV06AAoKCDkS2+xw5RXJywruurpbC4JZSm7nr7MOt1ojAzvyyaO+UxZf18j8FCF6kmzCZKcAgN/yu2gm2XgQ==}
+ 
+@@ -19470,6 +19488,18 @@ snapshots:
+     transitivePeerDependencies:
+       - supports-color
+ 
++  mdast-util-math@3.0.0:
++    dependencies:
++      '@types/hast': 3.0.4
++      '@types/mdast': 4.0.4
++      devlop: 1.1.0
++      longest-streak: 3.1.0
++      mdast-util-from-markdown: 2.0.3
++      mdast-util-to-markdown: 2.1.2
++      unist-util-remove-position: 5.0.0
++    transitivePeerDependencies:
++      - supports-color
++
+   mdast-util-mdx-expression@2.0.1:
+     dependencies:
+       '@types/estree-jsx': 1.0.5
+@@ -22051,6 +22081,11 @@ snapshots:
+     dependencies:
+       '@types/unist': 3.0.3
+ 
++  unist-util-remove-position@5.0.0:
++    dependencies:
++      '@types/unist': 3.0.3
++      unist-util-visit: 5.1.0
++
+   unist-util-stringify-position@4.0.0:
+     dependencies:
+       '@types/unist': 3.0.3

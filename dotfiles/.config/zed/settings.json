@@ -279,7 +279,7 @@
         "lint": {
           "enabled": true
         },
-        "exportPdf": "onSave",
+        "exportPdf": "never",
         "outputPath": "$root/$name"
       }
     }

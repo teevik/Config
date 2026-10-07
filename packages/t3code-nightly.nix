@@ -40,6 +40,11 @@ let
     hash = "sha256-M8Ya6b+/YbDrpQjDboMOj/LTLy4UUQg2+rRSNG9GYcQ=";
   };
 
+  # Opt-in LaTeX math rendering (Settings -> Appearance -> Render math), from
+  # pingdotgg/t3code#14574. It also edits pnpm-lock.yaml, so the dependency
+  # fetch is patched too; refresh pnpmDeps by hand when replacing the patch.
+  patches = [ ./t3code-math.patch ];
+
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
   # separately so the application build stays offline. The name omits the
   # version so nightlies with unchanged license inputs reuse the same output;
@@ -86,8 +91,9 @@ let
     pname = "t3code";
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
+    inherit patches;
     fetcherVersion = 4;
-    hash = "sha256-WZSV8+ugCLfls7jW7hPFoL4wYAffpER71zt2VhaTVzQ=";
+    hash = "sha256-WeK2Od/Q/xnbwytym1TjmNnYOHTfp+mYBKeNeu8KV7Y=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
@@ -97,6 +103,8 @@ let
       pnpmDeps
       resourceMonitor
       ;
+
+    patches = (oldAttrs.patches or [ ]) ++ patches;
 
     postPatch = (oldAttrs.postPatch or "") + ''
       # Upstream seeds this cache with SPDX symlinks into the Nix store.
