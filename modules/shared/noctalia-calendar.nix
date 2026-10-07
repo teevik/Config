@@ -9,7 +9,6 @@
   # The shared Noctalia config includes this same path on every graphical host.
   sops.templates."noctalia-school-calendar.toml" = {
     owner = config.sops.secrets.school-calendar-url.owner;
-    # Precision's user is managed by the host OS, not a Nix users.users entry.
     group = "root";
     mode = "0400";
     path = "/run/secrets-rendered/noctalia-school-calendar.toml";

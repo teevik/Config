@@ -13,23 +13,8 @@
       flake = false;
     };
 
-    nixos-apple-silicon = {
-      url = "github:nix-community/nixos-apple-silicon";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     blueprint = {
       url = "github:numtide/blueprint";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    system-manager = {
-      url = "github:numtide/system-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nix-system-graphics = {
-      url = "github:soupglasses/nix-system-graphics";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -83,10 +68,6 @@
     };
     openconnect-sso = {
       url = "github:active-group/openconnect-sso";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    titdb = {
-      url = "github:GarrettGR/titdb-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
