@@ -49,7 +49,7 @@ def main [source: path] {
         assert-success (run-update $checkout [--export $exported])
         assert ((nix-actions) == [
             [flake update]
-            [build --no-link --print-build-logs --file packages/update-targets.nix opencode opencode-desktop omp roc-nightly t3code-nightly]
+            [build --no-link --print-build-logs --file packages/update-targets.nix opencode opencode-desktop roc-nightly t3code-nightly]
         ])
         assert equal (calls | where tool == fetch | get args | flatten) [src pnpmDeps licenseNotices]
         let after = (contents $checkout)

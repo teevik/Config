@@ -23,16 +23,14 @@ install TARGET-IP HOST:
     ssh teevik@{{ TARGET-IP }} "cd /mnt/home/teevik/Documents/Config && git remote set-url origin git@github.com:teevik/Config.git"
 
     # Stow dotfiles
-    ssh teevik@{{ TARGET-IP }} "mkdir -p /mnt/home/teevik/.pi/agent && cd /mnt/home/teevik/Documents/Config && stow -t /mnt/home/teevik dotfiles"
+    ssh teevik@{{ TARGET-IP }} "cd /mnt/home/teevik/Documents/Config && stow -t /mnt/home/teevik dotfiles"
 
     # Reboot
     # ssh root@{{ TARGET-IP }} "reboot"
 
 # Stow dotfiles into home directory
 stow:
-    mkdir -p ~/.pi/agent
     stow -v -t ~ dotfiles
-    npm ci --prefix ~/.omp/agent
 
 # Remove stowed dotfiles
 unstow:
@@ -40,20 +38,16 @@ unstow:
 
 # Re-stow dotfiles (useful after adding new files)
 restow:
-    mkdir -p ~/.pi/agent
     stow -v -t ~ -R dotfiles
-    npm ci --prefix ~/.omp/agent
 
 # First-time stow: adopt existing files, then check diff
 stow-adopt:
-    mkdir -p ~/.pi/agent
     stow -v -t ~ --adopt dotfiles
     @echo "Files adopted. Run 'git diff dotfiles/' to review changes."
 
 # Create required directories
 setup:
     mkdir -p ~/.npm-packages/lib
-    mkdir -p ~/.pi/agent
     mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures/Screenshots ~/Videos ~/Desktop ~/Public ~/Templates
 
 # Refresh all flake inputs and package sources, then validate the packages.

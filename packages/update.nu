@@ -58,7 +58,7 @@ def main [
             ^nix build --no-link --print-build-logs --file packages/update-targets.nix ...($catalog | columns)
         }
         if $destination != null {
-            export-update $root $destination ($catalog | values | uniq | sort)
+            export-update $root $destination ([flake.lock] | append ($catalog | values) | uniq | sort)
         }
     } catch {|err|
         error make {msg: $"Package update failed; completed edits were kept.\n($err.msg)"}

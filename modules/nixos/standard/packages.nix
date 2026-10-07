@@ -166,12 +166,10 @@ in
       agent-browser
       perSystem.self.fox
       perSystem.self.agent-workspace-linux
-      pi-coding-agent
       perSystem.llm-agents.chatgpt
       perSystem.llm-agents.claude-code
       perSystem.llm-agents.claude-desktop
       perSystem.llm-agents.codex
-      perSystem.llm-agents.omp
       perSystem.self.t3code-nightly
       t3code-desktop-nightly
       perSystem.self.opencode
