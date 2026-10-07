@@ -5,7 +5,6 @@
 }:
 {
   imports = [
-    # ./android-studio.nix
     ./codex-desktop.nix
     ./nautilus.nix
     ./firefox.nix
@@ -36,10 +35,6 @@
         wayland
         stdenv.cc.cc.lib
         zlib
-        # glib.dev
-        # pango.dev
-        # gtk3
-        # cairo.dev
       ];
     };
 

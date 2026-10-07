@@ -1,7 +1,6 @@
 { pkgs, ... }:
 {
   networking.networkmanager.enable = true;
-  # wifi.backend = "iwd";
 
   # Fixes an issue that normally causes nixos-rebuild to fail.
   # https://github.com/NixOS/nixpkgs/issues/180175
@@ -13,18 +12,4 @@
     geteduroam-cli
     pkgs.networkmanagerapplet
   ];
-
-  # networking.wireless.iwd = {
-  #   enable = true;
-
-  #   settings = {
-  #     IPv6 = {
-  #       Enabled = true;
-  #     };
-
-  #     Settings = {
-  #       AutoConnect = true;
-  #     };
-  #   };
-  # };
 }

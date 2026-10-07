@@ -39,58 +39,7 @@
   # Infinite timeout for bootloader
   boot.loader.timeout = null;
 
-  # # GitHub Actions Runner
-  # users.users.github-runner = {
-  #   isSystemUser = true;
-  #   group = "users";
-  # };
-
-  # sops.secrets.github-runner-token = {
-  #   owner = "github-runner";
-  # };
-
-  # services.github-runners.desktop = {
-  #   enable = true;
-  #   user = "github-runner";
-  #   name = "desktop";
-  #   extraLabels = [ "nixos" ];
-  #   url = "https://github.com/teevik/Config";
-  #   tokenFile = config.sops.secrets.github-runner-token.path;
-  # };
-
-  # nix.settings.trusted-users = [ "github-runner" ];
-
-  # RustDesk Server (signal + relay)
-  # services.rustdesk-server = {
-  #   enable = true;
-  #   openFirewall = true;
-  #   signal.relayHosts = [ "desktop" ];
-  # };
-
   programs.noisetorch.enable = true;
   powerManagement.cpuFreqGovernor = "performance";
-  # Enable bluetooth
-  # hardware.bluetooth.enable = true;
-  # services.blueman.enable = true;
-
-  # services = {
-  #   asusd = {
-  #     enable = true;
-  #     enableUserService = true;
-  #   };
-
-  #   supergfxd.enable = true;
-
-  #   # fixes mic mute button
-  #   udev.extraHwdb = ''
-  #     evdev:name:*:dmi:bvn*:bvr*:bd*:svnASUS*:pn*:*
-  #      KEYBOARD_KEY_ff31007c=f20
-  #   '';
-  # };
-
-  # boot = {
-  #   kernelParams = [ "pcie_aspm.policy=powersupersave" ];
-  # };
-
   system.stateVersion = "25.11";
 }

@@ -113,7 +113,6 @@ require("teevik.nvim-cmp")
 require("teevik.lsp")
 require("teevik.conform")
 require("teevik.snacks")
--- require("teevik.magenta")
 
 -- Lualine
 vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" }, { confirm = false })

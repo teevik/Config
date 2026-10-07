@@ -50,7 +50,7 @@
       url = "github:DeterminateSystems/nix-src";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Unmerged nix-src PRs applied by packages/determinate-nix.nix. Pinned to
+    # Unmerged nix-src PRs applied by packages/determinate-nix/. Pinned to
     # PR commits; a patch stops applying once its PR lands on main.
     # https://github.com/DeterminateSystems/nix-src/pull/572
     determinate-nix-pr-572 = {
@@ -96,10 +96,6 @@
       flake = false;
     };
 
-    # opencode = {
-    #   url = "github:sst/opencode";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
     hyprland-scratchpad = {
       url = "github:teevik/hyprland-scratchpad";
       inputs.nixpkgs.follows = "nixpkgs";

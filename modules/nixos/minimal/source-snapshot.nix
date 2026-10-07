@@ -3,7 +3,7 @@
 let
   source = builtins.fetchTree {
     type = "git";
-    url = "file://${toString ../..}";
+    url = "file://${toString ../../..}";
     submodules = true;
   };
   root = /. + builtins.unsafeDiscardStringContext source.outPath;

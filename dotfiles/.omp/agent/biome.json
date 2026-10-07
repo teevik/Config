@@ -1,7 +1,15 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
 	"files": {
-		"includes": ["**", "!!node_modules"]
+		"includes": [
+			"extensions/**",
+			"src/**",
+			"test/**",
+			"biome.json",
+			"package.json",
+			"package-lock.json",
+			"tsconfig.json"
+		]
 	},
 	"formatter": {
 		"enabled": true,

@@ -33,14 +33,6 @@ in
     })
   ];
 
-  # services = {
-  #   udev = {
-  #     packages = with pkgs; [
-  #       game-devices-udev-rules
-  #     ];
-  #   };
-  # };
-
   services.udev.packages = [ dualsense-udev ];
   hardware.uinput.enable = true;
 

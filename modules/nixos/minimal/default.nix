@@ -35,11 +35,6 @@ in
       nixos.enable = false;
     };
 
-    # nixpkgs.flake = {
-    #   setFlakeRegistry = false;
-    #   setNixPath = false;
-    # };
-
     nix = {
       package = perSystem.self.determinate-nix;
       channel.enable = false;
@@ -119,19 +114,12 @@ in
     # Auto-login
     services.getty.autologinUser = lib.mkForce "teevik";
 
-    # Boot
-    #    boot = {
-    #     supportedFilesystems = [ "bcachefs" ];
-    #    kernelPackages = pkgs.linuxPackages_latest;
-    # };
-
     # Hardware
     hardware = {
       enableAllFirmware = true;
 
       graphics = {
         enable = true;
-        # enable32Bit = true;
       };
     };
 

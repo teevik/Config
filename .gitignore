@@ -1,2 +1,5 @@
 result
 target/
+/dotfiles/.omp/wt/
+/dotfiles/.config/nvim/Session.vim
+/dotfiles/.config/nvim/Sessionx.vim

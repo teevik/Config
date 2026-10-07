@@ -107,6 +107,10 @@ lint-check:
 script-check:
     nix build --file checks/nu-scripts.nix --no-link --print-build-logs
 
+# Exercise the patched nh CLI without building or activating a NixOS system.
+nh-check:
+    nix build --file checks/nh.nix --no-link --print-build-logs
+
 # Scan the running generation; detailed reports use the existing age recipient.
 security-scan output="/tmp/nix-security-report":
     nix run --impure --expr 'import ./packages/security {}' . -- /run/current-system --scope deployed --output {{ quote(output) }}
@@ -119,23 +123,18 @@ security-rescan sbom output="/tmp/nix-security-rescan":
 security-check:
     nix build --file checks/security.nix --no-link --print-build-logs
 
-# Compare uncached NixOS evaluation with Blueprint and a direct nixosSystem prototype.
-benchmark-eval host="zenbook" runs="5":
-    hyperfine --warmup 1 --runs {{ runs }} --parameter-list engine blueprint,native \
-      'nix eval --option eval-cache false --impure --raw --file tests/evaluation/benchmark.nix --argstr engine {engine} --argstr host {{ host }} drvPath'
-
 # Compare evaluator threads against the same source snapshot used by nh.
 benchmark-eval-cores host=`hostname` runs="5":
     #!/usr/bin/env bash
     set -euo pipefail
-    flake_source="$(nix eval --impure --raw --file tests/evaluation/source-snapshot.nix)"
+    flake_source="$(nix eval --impure --raw --file modules/nixos/minimal/source-snapshot.nix)"
     hyperfine --warmup 1 --runs {{ runs }} --parameter-list cores 1,2,4,8,16 \
       "nix eval --option eval-cache false --option eval-cores {cores} --raw 'path:$flake_source#nixosConfigurations.{{ host }}.config.system.build.toplevel.drvPath'"
 
 # Snapshot tracked Nix sources, preserving cache hits across unrelated dotfile edits.
 # nh prepares this automatically; this recipe is useful for manual cache lookups.
 flake-source:
-    @nix eval --impure --raw --file tests/evaluation/source-snapshot.nix
+    @nix eval --impure --raw --file modules/nixos/minimal/source-snapshot.nix
 
 # Compare a derivation lookup with and without Nix's evaluation cache; no builds.
 benchmark-eval-cache host="zenbook" runs="5":

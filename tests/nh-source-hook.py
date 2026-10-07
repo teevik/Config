@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the patched nh CLI with recording commands; no builds or activation.
 
-Usage: python3 tests/evaluation/nh-source-hook.py /path/to/patched/nh
+Usage: python3 tests/nh-source-hook.py /path/to/patched/nh
 """
 
 import json

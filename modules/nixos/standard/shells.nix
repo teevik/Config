@@ -62,7 +62,6 @@ in
       nushell
     ];
 
-    # variables.SHELL = "${pkgs.nushell}/bin/nu";
     variables.SHELL = "${pkgs.bash}/bin/bash";
 
     etc = {

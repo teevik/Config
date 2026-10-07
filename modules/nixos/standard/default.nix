@@ -89,12 +89,6 @@
       submissionUrl = "https://api.beacondb.net/v2/geosubmit";
 
       enableNmea = false;
-
-      # appConfig.geoshift = {
-      #   isAllowed = true;
-      #   isSystem = false;
-      #   users = [ ];
-      # };
     };
   };
 
@@ -103,7 +97,6 @@
   # gsettings set org.gnome.desktop.interface cursor-theme catppuccin-mocha-dark-cursors
   programs.dconf.enable = true;
 
-  # users.users.teevik.extraGroups = [ "geoclue" ];
   environment.localBinInPath = true;
 
   services.usbmuxd.enable = true;

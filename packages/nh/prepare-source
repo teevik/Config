@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Companion to nh-source-hook.patch. Only plain local references to
+# Companion to source-hook.patch. Only plain local references to
 # this checkout use the existing Git-aware snapshot; other references pass through.
 set -euo pipefail
 
@@ -13,7 +13,7 @@ config_root="$(realpath -- "$script_dir/../..")"
 reference=$1
 
 if [[ -d "$reference" && "$(realpath -- "$reference")" == "$config_root" ]]; then
-    snapshot="$(nix eval --impure --raw --file "$config_root/tests/evaluation/source-snapshot.nix")"
+    snapshot="$(nix eval --impure --raw --file "$config_root/modules/nixos/minimal/source-snapshot.nix")"
     printf 'path:%s\n' "$snapshot"
 else
     printf '%s\n' "$reference"
