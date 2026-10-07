@@ -513,6 +513,22 @@
         "type": "github"
       }
     },
+    "impeccable-rust": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791323439,
+        "narHash": "sha256-tlfwh4/grnz/INysy4N3gxD3K9qkZuiXGO35CIsSUoQ=",
+        "owner": "hexuria",
+        "repo": "impeccable-rust",
+        "rev": "1e85e9ad30d157f9627bbd1ab50107f9938bf3f6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hexuria",
+        "repo": "impeccable-rust",
+        "type": "github"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -870,6 +886,7 @@
         "gaze": "gaze",
         "hyprland-contrib": "hyprland-contrib",
         "hyprland-scratchpad": "hyprland-scratchpad",
+        "impeccable-rust": "impeccable-rust",
         "llm-agents": "llm-agents",
         "mattpocock-skills": "mattpocock-skills",
         "nix-index-database": "nix-index-database",

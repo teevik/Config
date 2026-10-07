@@ -20,6 +20,10 @@ let
       path = inputs.cursor-plugins;
       subdir = "cursor-team-kit/skills";
     };
+    impeccable-rust = {
+      path = inputs.impeccable-rust;
+      subdir = ".";
+    };
   };
 
   fromDir =
@@ -66,7 +70,13 @@ let
       "writing-fragments"
       "writing-shape"
     ]
-    // fromDir "cursor" "." [ "deslop" ];
+    // fromDir "cursor" "." [ "deslop" ]
+    // {
+      impeccable-rust = {
+        from = "impeccable-rust";
+        path = "skill";
+      };
+    };
 
   bundle = skillsLib.mkBundle {
     inherit pkgs;

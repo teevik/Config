@@ -110,6 +110,10 @@
       url = "github:cursor/plugins";
       flake = false;
     };
+    impeccable-rust = {
+      url = "github:hexuria/impeccable-rust";
+      flake = false;
+    };
 
     # opencode = {
     #   url = "github:sst/opencode";
