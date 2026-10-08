@@ -1,7 +1,7 @@
 T3 Code PR #15252: render Codex follow-up suggestions as composer chips
 https://github.com/pingdotgg/t3code/pull/15252 at e5bca463420281c684e9cf88db2c4fb68c426719
 
-Desktop/shared changes only. Context rebased onto v0.0.46-nightly.20261007.2761
+Desktop/shared changes only. Context rebased onto v0.0.46-nightly.20261008.2813
 with t3code-math.patch applied first. No dependency changes.
 
 diff --git a/apps/web/src/components/ChatMarkdown.test.tsx b/apps/web/src/components/ChatMarkdown.test.tsx
@@ -292,13 +292,14 @@ index 7fdc5e9..9e70eea 100644
    const editQueuedRunCommand = useAtomCommand(threadEnvironment.editQueuedRun, {
      reportFailure: false,
    });
-@@ -11363,7 +11375,11 @@ export default function ChatView(props: ChatViewProps) {
+@@ -11363,7 +11375,12 @@ export default function ChatView(props: ChatViewProps) {
                    paintOnlyDisplayedTimeline ? noopHeldRevert : onRevertTimelineTurn
                  }
                  {...(!paintOnlyDisplayedTimeline
--                  ? { onUseArtifactTemplate: useArtifactTemplate }
+-                  ? { onUseArtifactTemplate: useArtifactTemplate, onSendAppMessage: sendAppMessage }
 +                  ? {
 +                      onUseArtifactTemplate: useArtifactTemplate,
++                      onSendAppMessage: sendAppMessage,
 +                      // Provider subagent threads have no composer to fill.
 +                      ...(composerMounted ? { onUseCodexFollowUp: useCodexFollowUp } : {}),
 +                    }
@@ -314,41 +315,41 @@ index 89d44b6..b98bb97 100644
    onRevertToTurnCount: (targetTurnCount: number, messageId: MessageId) => void;
    onUseArtifactTemplate: (template: CodexArtifactTemplate) => void;
 +  onUseCodexFollowUp: ((prompt: string) => void) | undefined;
-   onRunShellCommand: ((command: string) => void) | undefined;
-   onImageExpand: (preview: ExpandedImagePreview) => void;
-   displayThreadKey?: string;
+   /** Sends text an MCP App asked to post, after the user approved it. */
+   onSendAppMessage: ((text: string) => Promise<void>) | undefined;
+   /**
 @@ -459,6 +460,7 @@ interface MessagesTimelineProps {
    supportsConversationRollback: boolean;
    onRevertToTurnCount: (targetTurnCount: number, messageId: MessageId) => void;
    onUseArtifactTemplate?: (template: CodexArtifactTemplate) => void;
 +  onUseCodexFollowUp?: (prompt: string) => void;
+   onSendAppMessage?: (text: string) => Promise<void>;
    onRunShellCommand?: (command: string) => void;
    isRevertingCheckpoint: boolean;
-   onImageExpand: (preview: ExpandedImagePreview) => void;
 @@ -534,6 +536,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
    supportsConversationRollback,
    onRevertToTurnCount,
    onUseArtifactTemplate = NOOP_USE_ARTIFACT_TEMPLATE,
 +  onUseCodexFollowUp,
+   onSendAppMessage,
    onRunShellCommand,
    isRevertingCheckpoint,
-   onImageExpand,
 @@ -1169,6 +1172,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
        onImageExpand,
        onFileOpen,
        onUseArtifactTemplate,
 +      onUseCodexFollowUp,
+       onSendAppMessage,
+       onAppFullscreenChange,
        onFileDownload,
-       openPullRequest,
-       onOpenTurnDiff,
 @@ -1204,6 +1208,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
        onImageExpand,
        onFileOpen,
        onUseArtifactTemplate,
 +      onUseCodexFollowUp,
+       onSendAppMessage,
+       onAppFullscreenChange,
        onFileDownload,
-       openPullRequest,
-       onOpenTurnDiff,
 @@ -2519,6 +2524,7 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
              skills={ctx.skills}
              headingLevelOffset={MESSAGE_HEADING_LEVEL}

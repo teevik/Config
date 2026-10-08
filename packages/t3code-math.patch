@@ -391,8 +391,8 @@ diff --git a/apps/web/src/index.css b/apps/web/src/index.css
 index 65e2cef9c5d1..378557b4d5bc 100644
 --- a/apps/web/src/index.css
 +++ b/apps/web/src/index.css
-@@ -1750,6 +1750,22 @@ code {
-   margin: 0.65rem 0;
+@@ -1749,6 +1749,22 @@ code {
+   margin-bottom: 0;
  }
  
 +/* Wide display equations scroll instead of clipping or widening the message. */
@@ -411,9 +411,9 @@ index 65e2cef9c5d1..378557b4d5bc 100644
 +  white-space: pre-wrap;
 +}
 +
- .chat-markdown h1,
- .chat-markdown h2,
- .chat-markdown h3,
+ .chat-markdown p,
+ .chat-markdown ul,
+ .chat-markdown ol,
 diff --git a/apps/web/src/markdown-clipboard.math.test.ts b/apps/web/src/markdown-clipboard.math.test.ts
 new file mode 100644
 index 000000000000..550bdf80e453
