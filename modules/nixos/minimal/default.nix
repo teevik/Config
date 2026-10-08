@@ -10,6 +10,7 @@ let
 in
 {
   imports = [
+    ./install-seed.nix
     ./networking.nix
     ./parallel-eval.nix
     ./ssh.nix

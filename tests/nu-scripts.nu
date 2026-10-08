@@ -6,7 +6,7 @@ def main [source: path, probe: path] {
     let probe = ($probe | path expand)
     let checker = ($source | path join packages/nu-scripts/check.nu)
     let warnings = ($source | path join tests/nix-warnings.nu)
-    let scripts = (glob $"($source)/packages/**/*.nu" | append (glob $"($source)/tests/**/*.nu"))
+    let scripts = ([packages scripts tests] | each {|directory| glob $"($source)/($directory)/**/*.nu" } | flatten)
     assert-success (^$nu.current-exe --no-config-file $checker ...$scripts | complete)
 
     with-scratch {|scratch|

@@ -5,7 +5,7 @@ def main [lint: path, fixtures: path] {
     let lint = ($lint | path expand)
     let fixtures = ($fixtures | path expand)
     with-scratch {|scratch|
-        mkdir checks hosts/generated modules packages tests dotfiles
+        mkdir checks hosts/generated modules packages scripts tests dotfiles
         cp ($fixtures | path join clean.nix.txt) flake.nix
         cp ($fixtures | path join clean.nix.txt) formatter.nix
         cp ($fixtures | path join parse-error.nix.txt) hosts/generated/hardware.nix

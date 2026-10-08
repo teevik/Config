@@ -9,12 +9,11 @@ let
       ../.github
       ../packages/security
       ../packages/update-packages.json
-      ../scripts/provision.sh
+      ../modules/nixos/minimal/install-seed.sh
       ../tests/security.py
       ../tests/cache-upload.py
       ../tests/cache-hosts.py
       ../tests/cache-update.py
-      ../tests/provision.py
       ../modules/nixos/minimal/homelab-cache.pub
     ];
   };
@@ -36,10 +35,9 @@ pkgs.runCommand "security-check"
     python3 tests/cache-upload.py
     python3 tests/cache-hosts.py
     python3 tests/cache-update.py
-    python3 tests/provision.py
     shellcheck .github/cache/host.sh
     shellcheck .github/cache/check.sh
-    shellcheck scripts/provision.sh
+    shellcheck modules/nixos/minimal/install-seed.sh
     actionlint -oneline .github/workflows/*.yml
     touch "$out"
   ''

@@ -1,12 +1,50 @@
-{ inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  # Secrets exported to interactive Nushell sessions, as ENV_VAR = secret name.
+  # Nix renders the loader so env.nu never repeats secret paths.
+  environmentSecrets = {
+    MERCURY_AI_TOKEN = "mercury-ai-token";
+    EXCALIDRAW_TOKEN = "excalidraw-token";
+    GEMINI_API_KEY = "gemini-api-key";
+    BRAVE_API_KEY = "brave-api-key";
+  };
+
+  exportSecret =
+    variable: secret:
+    let
+      path = config.sops.secrets.${secret}.path;
+    in
+    ''
+      if ("${path}" | path exists) {
+          let value = (open --raw "${path}" | str trim)
+          if ($value | is-not-empty) {
+              $env.${variable} = $value
+          }
+      }
+    '';
+in
 {
   imports = [ inputs.sops-nix.nixosModules.sops ];
 
   config = {
+    # Sourced from dotfiles/.config/nushell/env.nu.
+    environment.etc."nushell/scripts/secrets.nu".text = lib.concatLines (
+      lib.mapAttrsToList exportSecret environmentSecrets
+    );
+
     environment.systemPackages = [
       pkgs.sops
       pkgs.age
     ];
+
+    # On a new machine the age key arrives with the installation seed.
+    system.activationScripts.setupSecrets.deps = [ "installSeed" ];
 
     sops = {
       # Temporary compatibility until sops-nix stops requesting the removed Go 1.25 builder.

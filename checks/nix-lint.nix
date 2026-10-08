@@ -17,6 +17,7 @@ let
             ../hosts
             ../modules
             ../packages
+            ../scripts
             ../tests
           ]
         );

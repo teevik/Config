@@ -2,28 +2,8 @@
 $env.EDITOR = "nvim"
 $env.PKG_CONFIG_PATH = "/run/current-system/sw/lib/pkgconfig"
 
-# Secrets from sops-nix
-if ("/run/secrets/mercury-ai-token" | path exists) {
-    $env.MERCURY_AI_TOKEN = (open --raw /run/secrets/mercury-ai-token | str trim)
-}
-
-if ("/run/secrets/excalidraw-token" | path exists) {
-    $env.EXCALIDRAW_TOKEN = (open --raw /run/secrets/excalidraw-token | str trim)
-}
-
-if ("/run/secrets/gemini-api-key" | path exists) {
-    let gemini_api_key = (open --raw /run/secrets/gemini-api-key | str trim)
-    if ($gemini_api_key | is-not-empty) {
-        $env.GEMINI_API_KEY = $gemini_api_key
-    }
-}
-
-if ("/run/secrets/brave-api-key" | path exists) {
-    let brave_api_key = (open --raw /run/secrets/brave-api-key | str trim)
-    if ($brave_api_key | is-not-empty) {
-        $env.BRAVE_API_KEY = $brave_api_key
-    }
-}
+# Secrets from sops-nix, rendered by modules/nixos/standard/sops
+source /etc/nushell/scripts/secrets.nu
 
 # Add cargo bin and npm-packages to PATH
 $env.PATH = ($env.PATH | split row (char esep) | prepend [$"($nu.home-dir)/.cargo/bin" $"($nu.home-dir)/.npm-packages/bin"])

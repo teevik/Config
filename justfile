@@ -1,12 +1,7 @@
-# Install without rebooting; stage private keys before the first boot.
+# Install HOST on a machine and reboot it; it boots with this checkout and keys.
 [positional-arguments]
 install TARGET-IP HOST:
-    @bash scripts/provision.sh install "$@"
-
-# After booting the installed system, transfer this checkout and fix ownership.
-[positional-arguments]
-provision TARGET-IP:
-    @bash scripts/provision.sh provision "$@"
+    @nix run --impure --expr 'import ./packages/nu-scripts { tools = [ "nixos-anywhere" ]; }' . -- scripts/install.nu "$@"
 
 # Stow dotfiles into home directory
 stow:

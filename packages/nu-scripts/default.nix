@@ -1,5 +1,7 @@
 {
   pkgs ? import ../nix-lint/pkgs.nix,
+  # Names of extra packages a particular script needs, e.g. nixos-anywhere.
+  tools ? [ ],
   ...
 }:
 # A binary launcher, not another shell script. Keep the caller's selected Nix;
@@ -14,10 +16,13 @@ pkgs.runCommandLocal "config-nu"
     makeWrapper ${pkgs.lib.getExe pkgs.nushell} "$out/bin/config-nu" \
       --add-flags --no-config-file \
       --prefix PATH : ${
-        pkgs.lib.makeBinPath [
-          pkgs.coreutils
-          pkgs.curl
-          pkgs.git
-        ]
+        pkgs.lib.makeBinPath (
+          [
+            pkgs.coreutils
+            pkgs.curl
+            pkgs.git
+          ]
+          ++ map (name: pkgs.${name}) tools
+        )
       }
   ''

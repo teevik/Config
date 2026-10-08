@@ -91,12 +91,26 @@ in
     hyprlock-manual = { };
   };
 
-  system.activationScripts.nwgDisplaysConfig.text = ''
-    mkdir -p /home/teevik/.config/hypr
-    [ -f /home/teevik/.config/hypr/monitors.lua ] || printf '%s\n' 'hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })' > /home/teevik/.config/hypr/monitors.lua
-    [ -f /home/teevik/.config/hypr/workspaces.lua ] || touch /home/teevik/.config/hypr/workspaces.lua
-    chown -R teevik:users /home/teevik/.config/hypr
-  '';
+  # nwg-displays owns these files; only create them when missing. Parents
+  # belong to the user, or Hjem could not link the rest of ~/.config.
+  systemd.tmpfiles.settings.nwg-displays =
+    let
+      owned = {
+        user = "teevik";
+        group = "users";
+      };
+    in
+    {
+      "/home/teevik/.config".d = owned;
+      "/home/teevik/.config/hypr".d = owned;
+      "/home/teevik/.config/hypr/monitors.lua".f = owned // {
+        mode = "0644";
+        argument = ''hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })'' + "\n";
+      };
+      "/home/teevik/.config/hypr/workspaces.lua".f = owned // {
+        mode = "0644";
+      };
+    };
 
   systemd.user.services = {
     # Commands available to each host's Hypridle settings. The NixOS module
