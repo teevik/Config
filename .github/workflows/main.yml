@@ -1,4 +1,4 @@
-name: Nix flake check
+name: Main branch
 
 on:
   push:
@@ -10,14 +10,16 @@ permissions:
   id-token: write
 
 concurrency:
-  # Share the nightly queue so two cold runs don't build Zotero in parallel.
-  group: nix-cache-nightly-flake-update
-  # Let a completed test build finish uploading before another run.
+  # Single writer to the private homelab cache: every workflow that publishes
+  # to it (main.yml, nightly-update.yml) shares this group, so cache uploads
+  # never run in parallel.
+  group: homelab-cache-writer
+  # Let a running publish finish uploading before the next run starts.
   cancel-in-progress: false
 
 jobs:
   check:
-    uses: ./.github/workflows/nix-build.yml
+    uses: ./.github/workflows/build.yml
     with:
       build-hosts: false
       check-flake: true

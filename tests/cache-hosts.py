@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / ".github/cache/host.sh"
+SCRIPT = Path(__file__).resolve().parents[1] / ".github/ci/host.sh"
 
 
 class HostTests(unittest.TestCase):

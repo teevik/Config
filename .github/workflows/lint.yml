@@ -1,4 +1,4 @@
-name: Nix lint
+name: Lint
 
 on:
   push:
@@ -9,11 +9,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: nix-lint-${{ github.ref }}
+  group: lint-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  inputs:
+  nixpkgs-freshness:
     name: Nixpkgs freshness (advisory)
     runs-on: ubuntu-24.04
     steps:
@@ -33,6 +33,7 @@ jobs:
           send-statistics: false
 
   lint:
+    name: Lint checks
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
