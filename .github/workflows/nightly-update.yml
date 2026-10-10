@@ -35,6 +35,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      # Updates that failed but did not stop the night; see failures.json.
+      failed-updates: ${{ steps.update.outputs.failed-updates }}
     # Keep both hosts in one job: the Nix store and source/evaluation caches
     # are reused without a separate shared-dependency planner or artifact hop.
     steps:
@@ -55,6 +58,7 @@ jobs:
           nix-cache-signing-key: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
 
       - name: Update flake inputs and packages
+        id: update
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
@@ -160,12 +164,14 @@ jobs:
           title: "chore: update flake inputs and packages"
           body-path: ${{ runner.temp }}/pr-body.md
 
-  # Any failure above means no update, no PR or no cache refresh. Report it with
+  # Any failure above means no update, no PR or no cache refresh. A package
+  # update that failed while the rest succeeded only shows up in the PR body,
+  # and there is no PR when nothing else changed, so report that here too. Uses
   # the workflow token: the nightly GitHub App may lack the issues permission.
   notify-failure:
     name: Report nightly failure
     needs: [build, pull-request]
-    if: ${{ failure() }}
+    if: ${{ failure() || (needs.build.result == 'success' && needs.build.outputs.failed-updates != '') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -181,4 +187,5 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          FAILED_UPDATES: ${{ needs.build.outputs.failed-updates }}
         run: bash .github/ci/notify-failure.sh
