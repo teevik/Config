@@ -1,11 +1,14 @@
 T3 Code PR #14574: opt-in LaTeX math rendering in chat
 https://github.com/pingdotgg/t3code/pull/14574 at b7de94066ef221c528e1ec0e5ddfb307340fb05d
 
+Rebased onto v0.0.46-nightly.20261010.2922; sanitizer changes follow the
+shared Markdown pipeline, with opt-in math parsing kept in the web client.
+
 diff --git a/apps/web/package.json b/apps/web/package.json
-index ffccf206f910..69b77b210b78 100644
+index 1d2d93e..8ce3212 100644
 --- a/apps/web/package.json
 +++ b/apps/web/package.json
-@@ -48,8 +48,10 @@
+@@ -60,8 +60,10 @@
      "jose": "catalog:",
      "jsonc-parser": "3.3.1",
      "jszip": "3.10.1",
@@ -16,7 +19,7 @@ index ffccf206f910..69b77b210b78 100644
      "mermaid": "^11.17.2",
      "morphicons": "^1.7.1",
      "react": "19.2.6",
-@@ -80,6 +82,8 @@
+@@ -90,6 +92,8 @@
      "babel-plugin-react-compiler": "1.0.0",
      "compression": "^1.8.1",
      "jsdom": "^30.0.1",
@@ -24,14 +27,14 @@ index ffccf206f910..69b77b210b78 100644
 +    "micromark-util-types": "^2.0.2",
      "react-test-renderer": "19.2.6",
      "tailwindcss": "^4.0.0",
-     "unified": "^11.0.5",
+     "unified": "catalog:",
 diff --git a/apps/web/src/components/ChatMarkdown.test.tsx b/apps/web/src/components/ChatMarkdown.test.tsx
-index 5585dc3ddf40..8abec6fa7104 100644
+index b62431a..3c12647 100644
 --- a/apps/web/src/components/ChatMarkdown.test.tsx
 +++ b/apps/web/src/components/ChatMarkdown.test.tsx
-@@ -11,13 +11,16 @@ import { setMarkdownTaskChecked } from "./files/filePreviewMode";
- 
- vi.mock("@effect/atom-react", () => ({ useAtomValue: () => null }));
+@@ -23,13 +23,16 @@ vi.mock("./chat/MermaidDiagram", () => ({
+   MermaidDiagram: () => <svg aria-label="Diagram" />,
+ }));
  vi.mock("../hooks/useTheme", () => ({ useTheme: () => ({ resolvedTheme: "dark" }) }));
 +const settingsOverrides = vi.hoisted(() => ({ mathRenderingEnabled: false }));
  vi.mock("../hooks/useSettings", async (importOriginal) => {
@@ -48,7 +51,7 @@ index 5585dc3ddf40..8abec6fa7104 100644
    };
  });
  vi.mock("./ui/tooltip", async () => {
-@@ -447,6 +450,74 @@ describe("ChatMarkdown streaming", () => {
+@@ -544,6 +547,74 @@ describe("ChatMarkdown streaming", () => {
    });
  });
  
@@ -124,43 +127,27 @@ index 5585dc3ddf40..8abec6fa7104 100644
    const environmentId = EnvironmentId.make("environment-1");
  
 diff --git a/apps/web/src/components/ChatMarkdown.tsx b/apps/web/src/components/ChatMarkdown.tsx
-index 5358e253af4f..5aee631410b6 100644
+index 4c71236..e468d7b 100644
 --- a/apps/web/src/components/ChatMarkdown.tsx
 +++ b/apps/web/src/components/ChatMarkdown.tsx
-@@ -91,6 +91,7 @@ import remarkGfm from "remark-gfm";
- import type { Processor } from "unified";
+@@ -107,11 +107,13 @@ import { parseThreadLinkHref } from "@t3tools/shared/threadLinks";
+ import { AssistantCitationChip } from "./chat/AssistantCitationChip";
+ import { MarkdownThreadLink } from "./chat/MarkdownThreadLink";
  import { isWindowsAbsolutePath } from "@t3tools/shared/path";
- import { remarkGithubAlerts } from "../markdown-github-alerts";
 +import { mathKind, mayContainMath, remarkChatMath } from "../markdown-math";
  import {
    artifactTemplateFromHastProperties,
-   CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES,
-@@ -98,6 +99,7 @@ import {
    renderCodexFileCitationsAsMarkdown,
- } from "@t3tools/client-runtime/codex-markdown-directives";
+ } from "@t3tools/shared/codexMarkdownDirectives";
  import { renderSkillInlineMarkdownChildren } from "./chat/SkillInlineText";
 +import { MarkdownMath } from "./chat/MarkdownMath";
  import {
    resolveMarkdownMediaPreview,
    type ExpandedImagePreview,
-@@ -473,7 +475,12 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
-   attributes: {
-     ...defaultSchema.attributes,
-     "*": (defaultSchema.attributes?.["*"] ?? []).filter((attribute) => attribute !== "title"),
--    code: [...(defaultSchema.attributes?.code ?? []), "dataCodeMeta", "dataInlineCode"],
-+    // Fence languages plus the two math classes `remarkChatMath` emits.
-+    code: [
-+      ["className", /^language-./, "math-inline", "math-display"],
-+      "dataCodeMeta",
-+      "dataInlineCode",
-+    ],
-     blockquote: [...(defaultSchema.attributes?.blockquote ?? []), "dataAlert"],
-     div: [...(defaultSchema.attributes?.div ?? []), ...CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES],
-     a: [...(defaultSchema.attributes?.a ?? []), "dataPullRequestAutolink"],
-@@ -512,6 +519,22 @@ const CHAT_MARKDOWN_REMARK_PLUGINS_WITH_BREAKS = [
-   remarkNormalizeLinksAndTagInlineCode,
- ] satisfies NonNullable<ReactMarkdownOptions["remarkPlugins"]>;
+@@ -288,6 +290,22 @@ export function shouldUseMarkdownFileBrowserPrimaryAction(input: {
+ }
  
+ const EMPTY_MARKDOWN_SKILLS: ReadonlyArray<Pick<ServerProviderSkill, "name" | "displayName">> = [];
 +const CHAT_MARKDOWN_MATH_REMARK_PLUGINS = [remarkChatMath, ...CHAT_MARKDOWN_REMARK_PLUGINS];
 +
 +const CHAT_MARKDOWN_MATH_REMARK_PLUGINS_WITH_BREAKS = [
@@ -177,10 +164,10 @@ index 5358e253af4f..5aee631410b6 100644
 +  return lineBreaks ? CHAT_MARKDOWN_REMARK_PLUGINS_WITH_BREAKS : CHAT_MARKDOWN_REMARK_PLUGINS;
 +}
 +
- const CHAT_MARKDOWN_REHYPE_PLUGINS = [
-   rehypeRaw,
-   rehypePreserveImageSourceMeta,
-@@ -3463,6 +3486,19 @@ const CHAT_MARKDOWN_COMPONENTS = {
+ const EMPTY_REMARK_PLUGINS: NonNullable<ReactMarkdownOptions["remarkPlugins"]> = [];
+ 
+ const ARTIFACT_TEMPLATE_ICON_BY_KIND = {
+@@ -3378,6 +3396,19 @@ const CHAT_MARKDOWN_COMPONENTS = {
    },
  } satisfies Components;
  
@@ -200,7 +187,7 @@ index 5358e253af4f..5aee631410b6 100644
  function ChatMarkdown({
    text,
    className,
-@@ -3483,13 +3519,15 @@ function ChatMarkdown({
+@@ -3398,13 +3429,15 @@ function ChatMarkdown({
      props.isStreaming === true &&
      extraRemarkPlugins.length === 0 &&
      /(?:^|\n) {0,3}(?:`{3}|~{3})/.test(text);
@@ -218,9 +205,9 @@ index 5358e253af4f..5aee631410b6 100644
    );
  
    // react-markdown converts unparsed HTML nodes to text when skipHtml is false.
-@@ -3511,7 +3549,7 @@ function ChatMarkdown({
-           remarkPlugins={remarkPlugins}
-           rehypePlugins={parseRawHtml ? CHAT_MARKDOWN_REHYPE_PLUGINS : undefined}
+@@ -3430,7 +3463,7 @@ function ChatMarkdown({
+               : CHAT_MARKDOWN_LITERAL_HTML_REHYPE_PLUGINS
+           }
            skipHtml={false}
 -          components={CHAT_MARKDOWN_COMPONENTS}
 +          components={math ? CHAT_MARKDOWN_MATH_COMPONENTS : CHAT_MARKDOWN_COMPONENTS}
@@ -229,7 +216,7 @@ index 5358e253af4f..5aee631410b6 100644
            {text}
 diff --git a/apps/web/src/components/chat/MarkdownMath.tsx b/apps/web/src/components/chat/MarkdownMath.tsx
 new file mode 100644
-index 000000000000..c3436947d41e
+index 0000000..c343694
 --- /dev/null
 +++ b/apps/web/src/components/chat/MarkdownMath.tsx
 @@ -0,0 +1,29 @@
@@ -264,7 +251,7 @@ index 000000000000..c3436947d41e
 +});
 diff --git a/apps/web/src/components/chat/MathTypeset.tsx b/apps/web/src/components/chat/MathTypeset.tsx
 new file mode 100644
-index 000000000000..9934c1e33932
+index 0000000..9934c1e
 --- /dev/null
 +++ b/apps/web/src/components/chat/MathTypeset.tsx
 @@ -0,0 +1,40 @@
@@ -309,10 +296,10 @@ index 000000000000..9934c1e33932
 +  return <span dangerouslySetInnerHTML={{ __html: html }} />;
 +}
 diff --git a/apps/web/src/components/settings/SettingsPanels.tsx b/apps/web/src/components/settings/SettingsPanels.tsx
-index 1104f875f6c5..d59c38d247a9 100644
+index bee57d2..ad3f0e6 100644
 --- a/apps/web/src/components/settings/SettingsPanels.tsx
 +++ b/apps/web/src/components/settings/SettingsPanels.tsx
-@@ -543,6 +543,9 @@ export function useSettingsRestore(onRestored?: () => void) {
+@@ -547,6 +547,9 @@ export function useSettingsRestore(onRestored?: () => void) {
          ? ["Diff colors"]
          : []),
        ...(settings.chatWidth !== DEFAULT_UNIFIED_SETTINGS.chatWidth ? ["Chat width"] : []),
@@ -322,7 +309,7 @@ index 1104f875f6c5..d59c38d247a9 100644
        ...(settings.panelAnimationDurationMs !== DEFAULT_UNIFIED_SETTINGS.panelAnimationDurationMs
          ? ["Panel animations"]
          : []),
-@@ -670,6 +673,7 @@ export function useSettingsRestore(onRestored?: () => void) {
+@@ -674,6 +677,7 @@ export function useSettingsRestore(onRestored?: () => void) {
        settings.appearanceContrast,
        settings.diffColorScheme,
        settings.chatWidth,
@@ -330,7 +317,7 @@ index 1104f875f6c5..d59c38d247a9 100644
        settings.enableAgentBrowserAccess,
        settings.confirmQuit,
        settings.confirmThreadArchive,
-@@ -787,6 +791,7 @@ export function useSettingsRestore(onRestored?: () => void) {
+@@ -791,6 +795,7 @@ export function useSettingsRestore(onRestored?: () => void) {
        appearanceContrast: DEFAULT_UNIFIED_SETTINGS.appearanceContrast,
        diffColorScheme: DEFAULT_UNIFIED_SETTINGS.diffColorScheme,
        chatWidth: DEFAULT_UNIFIED_SETTINGS.chatWidth,
@@ -338,7 +325,7 @@ index 1104f875f6c5..d59c38d247a9 100644
        timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
        notificationMode: DEFAULT_UNIFIED_SETTINGS.notificationMode,
        inAppNotificationsEnabled: DEFAULT_UNIFIED_SETTINGS.inAppNotificationsEnabled,
-@@ -1447,6 +1452,31 @@ export function AppearanceSettingsPanel() {
+@@ -1456,6 +1461,31 @@ export function AppearanceSettingsPanel() {
              </div>
            }
          />
@@ -371,10 +358,10 @@ index 1104f875f6c5..d59c38d247a9 100644
  
        <SettingsSection id="motion" title="Motion">
 diff --git a/apps/web/src/components/settings/settingsSearch.ts b/apps/web/src/components/settings/settingsSearch.ts
-index ae55a327d163..af755250ffb5 100644
+index aff52ad..0de4a34 100644
 --- a/apps/web/src/components/settings/settingsSearch.ts
 +++ b/apps/web/src/components/settings/settingsSearch.ts
-@@ -219,6 +219,12 @@ export const SETTINGS_SEARCH_ITEMS = [
+@@ -246,6 +246,12 @@ export const SETTINGS_SEARCH_ITEMS = [
      to: "/settings/appearance",
      searchTerms: ["wide full width column layout messages composer monitor"],
    },
@@ -388,10 +375,10 @@ index ae55a327d163..af755250ffb5 100644
      id: "panel-animations",
      title: "Panel animations",
 diff --git a/apps/web/src/index.css b/apps/web/src/index.css
-index 65e2cef9c5d1..378557b4d5bc 100644
+index b59b832..e30f05e 100644
 --- a/apps/web/src/index.css
 +++ b/apps/web/src/index.css
-@@ -1749,6 +1749,22 @@ code {
+@@ -1775,6 +1775,22 @@ code {
    margin-bottom: 0;
  }
  
@@ -416,7 +403,7 @@ index 65e2cef9c5d1..378557b4d5bc 100644
  .chat-markdown ol,
 diff --git a/apps/web/src/markdown-clipboard.math.test.ts b/apps/web/src/markdown-clipboard.math.test.ts
 new file mode 100644
-index 000000000000..550bdf80e453
+index 0000000..550bdf8
 --- /dev/null
 +++ b/apps/web/src/markdown-clipboard.math.test.ts
 @@ -0,0 +1,28 @@
@@ -449,7 +436,7 @@ index 000000000000..550bdf80e453
 +  });
 +});
 diff --git a/apps/web/src/markdown-clipboard.ts b/apps/web/src/markdown-clipboard.ts
-index 39b941801638..b1ff7522e205 100644
+index 39b9418..b1ff752 100644
 --- a/apps/web/src/markdown-clipboard.ts
 +++ b/apps/web/src/markdown-clipboard.ts
 @@ -393,6 +393,15 @@ export function chatMarkdownClipboardPayload(
@@ -470,7 +457,7 @@ index 39b941801638..b1ff7522e205 100644
        if (text) {
 diff --git a/apps/web/src/markdown-math.test.ts b/apps/web/src/markdown-math.test.ts
 new file mode 100644
-index 000000000000..34b277764891
+index 0000000..34b2777
 --- /dev/null
 +++ b/apps/web/src/markdown-math.test.ts
 @@ -0,0 +1,127 @@
@@ -603,7 +590,7 @@ index 000000000000..34b277764891
 +});
 diff --git a/apps/web/src/markdown-math.ts b/apps/web/src/markdown-math.ts
 new file mode 100644
-index 000000000000..2787225ad6fe
+index 0000000..2787225
 --- /dev/null
 +++ b/apps/web/src/markdown-math.ts
 @@ -0,0 +1,375 @@
@@ -983,7 +970,7 @@ index 000000000000..2787225ad6fe
 +  return className.includes("math-inline") ? "inline" : null;
 +}
 diff --git a/docs/user/appearance.md b/docs/user/appearance.md
-index ec02a28ed787..c86a58bbb43a 100644
+index ec02a28..c86a58b 100644
 --- a/docs/user/appearance.md
 +++ b/docs/user/appearance.md
 @@ -29,6 +29,13 @@ The controls retreat as the composer docks after you send the first message.
@@ -1001,10 +988,10 @@ index ec02a28ed787..c86a58bbb43a 100644
  
  The main sidebar, right panel, and terminal drawer open and close immediately by default. Move the
 diff --git a/packages/contracts/src/settings.ts b/packages/contracts/src/settings.ts
-index 082459efc3df..a098acfe5c18 100644
+index 0038ede..18f0e21 100644
 --- a/packages/contracts/src/settings.ts
 +++ b/packages/contracts/src/settings.ts
-@@ -499,6 +499,9 @@ export const ClientSettingsSchema = Schema.Struct({
+@@ -505,6 +505,9 @@ export const ClientSettingsSchema = Schema.Struct({
    snapShotFlash: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
    snapShotAnimations: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
    wordWrap: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
@@ -1014,18 +1001,36 @@ index 082459efc3df..a098acfe5c18 100644
  });
  export type ClientSettings = typeof ClientSettingsSchema.Type;
  
-@@ -1803,5 +1806,6 @@ export const ClientSettingsPatch = Schema.Struct({
+@@ -1672,5 +1675,6 @@ export const ClientSettingsPatch = Schema.Struct({
    snapShotFlash: Schema.optionalKey(Schema.Boolean),
    snapShotAnimations: Schema.optionalKey(Schema.Boolean),
    wordWrap: Schema.optionalKey(Schema.Boolean),
 +  mathRenderingEnabled: Schema.optionalKey(Schema.Boolean),
  });
  export type ClientSettingsPatch = typeof ClientSettingsPatch.Type;
+diff --git a/packages/shared/src/markdownPipeline.ts b/packages/shared/src/markdownPipeline.ts
+index 7317dcc..c41b68b 100644
+--- a/packages/shared/src/markdownPipeline.ts
++++ b/packages/shared/src/markdownPipeline.ts
+@@ -145,7 +145,12 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
+   attributes: {
+     ...defaultSchema.attributes,
+     "*": (defaultSchema.attributes?.["*"] ?? []).filter((attribute) => attribute !== "title"),
+-    code: [...(defaultSchema.attributes?.code ?? []), "dataCodeMeta", "dataInlineCode"],
++    // Fence languages plus the two math classes `remarkChatMath` emits.
++    code: [
++      ["className", /^language-./, "math-inline", "math-display"],
++      "dataCodeMeta",
++      "dataInlineCode",
++    ],
+     blockquote: [...(defaultSchema.attributes?.blockquote ?? []), "dataAlert"],
+     div: [...(defaultSchema.attributes?.div ?? []), ...CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES],
+     a: [...(defaultSchema.attributes?.a ?? []), "dataPullRequestAutolink"],
 diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
-index c45ca5713bd3..a31a34cd89cc 100644
+index 249f45a..2b6f556 100644
 --- a/pnpm-lock.yaml
 +++ b/pnpm-lock.yaml
-@@ -719,12 +719,18 @@ importers:
+@@ -889,12 +889,18 @@ importers:
        jszip:
          specifier: 3.10.1
          version: 3.10.1
@@ -1044,7 +1049,7 @@ index c45ca5713bd3..a31a34cd89cc 100644
        mermaid:
          specifier: ^11.17.2
          version: 11.17.2
-@@ -810,6 +816,12 @@ importers:
+@@ -974,6 +980,12 @@ importers:
        jsdom:
          specifier: ^30.0.1
          version: 30.1.0(@noble/hashes@1.8.0)
@@ -1057,7 +1062,7 @@ index c45ca5713bd3..a31a34cd89cc 100644
        react-test-renderer:
          specifier: 19.2.6
          version: 19.2.6(react@19.2.6)
-@@ -8894,6 +8906,9 @@ packages:
+@@ -9722,6 +9734,9 @@ packages:
    mdast-util-gfm@3.1.0:
      resolution: {integrity: sha512-0ulfdQOM3ysHhCJ1p06l0b0VKlhU0wuQs3thxZQagjcjPrlFRqY215uZGHHJan9GEAXd9MbfPjFJz+qMkVR6zQ==}
  
@@ -1067,7 +1072,7 @@ index c45ca5713bd3..a31a34cd89cc 100644
    mdast-util-mdx-expression@2.0.1:
      resolution: {integrity: sha512-J6f+9hUp+ldTZqKRSg7Vw5V6MqjATc+3E4gf3CFNcuZNWD8XdyI6zQ8GqH7f8169MM6P7hMBRDVGnn7oHB9kXQ==}
  
-@@ -10878,6 +10893,9 @@ packages:
+@@ -11719,6 +11734,9 @@ packages:
    unist-util-position@5.0.0:
      resolution: {integrity: sha512-fucsC7HjXvkB5R3kTCO7kUjRdrS0BJt3M/FPxmHMBOm8JQi2BsHAHFsy27E0EolP8rp0NzXsJ+jNPyDWvOJZPA==}
  
@@ -1077,7 +1082,7 @@ index c45ca5713bd3..a31a34cd89cc 100644
    unist-util-stringify-position@4.0.0:
      resolution: {integrity: sha512-0ASV06AAoKCDkS2+xw5RXJywruurpbC4JZSm7nr7MOt1ojAzvyyaO+UxZf18j8FCF6kmzCZKcAgN/yu2gm2XgQ==}
  
-@@ -19470,6 +19488,18 @@ snapshots:
+@@ -20476,6 +20494,18 @@ snapshots:
      transitivePeerDependencies:
        - supports-color
  
@@ -1096,7 +1101,7 @@ index c45ca5713bd3..a31a34cd89cc 100644
    mdast-util-mdx-expression@2.0.1:
      dependencies:
        '@types/estree-jsx': 1.0.5
-@@ -22051,6 +22081,11 @@ snapshots:
+@@ -23118,6 +23148,11 @@ snapshots:
      dependencies:
        '@types/unist': 3.0.3
  

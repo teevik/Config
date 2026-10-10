@@ -8,8 +8,9 @@ t3code.overrideAttrs (_: {
   buildPhase = ''
     runHook preBuild
     pnpm exec vp test run \
-      packages/client-runtime/src/codexMarkdownDirectives.test.ts \
-      packages/client-runtime/src/codexArtifactTemplates.test.ts \
+      packages/shared/src/codexMarkdownDirectives.test.ts \
+      packages/shared/src/codexArtifactTemplates.test.ts \
+      packages/shared/src/markdownPipeline.test.ts \
       apps/web/src/components/ChatMarkdown.test.tsx \
       apps/web/src/components/ChatView.logic.test.ts \
       apps/web/src/components/chat/MessagesTimeline.logic.test.ts \

@@ -174,6 +174,12 @@ in
           installation_mode = "force_installed";
         };
 
+        # Open in Spotify desktop client
+        "{04a727ec-f366-4f19-84bc-14b41af73e4d}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/open-in-spotify-desktop/latest.xpi";
+          installation_mode = "force_installed";
+        };
+
       };
     };
   };

@@ -1,14 +1,15 @@
 T3 Code PR #15252: render Codex follow-up suggestions as composer chips
 https://github.com/pingdotgg/t3code/pull/15252 at e5bca463420281c684e9cf88db2c4fb68c426719
 
-Desktop/shared changes only. Context rebased onto v0.0.46-nightly.20261008.2813
-with t3code-math.patch applied first. No dependency changes.
+Desktop/shared changes only. Rebased onto v0.0.46-nightly.20261010.2922
+with t3code-math.patch applied first. Directive helpers and sanitizer changes
+follow their upstream move to packages/shared. No dependency changes.
 
 diff --git a/apps/web/src/components/ChatMarkdown.test.tsx b/apps/web/src/components/ChatMarkdown.test.tsx
-index b019ab6..37b6fe1 100644
+index 3c12647..d9bf94c 100644
 --- a/apps/web/src/components/ChatMarkdown.test.tsx
 +++ b/apps/web/src/components/ChatMarkdown.test.tsx
-@@ -922,6 +922,72 @@ describe("ChatMarkdown artifact-template cards", () => {
+@@ -932,6 +932,72 @@ describe("ChatMarkdown artifact-template cards", () => {
    });
  });
  
@@ -82,10 +83,10 @@ index b019ab6..37b6fe1 100644
    it("exposes headings below the host heading without changing their tags", () => {
      const html = renderToStaticMarkup(
 diff --git a/apps/web/src/components/ChatMarkdown.tsx b/apps/web/src/components/ChatMarkdown.tsx
-index a310a25..f8c00e2 100644
+index e468d7b..567c6dd 100644
 --- a/apps/web/src/components/ChatMarkdown.tsx
 +++ b/apps/web/src/components/ChatMarkdown.tsx
-@@ -8,6 +8,7 @@ import {
+@@ -27,6 +27,7 @@ import {
  import {
    ChevronRightIcon,
    CodeIcon,
@@ -93,17 +94,16 @@ index a310a25..f8c00e2 100644
    FileSpreadsheetIcon,
    FileTextIcon,
    GlobeIcon,
-@@ -97,6 +98,9 @@ import { mathKind, mayContainMath, remarkChatMath } from "../markdown-math";
+@@ -110,6 +111,8 @@ import { isWindowsAbsolutePath } from "@t3tools/shared/path";
+ import { mathKind, mayContainMath, remarkChatMath } from "../markdown-math";
  import {
    artifactTemplateFromHastProperties,
-   CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES,
-+  CODEX_FOLLOW_UP_HAST_PROPERTIES,
 +  codexFollowUpFromHastProperties,
 +  type CodexFollowUp,
-   remarkCodexDirectives,
    renderCodexFileCitationsAsMarkdown,
- } from "@t3tools/client-runtime/codex-markdown-directives";
-@@ -224,6 +228,8 @@ interface ChatMarkdownProps {
+ } from "@t3tools/shared/codexMarkdownDirectives";
+ import { renderSkillInlineMarkdownChildren } from "./chat/SkillInlineText";
+@@ -231,6 +234,8 @@ interface ChatMarkdownProps {
    parseRawHtml?: boolean;
    /** Append a prompt that invokes a newly created artifact-template skill. */
    onUseArtifactTemplate?: ((template: CodexArtifactTemplate) => void) | undefined;
@@ -112,7 +112,7 @@ index a310a25..f8c00e2 100644
    onRunShellCommand?: ((command: string) => void) | undefined;
    /** Directory that anchors relative links and images; defaults to `cwd`. Set
        to the file's own directory when rendering a markdown file. */
-@@ -344,6 +350,33 @@ function CodexArtifactTemplateCard(props: {
+@@ -369,6 +374,33 @@ function CodexArtifactTemplateCard(props: {
    );
  }
  
@@ -146,15 +146,7 @@ index a310a25..f8c00e2 100644
  const CODE_FENCE_LANGUAGE_REGEX = /(?:^|\s)language-([^\s]+)/;
  const WINDOWS_DRIVE_PATH_REGEX = /^[A-Za-z]:[\\/]/;
  const MAX_HIGHLIGHT_CACHE_ENTRIES = 500;
-@@ -535,6 +568,7 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
-     ],
-     blockquote: [...(defaultSchema.attributes?.blockquote ?? []), "dataAlert"],
-     div: [...(defaultSchema.attributes?.div ?? []), ...CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES],
-+    span: [...(defaultSchema.attributes?.span ?? []), ...CODEX_FOLLOW_UP_HAST_PROPERTIES],
-     a: [...(defaultSchema.attributes?.a ?? []), "dataPullRequestAutolink"],
-     img: [
-       ...(defaultSchema.attributes?.img ?? []),
-@@ -2511,6 +2545,7 @@ function useChatMarkdownState({
+@@ -2317,6 +2349,7 @@ function useChatMarkdownState({
    isStreaming = false,
    skills = EMPTY_MARKDOWN_SKILLS,
    onUseArtifactTemplate,
@@ -162,7 +154,7 @@ index a310a25..f8c00e2 100644
    onRunShellCommand,
    imageBaseDir,
    onImageExpand,
-@@ -2935,6 +2970,7 @@ function useChatMarkdownState({
+@@ -2737,6 +2770,7 @@ function useChatMarkdownState({
        markdownFileLinkMetaByHref,
        onTaskListChange,
        onUseArtifactTemplate,
@@ -170,7 +162,7 @@ index a310a25..f8c00e2 100644
        onRunShellCommand,
        openChangeRequestLink,
        openDeferredMarkdownLink,
-@@ -2968,6 +3004,7 @@ function useChatMarkdownState({
+@@ -2770,6 +2804,7 @@ function useChatMarkdownState({
        markdownFileLinkMetaByHref,
        onTaskListChange,
        onUseArtifactTemplate,
@@ -178,7 +170,7 @@ index a310a25..f8c00e2 100644
        onRunShellCommand,
        openChangeRequestLink,
        openDeferredMarkdownLink,
-@@ -3035,6 +3072,14 @@ const CHAT_MARKDOWN_COMPONENTS = {
+@@ -2837,6 +2872,14 @@ const CHAT_MARKDOWN_COMPONENTS = {
      }
      return <div {...props}>{children}</div>;
    },
@@ -194,7 +186,7 @@ index a310a25..f8c00e2 100644
      const { skills } = use(ChatMarkdownRendererContext);
      return <p {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</p>;
 diff --git a/apps/web/src/components/ChatView.logic.test.ts b/apps/web/src/components/ChatView.logic.test.ts
-index bf8d32f..e23dd11 100644
+index f870182..1a3e0ad 100644
 --- a/apps/web/src/components/ChatView.logic.test.ts
 +++ b/apps/web/src/components/ChatView.logic.test.ts
 @@ -55,6 +55,7 @@ import {
@@ -221,7 +213,7 @@ index bf8d32f..e23dd11 100644
    it("does not dock the composer before a background submission", () => {
      expect(
 diff --git a/apps/web/src/components/ChatView.logic.ts b/apps/web/src/components/ChatView.logic.ts
-index f36e54d..d4cff85 100644
+index 1e79964..9d381c4 100644
 --- a/apps/web/src/components/ChatView.logic.ts
 +++ b/apps/web/src/components/ChatView.logic.ts
 @@ -36,6 +36,7 @@ import {
@@ -231,7 +223,7 @@ index f36e54d..d4cff85 100644
 +  appendComposerPromptOnce,
    codexArtifactTemplateUsePrompt,
    type CodexArtifactTemplate,
- } from "@t3tools/client-runtime/codex-artifact-templates";
+ } from "@t3tools/shared/codexArtifactTemplates";
 @@ -214,6 +215,11 @@ export function codexArtifactTemplatePromptToAppend(
      : codexArtifactTemplateUsePrompt(template);
  }
@@ -245,10 +237,10 @@ index f36e54d..d4cff85 100644
  
  export function resolveEffectiveInteractionMode(input: {
 diff --git a/apps/web/src/components/ChatView.tsx b/apps/web/src/components/ChatView.tsx
-index 7fdc5e9..9e70eea 100644
+index 2aeca85..c003f8a 100644
 --- a/apps/web/src/components/ChatView.tsx
 +++ b/apps/web/src/components/ChatView.tsx
-@@ -546,6 +546,7 @@ import {
+@@ -551,6 +551,7 @@ import {
    revokeUserMessagePreviewUrls,
    startNewThreadForProject,
    codexArtifactTemplatePromptToAppend,
@@ -256,7 +248,7 @@ index 7fdc5e9..9e70eea 100644
    waitForStartedServerThread,
    shouldRefocusComposerOnWindowFocus,
  } from "./ChatView.logic";
-@@ -4585,13 +4586,12 @@ export default function ChatView(props: ChatViewProps) {
+@@ -4600,13 +4601,12 @@ export default function ChatView(props: ChatViewProps) {
        focusComposer();
      });
    }, [focusComposer]);
@@ -273,9 +265,9 @@ index 7fdc5e9..9e70eea 100644
        if (prompt !== null && !composer.insertTextAtEnd(prompt, { ensureLeadingBoundary: true })) {
          toastManager.add({
            type: "error",
-@@ -4604,6 +4604,18 @@ export default function ChatView(props: ChatViewProps) {
+@@ -4643,6 +4643,18 @@ export default function ChatView(props: ChatViewProps) {
      },
-     [composerRef, scheduleComposerFocus],
+     [activeThreadId, environmentId, interactionMode, isServerThread, runtimeMode, startThreadTurn],
    );
 +  const useArtifactTemplate = useCallback(
 +    (template: CodexArtifactTemplate) =>
@@ -292,7 +284,7 @@ index 7fdc5e9..9e70eea 100644
    const editQueuedRunCommand = useAtomCommand(threadEnvironment.editQueuedRun, {
      reportFailure: false,
    });
-@@ -11363,7 +11375,12 @@ export default function ChatView(props: ChatViewProps) {
+@@ -11490,7 +11502,12 @@ export default function ChatView(props: ChatViewProps) {
                    paintOnlyDisplayedTimeline ? noopHeldRevert : onRevertTimelineTurn
                  }
                  {...(!paintOnlyDisplayedTimeline
@@ -307,10 +299,10 @@ index 7fdc5e9..9e70eea 100644
                  isRevertingCheckpoint={isRevertingCheckpoint}
                  onImageExpand={onExpandTimelineImage}
 diff --git a/apps/web/src/components/chat/MessagesTimeline.tsx b/apps/web/src/components/chat/MessagesTimeline.tsx
-index 89d44b6..b98bb97 100644
+index 0518c96..bccffb3 100644
 --- a/apps/web/src/components/chat/MessagesTimeline.tsx
 +++ b/apps/web/src/components/chat/MessagesTimeline.tsx
-@@ -312,6 +312,7 @@ interface TimelineRowSharedState {
+@@ -327,6 +327,7 @@ interface TimelineRowSharedState {
    activeThreadEnvironmentId: EnvironmentId;
    onRevertToTurnCount: (targetTurnCount: number, messageId: MessageId) => void;
    onUseArtifactTemplate: (template: CodexArtifactTemplate) => void;
@@ -318,7 +310,7 @@ index 89d44b6..b98bb97 100644
    /** Sends text an MCP App asked to post, after the user approved it. */
    onSendAppMessage: ((text: string) => Promise<void>) | undefined;
    /**
-@@ -459,6 +460,7 @@ interface MessagesTimelineProps {
+@@ -497,6 +498,7 @@ interface MessagesTimelineProps {
    supportsConversationRollback: boolean;
    onRevertToTurnCount: (targetTurnCount: number, messageId: MessageId) => void;
    onUseArtifactTemplate?: (template: CodexArtifactTemplate) => void;
@@ -326,7 +318,7 @@ index 89d44b6..b98bb97 100644
    onSendAppMessage?: (text: string) => Promise<void>;
    onRunShellCommand?: (command: string) => void;
    isRevertingCheckpoint: boolean;
-@@ -534,6 +536,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
+@@ -602,6 +604,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
    supportsConversationRollback,
    onRevertToTurnCount,
    onUseArtifactTemplate = NOOP_USE_ARTIFACT_TEMPLATE,
@@ -334,7 +326,7 @@ index 89d44b6..b98bb97 100644
    onSendAppMessage,
    onRunShellCommand,
    isRevertingCheckpoint,
-@@ -1169,6 +1172,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
+@@ -1317,6 +1320,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
        onImageExpand,
        onFileOpen,
        onUseArtifactTemplate,
@@ -342,7 +334,7 @@ index 89d44b6..b98bb97 100644
        onSendAppMessage,
        onAppFullscreenChange,
        onFileDownload,
-@@ -1204,6 +1208,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
+@@ -1355,6 +1359,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
        onImageExpand,
        onFileOpen,
        onUseArtifactTemplate,
@@ -350,18 +342,18 @@ index 89d44b6..b98bb97 100644
        onSendAppMessage,
        onAppFullscreenChange,
        onFileDownload,
-@@ -2519,6 +2524,7 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
-             skills={ctx.skills}
-             headingLevelOffset={MESSAGE_HEADING_LEVEL}
-             onUseArtifactTemplate={ctx.onUseArtifactTemplate}
-+            onUseCodexFollowUp={ctx.onUseCodexFollowUp}
-             onRunShellCommand={ctx.onRunShellCommand}
-             onImageExpand={ctx.onImageExpand}
-           />
-diff --git a/packages/client-runtime/src/codexArtifactTemplates.ts b/packages/client-runtime/src/codexArtifactTemplates.ts
+@@ -2774,6 +2779,7 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
+               skills={ctx.skills}
+               headingLevelOffset={MESSAGE_HEADING_LEVEL}
+               onUseArtifactTemplate={ctx.onUseArtifactTemplate}
++              onUseCodexFollowUp={ctx.onUseCodexFollowUp}
+               onRunShellCommand={ctx.onRunShellCommand}
+               onImageExpand={ctx.onImageExpand}
+             />
+diff --git a/packages/shared/src/codexArtifactTemplates.ts b/packages/shared/src/codexArtifactTemplates.ts
 index 052a60f..b8f2fb0 100644
---- a/packages/client-runtime/src/codexArtifactTemplates.ts
-+++ b/packages/client-runtime/src/codexArtifactTemplates.ts
+--- a/packages/shared/src/codexArtifactTemplates.ts
++++ b/packages/shared/src/codexArtifactTemplates.ts
 @@ -119,7 +119,11 @@ export function appendCodexArtifactTemplateUsePrompt(
    draft: string,
    template: CodexArtifactTemplate,
@@ -375,10 +367,10 @@ index 052a60f..b8f2fb0 100644
    const trimmedDraft = draft.trimEnd();
    const promptStart = trimmedDraft.length - prompt.length;
    const alreadyEndsWithPrompt =
-diff --git a/packages/client-runtime/src/codexMarkdownDirectives.test.ts b/packages/client-runtime/src/codexMarkdownDirectives.test.ts
-index efd5262..c3272b3 100644
---- a/packages/client-runtime/src/codexMarkdownDirectives.test.ts
-+++ b/packages/client-runtime/src/codexMarkdownDirectives.test.ts
+diff --git a/packages/shared/src/codexMarkdownDirectives.test.ts b/packages/shared/src/codexMarkdownDirectives.test.ts
+index 2cfd1a0..034bf93 100644
+--- a/packages/shared/src/codexMarkdownDirectives.test.ts
++++ b/packages/shared/src/codexMarkdownDirectives.test.ts
 @@ -3,9 +3,12 @@ import remarkParse from "remark-parse";
  import { unified } from "unified";
  
@@ -390,8 +382,8 @@ index efd5262..c3272b3 100644
    renderCodexFileCitationsAsMarkdown,
 +  renderCodexFollowUpsAsMarkdown,
    splitCodexArtifactTemplateMarkdown,
- } from "./codexMarkdownDirectives.js";
- import { parseMarkdownFileLink } from "./markdownLinks.js";
+ } from "./codexMarkdownDirectives.ts";
+ import { parseMarkdownFileLink } from "./markdownLinks.ts";
 @@ -26,6 +29,8 @@ interface TestNode {
  }
  
@@ -538,10 +530,10 @@ index efd5262..c3272b3 100644
    it("leaves excluded and malformed directive source unchanged", () => {
      const markdown = [
        `\`${FILE_CITATION}\``,
-diff --git a/packages/client-runtime/src/codexMarkdownDirectives.ts b/packages/client-runtime/src/codexMarkdownDirectives.ts
+diff --git a/packages/shared/src/codexMarkdownDirectives.ts b/packages/shared/src/codexMarkdownDirectives.ts
 index 64a981a..e11363d 100644
---- a/packages/client-runtime/src/codexMarkdownDirectives.ts
-+++ b/packages/client-runtime/src/codexMarkdownDirectives.ts
+--- a/packages/shared/src/codexMarkdownDirectives.ts
++++ b/packages/shared/src/codexMarkdownDirectives.ts
 @@ -20,7 +20,9 @@ const COLON = 58;
  const DASH = 45;
  const UNDERSCORE = 95;
@@ -736,3 +728,23 @@ index 64a981a..e11363d 100644
 +  const trimmedLabel = label.trim();
 +  return prompt && trimmedLabel ? { label: trimmedLabel, prompt } : null;
 +}
+diff --git a/packages/shared/src/markdownPipeline.ts b/packages/shared/src/markdownPipeline.ts
+index c41b68b..96f212e 100644
+--- a/packages/shared/src/markdownPipeline.ts
++++ b/packages/shared/src/markdownPipeline.ts
+@@ -9,6 +9,7 @@ import { remarkGithubAlerts } from "./markdownGithubAlerts.ts";
+ import { remarkNormalizeListItemIndentation } from "./markdownListIndentation.ts";
+ import {
+   CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES,
++  CODEX_FOLLOW_UP_HAST_PROPERTIES,
+   remarkCodexDirectives,
+ } from "./codexMarkdownDirectives.ts";
+ import { isWindowsDrivePathHref } from "./markdownLinks.ts";
+@@ -153,6 +154,7 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
+     ],
+     blockquote: [...(defaultSchema.attributes?.blockquote ?? []), "dataAlert"],
+     div: [...(defaultSchema.attributes?.div ?? []), ...CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES],
++    span: [...(defaultSchema.attributes?.span ?? []), ...CODEX_FOLLOW_UP_HAST_PROPERTIES],
+     a: [...(defaultSchema.attributes?.a ?? []), "dataPullRequestAutolink"],
+     img: [
+       ...(defaultSchema.attributes?.img ?? []),
