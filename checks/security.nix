@@ -35,9 +35,9 @@ pkgs.runCommand "security-check"
     python3 tests/cache-upload.py
     python3 tests/cache-hosts.py
     python3 tests/cache-update.py
-    shellcheck .github/cache/host.sh
-    shellcheck .github/cache/check.sh
-    shellcheck .github/cache/notify-failure.sh
+    shellcheck .github/ci/host.sh
+    shellcheck .github/ci/check.sh
+    shellcheck .github/ci/notify-failure.sh
     shellcheck modules/nixos/minimal/install-seed.sh
     actionlint -oneline .github/workflows/*.yml
     touch "$out"

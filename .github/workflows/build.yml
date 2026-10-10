@@ -1,4 +1,4 @@
-name: Build NixOS
+name: Build
 
 on:
   workflow_call:
@@ -124,7 +124,7 @@ jobs:
         env:
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: python3 .github/cache/publish.py --preflight
+        run: python3 .github/ci/publish.py --preflight
 
       - name: Update flake inputs and packages
         if: inputs.update-packages
@@ -135,7 +135,7 @@ jobs:
         run: |
           # Resolve just from the same locked nixpkgs as this checkout.
           nixpkgs_rev=$(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)
-          python3 .github/cache/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
+          python3 .github/ci/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
             nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" \
             -c just update --export "$RUNNER_TEMP/nightly-update"
           echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
@@ -159,7 +159,7 @@ jobs:
         run: |
           build=(nix build --file packages/security/default.nix --out-link "$RUNNER_TEMP/security-tools")
           if [[ "$PUBLISH_CACHE" == true ]]; then
-            python3 .github/cache/build.py "${HOST:-bootstrap}" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
+            python3 .github/ci/build.py "${HOST:-bootstrap}" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
           else
             "${build[@]}"
           fi
@@ -174,7 +174,7 @@ jobs:
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
           SCAN_SCOPE: ${{ inputs.update-packages && 'candidate' || 'committed' }}
           SCANNER: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
-        run: bash .github/cache/host.sh desktop
+        run: bash .github/ci/host.sh desktop
 
       - name: Retain encrypted desktop security report
         if: ${{ !cancelled() && steps.desktop.outputs.scan-started == 'true' }}
@@ -196,7 +196,7 @@ jobs:
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
           SCAN_SCOPE: ${{ inputs.update-packages && 'candidate' || 'committed' }}
           SCANNER: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
-        run: bash .github/cache/host.sh zenbook
+        run: bash .github/ci/host.sh zenbook
 
       - name: Retain encrypted zenbook security report
         if: ${{ !cancelled() && steps.zenbook.outputs.scan-started == 'true' }}
@@ -215,4 +215,4 @@ jobs:
         env:
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: bash .github/cache/check.sh
+        run: bash .github/ci/check.sh

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("install_update", ROOT / ".github/cache/install-update.py")
+spec = importlib.util.spec_from_file_location("install_update", ROOT / ".github/ci/install-update.py")
 update = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(update)
 

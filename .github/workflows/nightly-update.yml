@@ -1,4 +1,4 @@
-name: Nix cache
+name: Nightly update
 
 on:
   # Scheduled workflows are best-effort and may be delayed or disabled after
@@ -9,7 +9,11 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: nix-cache-nightly-flake-update
+  # Single writer to the private homelab cache: every workflow that publishes
+  # to it (main.yml, nightly-update.yml) shares this group, so cache uploads
+  # never run in parallel.
+  group: homelab-cache-writer
+  # Let a running publish finish uploading before the next run starts.
   cancel-in-progress: false
 
 permissions:
@@ -23,7 +27,7 @@ jobs:
       id-token: write
     # Keep both hosts in one job: the Nix store and source/evaluation caches
     # are reused without a separate shared-dependency planner or artifact hop.
-    uses: ./.github/workflows/nix-build.yml
+    uses: ./.github/workflows/build.yml
     with:
       update-packages: true
       publish-cache: true
@@ -53,7 +57,7 @@ jobs:
         id: input-changes
         run: |
           git show HEAD:flake.lock > "$RUNNER_TEMP/flake.lock.before"
-          python3 .github/cache/install-update.py "$RUNNER_TEMP/nightly-update"
+          python3 .github/ci/install-update.py "$RUNNER_TEMP/nightly-update"
           {
             echo 'files<<UPDATE_FILES'
             cat "$RUNNER_TEMP/nightly-update/files.txt"
@@ -156,4 +160,4 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: bash .github/cache/notify-failure.sh
+        run: bash .github/ci/notify-failure.sh

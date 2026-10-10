@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / ".github/cache/check.sh"
+SCRIPT = Path(__file__).resolve().parents[1] / ".github/ci/check.sh"
 
 
 class CheckTests(unittest.TestCase):
@@ -39,7 +39,7 @@ Path(os.environ['out']).write_text('checked')
            .replace('BUILDER', json.dumps(sys.executable)) \
            .replace('PROGRAM', json.dumps(program))
         (self.checkout / "flake.nix").write_text(self.flake.replace('EXTRA', ''))
-        scripts = self.checkout / ".github/cache"
+        scripts = self.checkout / ".github/ci"
         scripts.mkdir(parents=True)
         # The existing uploader has its own integration tests. This stand-in
         # leaves Nix untouched and observes the final retention manifest.

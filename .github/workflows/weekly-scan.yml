@@ -1,4 +1,4 @@
-name: Nix security
+name: Weekly security scan
 
 on:
   schedule:
@@ -11,10 +11,10 @@ permissions:
   id-token: write
 
 concurrency:
-  group: nix-security-${{ github.ref }}
+  group: weekly-scan-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   scan:
     name: Scan committed desktop then zenbook
-    uses: ./.github/workflows/nix-build.yml
+    uses: ./.github/workflows/build.yml

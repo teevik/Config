@@ -14,7 +14,7 @@ system="$RUNNER_TEMP/nixos-$host"
 build=(nix build --out-link "$system" --print-build-logs "$target")
 echo "::group::Build $host"
 if [[ "$PUBLISH_CACHE" == true ]]; then
-  python3 .github/cache/build.py "$host" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
+  python3 .github/ci/build.py "$host" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- "${build[@]}"
 else
   "${build[@]}"
 fi
@@ -22,7 +22,7 @@ echo '::endgroup::'
 
 if [[ "$PUBLISH_CACHE" == true ]]; then
   echo "::group::Retain and verify $host"
-  python3 .github/cache/publish.py "$host" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$system"
+  python3 .github/ci/publish.py "$host" "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$system"
   echo '::endgroup::'
 fi
 
