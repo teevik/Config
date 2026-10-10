@@ -24,7 +24,9 @@ jobs:
     # Only main may publish to the homelab cache.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    # Longest successful run: 1h01m (2026-10-07) on a warm cache. A cold flake
+    # check rebuilds both hosts and every package, so leave headroom.
+    timeout-minutes: 240
     permissions:
       contents: read
       id-token: write
