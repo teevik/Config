@@ -57,13 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
           NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
-        run: |
-          # Resolve just from the same locked nixpkgs as this checkout.
-          nixpkgs_rev=$(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)
-          python3 .github/ci/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
-            nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" \
-            -c just update --export "$RUNNER_TEMP/nightly-update"
-          echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
+        run: bash .github/ci/update-packages.sh "$RUNNER_TEMP/nightly-update"
 
       - name: Upload nightly update
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -125,8 +119,10 @@ jobs:
           name: nightly-update
           path: ${{ runner.temp }}/nightly-update
 
-      - name: Install the built update and summarize input changes
+      - name: Install the built update and write the pull request body
         id: input-changes
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           git show HEAD:flake.lock > "$RUNNER_TEMP/flake.lock.before"
           python3 .github/ci/install-update.py "$RUNNER_TEMP/nightly-update"
@@ -135,59 +131,10 @@ jobs:
             cat "$RUNNER_TEMP/nightly-update/files.txt"
             echo 'UPDATE_FILES'
           } >> "$GITHUB_OUTPUT"
-
-          rows="$(
-            jq -r --slurpfile old "$RUNNER_TEMP/flake.lock.before" '
-              ($old[0].nodes // {}) as $before
-              | (.nodes // {}) as $after
-              | ((($before | keys) + ($after | keys)) | unique[]) as $name
-              | ($before[$name].locked // null) as $old_lock
-              | ($after[$name].locked // null) as $new_lock
-              | select($old_lock != $new_lock)
-              | "| `\($name)` | `\($old_lock.rev // "not present")` | `\($new_lock.rev // "not present")` |"
-            ' flake.lock
-          )"
-
-          # Updates that failed were left out of the artifact. Surface them in the
-          # log and the PR body; their errors are untrusted text, so escape them
-          # for workflow commands and fence them in Markdown.
-          failures="$RUNNER_TEMP/nightly-update/failures.json"
-          jq -r '.[] | "::warning title=Nightly update failed::\(.label): \(.error)"
-            | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A")' "$failures"
-          failed="$(
-            jq -r '.[]
-              | ("`" * ([([.error | scan("`+") | length] | max // 0) + 1, 3] | max)) as $fence
-              | "**\(.label)**\n\n\($fence)text\n\(.error)\n\($fence)\n"
-            ' "$failures"
-          )"
-
-          delimiter="BODY_$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')"
-          {
-            echo "body<<$delimiter"
-            echo 'Automated flake input and package update. Desktop and zenbook were built and scanned, and nix flake check passed using these exact files. System closures and successful check outputs were retained and verified in the private homelab cache.'
-            echo
-            echo 'Security scans are informational; see the per-host job summaries and encrypted security artifacts.'
-            echo 'Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-            echo
-            echo '### Changed inputs'
-            echo
-            echo '| Input | Old revision | New revision |'
-            echo '| --- | --- | --- |'
-            if [[ -n "$rows" ]]; then
-              echo "$rows"
-            else
-              echo '| _No locked inputs changed_ | — | — |'
-            fi
-            if [[ -n "$failed" ]]; then
-              echo
-              echo '### Failed updates'
-              echo
-              echo 'These updates failed and are not part of this pull request. Their files were left unchanged.'
-              echo
-              echo "$failed"
-            fi
-            echo "$delimiter"
-          } >> "$GITHUB_OUTPUT"
+          # Failed updates were left out of the artifact; the script warns about
+          # them in the log and lists them in the body.
+          python3 .github/ci/pr-body.py "$RUNNER_TEMP/flake.lock.before" flake.lock \
+            "$RUNNER_TEMP/nightly-update" "$RUN_URL" "$RUNNER_TEMP/pr-body.md"
 
       # App-authenticated pushes and PR updates trigger CI without manual approval.
       - name: Create nightly GitHub App token
@@ -209,7 +156,7 @@ jobs:
           branch: nightly/flake-update
           base: main
           title: "chore: update flake inputs and packages"
-          body: ${{ steps.input-changes.outputs.body }}
+          body-path: ${{ runner.temp }}/pr-body.md
 
   # Any failure above means no update, no PR or no cache refresh. Report it with
   # the workflow token: the nightly GitHub App may lack the issues permission.

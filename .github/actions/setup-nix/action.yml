@@ -57,27 +57,15 @@ runs:
         tags: tag:config-cache-ci
         ping: homelab.tail84b6c.ts.net
 
+    - name: Assemble the Nix configuration
+      id: nix-conf
+      shell: bash
+      run: bash .github/ci/nix-conf.sh --github-output
+
     - name: Install Nix
       uses: DeterminateSystems/determinate-nix-action@4d65ea9cab522b6d9f29a170aed23ededc1b27af # v3.23.0
       with:
-        extra-conf: |
-          extra-experimental-features = parallel-eval
-          eval-cores = 2
-          max-jobs = 1
-          cores = 4
-          # Reclaim unused, already-uploaded build inputs under disk pressure.
-          min-free = 8589934592
-          max-free = 21474836480
-          # A just-published path must not remain a cached miss for an hour.
-          narinfo-cache-negative-ttl = 0
-          lazy-trees = true
-          accept-flake-config = true
-          connect-timeout = 15
-          fallback = true
-          # Public paths use the CDN directly; ncps advertises priority 10.
-          # Keep the private cache for custom outputs and other upstreams.
-          substituters = https://cache.nixos.org?priority=5 http://homelab.tail84b6c.ts.net:8501
-          trusted-public-keys = homelab-cache-1:e0A0wubKr+XqKPA/MeUY5ixaG+1HvBBImTkPzrNJT4s= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= teevik.cachix.org-1:lh2jXPvLIaTNsL8e8gvrI2abYe83tKhV0PmxQOGlitQ= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=
+        extra-conf: ${{ steps.nix-conf.outputs.conf }}
 
     - name: Verify private cache publication access
       if: ${{ inputs.publish-cache == 'true' }}

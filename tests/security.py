@@ -194,5 +194,29 @@ class ActionTests(unittest.TestCase):
                 self.assertEqual(runs, shells, "every run step needs shell: bash")
 
 
+
+class NixConfTests(unittest.TestCase):
+    """CI trusts the same cache keys as the NixOS hosts."""
+
+    def nix_conf(self, *args, env=None):
+        return subprocess.run(["bash", str(ROOT / ".github/ci/nix-conf.sh"), *args],
+                              check=True, capture_output=True, text=True, env=env).stdout
+
+    def test_conf_trusts_every_host_key_and_keeps_substituters(self):
+        lines = self.nix_conf().splitlines()
+        self.assertIn("substituters = https://cache.nixos.org?priority=5 http://homelab.tail84b6c.ts.net:8501", lines)
+        trusted = [line for line in lines if line.startswith("trusted-public-keys = ")]
+        self.assertEqual(len(trusted), 1)
+        minimal = ROOT / "modules/nixos/minimal"
+        expected = [(minimal / "homelab-cache.pub").read_text().strip(),
+                    *(minimal / "trusted-public-keys.txt").read_text().split()]
+        self.assertEqual(trusted[0].removeprefix("trusted-public-keys = ").split(" "), expected)
+
+    def test_github_output_wraps_conf_in_a_heredoc(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "output"
+            self.nix_conf("--github-output", env=dict(os.environ, GITHUB_OUTPUT=str(output)))
+            self.assertEqual(output.read_text(), "conf<<NIX_CONF_EOF\n" + self.nix_conf() + "NIX_CONF_EOF\n")
+
 if __name__ == "__main__":
     unittest.main()
