@@ -24,6 +24,17 @@ def t3-declared [file: path] {
     }
 }
 
+# MOCK_FAILURE names one failure, or several separated by commas.
+def failing [name: string] {
+    $name in ($env.MOCK_FAILURE? | default '' | split row ',')
+}
+
+# Fail like a real command: report on stderr, then exit non-zero.
+def fail [name: string] {
+    print --stderr $"error: mock ($name) failure"
+    exit 17
+}
+
 def t3-source [version: string] { $env.MOCK_T3 | path join sources $version }
 
 # The hash each input really has for a fixture source tree.
@@ -56,7 +67,6 @@ def t3-nix [args: list<string>] {
     if not ($args | any {|arg| $arg =~ '^t3code-nightly($|\.)' }) { return false }
     if $args.0 == 'build' and '--keep-going' not-in $args { return false }
     let declared = (t3-declared (t3-file $args))
-    let failure = ($env.MOCK_FAILURE? | default '')
     match $args.0 {
         'eval' => {
             let apply = ($args | last)
@@ -79,7 +89,7 @@ def t3-nix [args: list<string>] {
                 let declared_hash = ($declared | get $attr)
                 if ((t3-out-path $declared $attr) | path exists) { continue }
                 {tool: fetch, args: [$attr]} | to json --raw | $in + "\n" | save --append $env.MOCK_LOG
-                if $failure == 'fetch' {
+                if (failing fetch) {
                     print --stderr $"error: builder for ($attr) failed"
                     $failed = true
                     continue
@@ -107,9 +117,8 @@ def git-command [args: list<string>] {
 # Model command effects in a writable checkout; production update scripts still
 # perform their real fetching, parsing, replacement, sequencing, and export.
 def update-command [tool: string, args: list<string>] {
-    let failure = ($env.MOCK_FAILURE? | default '')
     let release_mode = ($env.MOCK_RELEASE? | default 'valid')
-    if $failure == $tool { exit 17 }
+    if (failing $tool) { fail $tool }
     match $tool {
         'nix' => {
             if (t3-nix $args) { return }
@@ -118,13 +127,19 @@ def update-command [tool: string, args: list<string>] {
                 # checked against real Nix in tests/update-inputs.py.
                 print '[]'
             } else if $args == [flake update] {
-                if $failure == 'flake' { exit 17 }
+                if (failing flake) { fail flake }
                 {fixture: updated} | to json | save --force flake.lock
             } else if $args.0 == 'build' {
-                assert (open --raw packages/roc-nightly.nix | str contains '2026-10-01-abcdef0')
-                assert (open --raw packages/t3code-nightly.nix | str contains '0.0.99-nightly.20261001.42')
-                assert equal (open --raw flake.lock | from json).fixture updated
-                if $failure == 'build' { exit 17 }
+                # Validation sees every requested package already updated;
+                # T3 Code also needs the refreshed lock it was built against.
+                if roc-nightly in $args {
+                    assert (open --raw packages/roc-nightly.nix | str contains '2026-10-01-abcdef0')
+                }
+                if t3code-nightly in $args {
+                    assert (open --raw packages/t3code-nightly.nix | str contains '0.0.99-nightly.20261001.42')
+                    assert equal (open --raw flake.lock | from json).fixture updated
+                }
+                if (failing build) { fail build }
             } else { error make {msg: $"Unexpected Nix command: ($args)"} }
         }
         'git' => { git-command $args }
@@ -165,7 +180,7 @@ def --wrapped main [...raw_args] {
         update-command $env.MOCK_TOOL $args
         return
     }
-    if ($env.MOCK_FAILURE? | default '') == $env.MOCK_TOOL { exit 17 }
+    if (failing $env.MOCK_TOOL) { exit 17 }
     if $env.MOCK_TOOL == 'nix' and (t3-nix $args) { return }
     if $env.MOCK_TOOL == 'git' { git-command $args; return }
 

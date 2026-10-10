@@ -72,8 +72,22 @@ jobs:
             ' flake.lock
           )"
 
+          # Updates that failed were left out of the artifact. Surface them in the
+          # log and the PR body; their errors are untrusted text, so escape them
+          # for workflow commands and fence them in Markdown.
+          failures="$RUNNER_TEMP/nightly-update/failures.json"
+          jq -r '.[] | "::warning title=Nightly update failed::\(.label): \(.error)"
+            | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A")' "$failures"
+          failed="$(
+            jq -r '.[]
+              | ("`" * ([([.error | scan("`+") | length] | max // 0) + 1, 3] | max)) as $fence
+              | "**\(.label)**\n\n\($fence)text\n\(.error)\n\($fence)\n"
+            ' "$failures"
+          )"
+
+          delimiter="BODY_$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')"
           {
-            echo 'body<<EOF'
+            echo "body<<$delimiter"
             echo 'Automated flake input and package update. Desktop and zenbook were built and scanned, and nix flake check passed using these exact files. System closures and successful check outputs were retained and verified in the private homelab cache.'
             echo
             echo 'Security scans are informational; see the per-host job summaries and encrypted security artifacts.'
@@ -88,7 +102,15 @@ jobs:
             else
               echo '| _No locked inputs changed_ | — | — |'
             fi
-            echo 'EOF'
+            if [[ -n "$failed" ]]; then
+              echo
+              echo '### Failed updates'
+              echo
+              echo 'These updates failed and are not part of this pull request. Their files were left unchanged.'
+              echo
+              echo "$failed"
+            fi
+            echo "$delimiter"
           } >> "$GITHUB_OUTPUT"
 
       # App-authenticated pushes and PR updates trigger CI without manual approval.
@@ -112,3 +134,26 @@ jobs:
           base: main
           title: "chore: update flake inputs and packages"
           body: ${{ steps.input-changes.outputs.body }}
+
+  # Any failure above means no update, no PR or no cache refresh. Report it with
+  # the workflow token: the nightly GitHub App may lack the issues permission.
+  notify-failure:
+    name: Report nightly failure
+    needs: [build, pull-request]
+    if: ${{ failure() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out Config
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Open or update the nightly failure issue
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash .github/cache/notify-failure.sh
