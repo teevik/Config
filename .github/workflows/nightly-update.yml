@@ -29,6 +29,8 @@ jobs:
     # Only main may publish to the homelab cache.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    # Longest successful run: 3h30m (2026-09-16), and both hosts now build in
+    # sequence, so a cold rebuild needs the GitHub maximum.
     timeout-minutes: 360
     permissions:
       contents: read

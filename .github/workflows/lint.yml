@@ -1,3 +1,6 @@
+# Runs on every push and pull request (or manual dispatch). Needs no secrets
+# or Tailscale: builds the file-based checks via tests/lint-checks.nix and
+# evaluates the flake without building its checks.
 name: Lint
 
 on:
@@ -16,9 +19,15 @@ jobs:
   lint:
     name: Lint checks
     runs-on: ubuntu-24.04
+    # Longest successful run: 9m30s (2026-10-10); a hung job should not run six hours.
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@4d65ea9cab522b6d9f29a170aed23ededc1b27af # v3.23.0
+      - name: Check out Config
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@4d65ea9cab522b6d9f29a170aed23ededc1b27af # v3.23.0
       - name: Build every checks/*.nix check
         run: nix build --file tests/lint-checks.nix --no-link --print-build-logs
       - name: Check flake cache substitution and retention
