@@ -1,3 +1,6 @@
+# Weekly (Monday morning, or on manual dispatch from any branch): build the
+# committed desktop and zenbook configurations and scan them for known
+# vulnerabilities. Reads from the private cache but never publishes to it.
 name: Weekly security scan
 
 on:
@@ -8,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: weekly-scan-${{ github.ref }}
@@ -17,4 +19,42 @@ concurrency:
 jobs:
   scan:
     name: Scan committed desktop then zenbook
-    uses: ./.github/workflows/build.yml
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out Config and its submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up Nix with the private cache
+        uses: ./.github/actions/setup-nix
+        with:
+          publish-cache: "false"
+          tailscale-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
+          tailscale-audience: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
+          cache-policy-ready: ${{ vars.NIX_CACHE_POLICY_READY }}
+
+      - name: Build pinned security tools
+        id: tools
+        uses: ./.github/actions/security-tools
+
+      - name: Build and scan desktop
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        uses: ./.github/actions/build-host
+        with:
+          host: desktop
+          scan-scope: committed
+          scanner: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
+
+      - name: Build and scan zenbook
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        uses: ./.github/actions/build-host
+        with:
+          host: zenbook
+          scan-scope: committed
+          scanner: ${{ steps.tools.outputs.package }}/bin/nix-security-scan

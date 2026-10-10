@@ -170,5 +170,29 @@ class ReportingTests(unittest.TestCase):
         self.assertEqual((self.output / "summary.json").read_text(), "old")
 
 
+class ActionTests(unittest.TestCase):
+    """actionlint does not read composite actions, so check their invariants here."""
+
+    def test_composite_actions_are_pinned_and_injection_free(self):
+        actions = sorted((ROOT / ".github/actions").glob("*/action.yml"))
+        self.assertTrue(actions)
+        for path in actions:
+            with self.subTest(action=path.parent.name):
+                lines = path.read_text().splitlines()
+                self.assertIn("  using: composite", lines)
+                for line in lines:
+                    key, _, value = line.strip().removeprefix("- ").partition(": ")
+                    if key == "uses" and not value.startswith("./"):
+                        self.assertRegex(value, r"^[\w.-]+/[\w./-]+@[0-9a-f]{40}( #|$)")
+                    if key == "run":
+                        # One line calling a shellchecked script under .github/ci;
+                        # inputs go through env, never into the shell text.
+                        self.assertFalse(value.startswith(("|", ">")), line)
+                        self.assertNotIn("${{", value)
+                runs = sum(line.strip().startswith(("run:", "- run:")) for line in lines)
+                shells = sum(line.strip() in ("shell: bash", "- shell: bash") for line in lines)
+                self.assertEqual(runs, shells, "every run step needs shell: bash")
+
+
 if __name__ == "__main__":
     unittest.main()

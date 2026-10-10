@@ -1,3 +1,5 @@
+# Runs `nix flake check` on every push to main (or manual dispatch) and
+# publishes the successful check outputs to the private homelab cache.
 name: Main branch
 
 on:
@@ -7,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   # Single writer to the private homelab cache: every workflow that publishes
@@ -19,11 +20,33 @@ concurrency:
 
 jobs:
   check:
-    uses: ./.github/workflows/build.yml
-    with:
-      build-hosts: false
-      check-flake: true
-      publish-cache: true
-    secrets:
-      NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-      NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+    name: Check flake
+    # Only main may publish to the homelab cache.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out Config and its submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up Nix with the private cache
+        uses: ./.github/actions/setup-nix
+        with:
+          publish-cache: "true"
+          tailscale-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
+          tailscale-audience: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
+          cache-policy-ready: ${{ vars.NIX_CACHE_POLICY_READY }}
+          nix-cache-ssh-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          nix-cache-signing-key: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+
+      - name: Check flake and retain successful check outputs
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: bash .github/ci/check.sh

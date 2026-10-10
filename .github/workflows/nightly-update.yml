@@ -1,3 +1,7 @@
+# Nightly (03:17 Oslo, or on manual dispatch from main): update flake inputs
+# and packages, build and scan both hosts and run the flake check against the
+# update, publish everything to the private homelab cache, then open or
+# refresh the update pull request. Failures are reported in a tracking issue.
 name: Nightly update
 
 on:
@@ -22,19 +26,87 @@ permissions:
 jobs:
   build:
     name: Update and build both hosts
+    # Only main may publish to the homelab cache.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
     permissions:
       contents: read
       id-token: write
     # Keep both hosts in one job: the Nix store and source/evaluation caches
     # are reused without a separate shared-dependency planner or artifact hop.
-    uses: ./.github/workflows/build.yml
-    with:
-      update-packages: true
-      publish-cache: true
-      check-flake: true
-    secrets:
-      NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
-      NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+    steps:
+      - name: Check out Config and its submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up Nix with the private cache
+        uses: ./.github/actions/setup-nix
+        with:
+          publish-cache: "true"
+          tailscale-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
+          tailscale-audience: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
+          cache-policy-ready: ${{ vars.NIX_CACHE_POLICY_READY }}
+          nix-cache-ssh-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          nix-cache-signing-key: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+
+      - name: Update flake inputs and packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: |
+          # Resolve just from the same locked nixpkgs as this checkout.
+          nixpkgs_rev=$(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)
+          python3 .github/ci/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
+            nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" \
+            -c just update --export "$RUNNER_TEMP/nightly-update"
+          echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
+
+      - name: Upload nightly update
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nightly-update
+          path: ${{ runner.temp }}/nightly-update
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Build pinned security tools
+        id: tools
+        uses: ./.github/actions/security-tools
+        with:
+          nix-cache-ssh-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          nix-cache-signing-key: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+
+      # A failed host must not stop the other host or the flake check.
+      - name: Build, retain and scan desktop
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        uses: ./.github/actions/build-host
+        with:
+          host: desktop
+          scan-scope: candidate
+          scanner: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
+          nix-cache-ssh-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          nix-cache-signing-key: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+
+      - name: Build, retain and scan zenbook
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        uses: ./.github/actions/build-host
+        with:
+          host: zenbook
+          scan-scope: candidate
+          scanner: ${{ steps.tools.outputs.package }}/bin/nix-security-scan
+          nix-cache-ssh-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          nix-cache-signing-key: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+
+      - name: Check flake and retain successful check outputs
+        if: ${{ !cancelled() }}
+        env:
+          NIX_CACHE_SSH_KEY: ${{ secrets.NIX_CACHE_SSH_KEY }}
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: bash .github/ci/check.sh
 
   pull-request:
     name: Open nightly update pull request

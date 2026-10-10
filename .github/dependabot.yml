@@ -1,7 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    # Workflows plus the composite actions that pin their own actions.
+    directories: ["/", "/.github/actions/*"]
     schedule:
       interval: weekly
     groups:

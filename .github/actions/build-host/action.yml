@@ -1,0 +1,47 @@
+# Build one NixOS host, retain its closure in the private cache when
+# publishing, scan it, and upload the encrypted report even if the scan fails.
+name: Build, retain and scan a host
+description: Run .github/ci/host.sh for one host and upload its encrypted security report.
+
+inputs:
+  host:
+    description: Host to build (desktop or zenbook)
+    required: true
+  scan-scope:
+    description: Scan scope passed to the scanner (candidate or committed)
+    required: true
+  scanner:
+    description: Path to the nix-security-scan binary
+    required: true
+  nix-cache-ssh-key:
+    description: secrets.NIX_CACHE_SSH_KEY, required when publishing
+    default: ""
+  nix-cache-signing-key:
+    description: secrets.NIX_CACHE_SIGNING_KEY, required when publishing
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Build, retain and scan ${{ inputs.host }}
+      id: host
+      shell: bash
+      env:
+        HOST: ${{ inputs.host }}
+        SCAN_SCOPE: ${{ inputs.scan-scope }}
+        SCANNER: ${{ inputs.scanner }}
+        NIX_CACHE_SSH_KEY: ${{ inputs.nix-cache-ssh-key }}
+        NIX_CACHE_SIGNING_KEY: ${{ inputs.nix-cache-signing-key }}
+      run: bash .github/ci/host.sh "$HOST"
+
+    - name: Retain encrypted ${{ inputs.host }} security report
+      if: ${{ !cancelled() && steps.host.outputs.scan-started == 'true' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: security-${{ inputs.host }}
+        path: |
+          ${{ runner.temp }}/security-${{ inputs.host }}/report.tar.gz.age
+          ${{ runner.temp }}/security-${{ inputs.host }}/summary.json
+          ${{ runner.temp }}/security-${{ inputs.host }}/summary.md
+        if-no-files-found: error
+        retention-days: 30

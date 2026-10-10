@@ -1,0 +1,28 @@
+# Build the pinned security scanner once per job. When publishing, its closure
+# is retained in the private cache under the `bootstrap` group.
+name: Build pinned security tools
+description: Build packages/security/default.nix and output its store path.
+
+inputs:
+  nix-cache-ssh-key:
+    description: secrets.NIX_CACHE_SSH_KEY, required when publishing
+    default: ""
+  nix-cache-signing-key:
+    description: secrets.NIX_CACHE_SIGNING_KEY, required when publishing
+    default: ""
+
+outputs:
+  package:
+    description: Store path of the security tools package
+    value: ${{ steps.build.outputs.package }}
+
+runs:
+  using: composite
+  steps:
+    - name: Build pinned security tools
+      id: build
+      shell: bash
+      env:
+        NIX_CACHE_SSH_KEY: ${{ inputs.nix-cache-ssh-key }}
+        NIX_CACHE_SIGNING_KEY: ${{ inputs.nix-cache-signing-key }}
+      run: bash .github/ci/security-tools.sh
