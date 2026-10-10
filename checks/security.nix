@@ -38,6 +38,10 @@ pkgs.runCommand "security-check"
     shellcheck .github/ci/host.sh
     shellcheck .github/ci/check.sh
     shellcheck .github/ci/notify-failure.sh
+    shellcheck .github/ci/setup-env.sh
+    shellcheck .github/ci/free-disk-space.sh
+    shellcheck .github/ci/check-cache-config.sh
+    shellcheck .github/ci/security-tools.sh
     shellcheck modules/nixos/minimal/install-seed.sh
     actionlint -oneline .github/workflows/*.yml
     touch "$out"
