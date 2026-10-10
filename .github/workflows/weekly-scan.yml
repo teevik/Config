@@ -1,6 +1,7 @@
 # Weekly (Monday morning, or on manual dispatch from any branch): build the
 # committed desktop and zenbook configurations and scan them for known
-# vulnerabilities. Reads from the private cache but never publishes to it.
+# vulnerabilities, and report how stale the locked Nixpkgs inputs are. Reads
+# from the private cache but never publishes to it.
 name: Weekly security scan
 
 on:
@@ -17,6 +18,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Informational and not actionable for transitive inputs: weekly, not per push.
+  nixpkgs-freshness:
+    name: Nixpkgs freshness (advisory)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Include transitive Nixpkgs inputs
+        id: inputs
+        run: |
+          keys=$(python3 packages/security/lock_inputs.py flake.lock "$RUNNER_TEMP/nixpkgs.lock")
+          echo "keys=$keys" >> "$GITHUB_OUTPUT"
+      - uses: DeterminateSystems/flake-checker-action@786422608c7bded2bbc9741ad9f91356842bf520 # v14
+        with:
+          flake-lock-path: ${{ runner.temp }}/nixpkgs.lock
+          nixpkgs-keys: ${{ steps.inputs.outputs.keys }}
+          ignore-missing-flake-lock: false
+          # Existing transitive inputs are stale; report them while we migrate.
+          fail-mode: false
+          send-statistics: false
+
   scan:
     name: Scan committed desktop then zenbook
     runs-on: ubuntu-24.04

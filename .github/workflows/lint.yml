@@ -13,43 +13,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  nixpkgs-freshness:
-    name: Nixpkgs freshness (advisory)
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Include transitive Nixpkgs inputs
-        id: inputs
-        run: |
-          keys=$(python3 packages/security/lock_inputs.py flake.lock "$RUNNER_TEMP/nixpkgs.lock")
-          echo "keys=$keys" >> "$GITHUB_OUTPUT"
-      - uses: DeterminateSystems/flake-checker-action@786422608c7bded2bbc9741ad9f91356842bf520 # v14
-        with:
-          flake-lock-path: ${{ runner.temp }}/nixpkgs.lock
-          nixpkgs-keys: ${{ steps.inputs.outputs.keys }}
-          ignore-missing-flake-lock: false
-          # Existing transitive inputs are stale; report them while we migrate.
-          fail-mode: false
-          send-statistics: false
-
   lint:
     name: Lint checks
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@4d65ea9cab522b6d9f29a170aed23ededc1b27af # v3.23.0
-      # Same derivation as checks.x86_64-linux.nix-lint, without discovering
-      # every Blueprint package/host or fetching private flake inputs.
-      - name: Check Nix/Nu sources and lint regression tests
-        run: nix build --file checks/nix-lint.nix --no-link --print-build-logs
-      - name: Check Nushell helpers and offline script regressions
-        run: nix build --file checks/nu-scripts.nix --no-link --print-build-logs
-      - name: Check nh source preparation
-        run: nix build --file checks/nh.nix --no-link --print-build-logs
-      - name: Check Skim plugin compatibility with Nushell
-        run: nix build --file checks/nu-plugin-skim.nix --no-link --print-build-logs
-      - name: Check security reporting and workflow definitions
-        run: nix build --file checks/security.nix --no-link --print-build-logs
+      - name: Build every checks/*.nix check
+        run: nix build --file tests/lint-checks.nix --no-link --print-build-logs
       - name: Check flake cache substitution and retention
         # These checks exercise Determinate Nix's flake-check out links.
         run: python3 tests/cache-checks.py
