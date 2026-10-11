@@ -212,6 +212,14 @@ class NixConfTests(unittest.TestCase):
                     *(minimal / "trusted-public-keys.txt").read_text().split()]
         self.assertEqual(trusted[0].removeprefix("trusted-public-keys = ").split(" "), expected)
 
+    def test_public_only_overrides_the_substituters(self):
+        lines = self.nix_conf("--public-only").splitlines()
+        # Nix keeps the last assignment, so the override must follow nix.conf's.
+        self.assertEqual([line for line in lines if line.startswith("substituters = ")],
+                         ["substituters = https://cache.nixos.org?priority=5 http://homelab.tail84b6c.ts.net:8501",
+                          "substituters = https://cache.nixos.org"])
+        self.assertEqual(sum(line.startswith("trusted-public-keys = ") for line in lines), 1)
+
     def test_github_output_wraps_conf_in_a_heredoc(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"

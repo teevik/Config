@@ -1,6 +1,3 @@
-# Runs on every push and pull request (or manual dispatch). Needs no secrets
-# or Tailscale: builds the file-based checks via tests/lint-checks.nix and
-# evaluates the flake without building its checks.
 name: Lint
 
 on:
@@ -21,13 +18,40 @@ jobs:
     runs-on: ubuntu-24.04
     # Longest successful run: 9m30s (2026-10-10); a hung job should not run six hours.
     timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Check out Config
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Connect to the private cache
+        id: tailscale
+        # Best effort: forks have no OIDC token or variables, and a tailnet
+        # outage must not block lint. Without it the checks build from source.
+        continue-on-error: true
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
+        with:
+          oauth-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
+          audience: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
+          tags: tag:config-cache-ci
+          ping: homelab.tail84b6c.ts.net
+      - name: Assemble the Nix configuration
+        id: nix-conf
+        env:
+          PRIVATE_CACHE: ${{ steps.tailscale.outcome }}
+        run: |
+          if [[ "$PRIVATE_CACHE" == success ]]; then
+            bash .github/ci/nix-conf.sh --github-output
+          else
+            echo "::warning::Private cache unreachable; lint checks build from the public cache only"
+            bash .github/ci/nix-conf.sh --github-output --public-only
+          fi
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@4d65ea9cab522b6d9f29a170aed23ededc1b27af # v3.23.0
+        with:
+          extra-conf: ${{ steps.nix-conf.outputs.conf }}
       - name: Build every checks/*.nix check
         run: nix build --file tests/lint-checks.nix --no-link --print-build-logs
       - name: Check flake cache substitution and retention
