@@ -161,6 +161,22 @@ hl.bind("SUPER + comma", exec("noctalia msg settings-toggle"))
 hl.bind("SUPER + W", exec("uwsm app -- firefox"))
 hl.bind("SUPER + F", exec("uwsm app -- nautilus"))
 hl.bind("SUPER + E", exec("uwsm app -- zeditor"))
+-- Bring the existing T3 window here; pressing again while focused hides it.
+hl.bind("SUPER + Z", function()
+  local window = hl.get_window("class:^com[.]t3tools[.]T3Code$")
+  if not window then
+    hl.exec_cmd("uwsm app -- t3code-desktop")
+    return
+  end
+
+  local active = hl.get_active_window()
+  if active and active.address == window.address then
+    hl.dispatch(hl.dsp.window.move({ workspace = "special:t3code", window = window, follow = false }))
+  else
+    hl.dispatch(hl.dsp.window.move({ workspace = hl.get_active_workspace(), window = window, follow = false }))
+    hl.dispatch(hl.dsp.focus({ window = window }))
+  end
+end)
 hl.bind("SUPER + Backspace", exec("hyprland-scratchpad toggle-exec --name discord --exec 'uwsm app -- vesktop'"))
 hl.bind("SUPER + M", exec("hyprland-scratchpad toggle-exec --name spotify --exec 'uwsm app -- spotify'"))
 hl.bind("SUPER + S", exec("noctalia msg panel-toggle control-center"))
