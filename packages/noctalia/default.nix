@@ -6,37 +6,53 @@ let
   # GSR 6.1.2 assumes FFmpeg 9 needs NVENC 13.1 and rejects NVIDIA 595
   # (NVENC 13.0) before encoding. FFmpeg 8 passes its compatibility check.
   gpuScreenRecorder = pkgs.gpu-screen-recorder.override { ffmpeg = pkgs.ffmpeg_8; };
-  pluginFiles = pkgs.runCommand "noctalia-plugins" { } ''
-    mkdir -p "$out/share/noctalia/plugins" "$out/bin"
-    ${lib.concatMapStringsSep "\n"
-      (name: ''
-        cp -r ${official}/${name} "$out/share/noctalia/plugins/${name}"
-      '')
-      [
-        "bongocat"
-        "screen_recorder"
-        "timer"
-      ]
-    }
-    ${lib.concatMapStringsSep "\n"
-      (name: ''
-        cp -r ${community}/${name} "$out/share/noctalia/plugins/${name}"
-      '')
-      [
-        "tailnet"
-        "taildrop"
-        "systemd"
-        "ssh-launcher"
-        "nix-search"
-      ]
-    }
+  pluginFiles =
+    pkgs.runCommand "noctalia-plugins"
+      {
+        nativeBuildInputs = [
+          pkgs.patch
+          pkgs.python3
+        ];
+      }
+      ''
+        mkdir -p "$out/share/noctalia/plugins" "$out/bin"
+        ${lib.concatMapStringsSep "\n"
+          (name: ''
+            cp -r ${official}/${name} "$out/share/noctalia/plugins/${name}"
+          '')
+          [
+            "bongocat"
+            "screen_recorder"
+            "timer"
+          ]
+        }
+        ${lib.concatMapStringsSep "\n"
+          (name: ''
+            cp -r ${community}/${name} "$out/share/noctalia/plugins/${name}"
+          '')
+          [
+            "tailnet"
+            "taildrop"
+            "systemd"
+            "ssh-launcher"
+            "nix-search"
+            "sony_headphones"
+          ]
+        }
 
-    install -m755 ${community}/taildrop/bin/noctalia-taildrop "$out/bin/noctalia-taildrop"
-    substituteInPlace "$out/bin/noctalia-taildrop" \
-      --replace-fail '#!/usr/bin/env python3' '#!${pkgs.python3}/bin/python3' \
-      --replace-fail '["noctalia",' '["${lib.getExe pkgs.noctalia}",'
-  '';
+        # The plugin's XM5 query and command layout do not control the XM6.
+        chmod -R u+w "$out/share/noctalia/plugins/sony_headphones"
+        patch -d "$out/share/noctalia/plugins" -p1 < ${./sony-xm6.patch}
+        PYTHONDONTWRITEBYTECODE=1 python3 ${../../tests/noctalia-sony-headphones.py} \
+          "$out/share/noctalia/plugins/sony_headphones/scripts/sony_ctl.py"
+
+        install -m755 ${community}/taildrop/bin/noctalia-taildrop "$out/bin/noctalia-taildrop"
+        substituteInPlace "$out/bin/noctalia-taildrop" \
+          --replace-fail '#!/usr/bin/env python3' '#!${pkgs.python3}/bin/python3' \
+          --replace-fail '["noctalia",' '["${lib.getExe pkgs.noctalia}",'
+      '';
   runtimeInputs = with pkgs; [
+    bluez
     coreutils
     evtest
     fzf
@@ -46,6 +62,7 @@ let
     nix-search-tv
     openssh
     procps
+    python3
     systemd
     tailscale
     util-linux # setsid, used by the Nix Search background indexer

@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.0.46-nightly.20261011.2967";
+  version = "0.0.46-nightly.20261011.2994";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-1TUSFoLJIBXfr8ZvOdArI07NjNdLU9W7hPXlrPm9CHQ=";
+    hash = "sha256-pmPFSlF2hIPdqsqgzbFiv3ylrKoSumznFMKBX7obvOg=";
   };
 
   # Opt-in LaTeX math rendering (Settings -> Appearance -> Render math), from

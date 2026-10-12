@@ -19,6 +19,12 @@
   networking.hostName = "desktop";
   disko.devices = import ./disk-config.nix { disks = [ "/dev/nvme1n1" ]; };
 
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
+  services.blueman.enable = true;
+
   services.hypridle.settings = {
     general = {
       before_sleep_cmd = "hyprctl dispatch 'hl.dsp.dpms({ action = \"off\" })'";

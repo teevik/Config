@@ -93,13 +93,13 @@ font_weight = 500
 font_scale = 1.1
 start = ["launcher", "workspaces", "bongocat"]
 center = ["date", "clock"]
-end = ["media", "screen-recorder", "timer", "tailnet", "tray", "keyboard_layout", "notifications", "volume", "battery", "control-center"]
+end = ["media", "screen-recorder", "timer", "tailnet", "tray", "keyboard_layout", "notifications", "sony-headphones", "volume", "battery", "control-center"]
 
 # Keep the smaller desktop display focused on workspaces and quick controls.
 [bar.main.monitor."HDMI-A-2"]
 start = ["launcher", "workspaces"]
 center = ["clock"]
-end = ["tray", "keyboard_layout", "notifications", "volume", "battery", "control-center"]
+end = ["tray", "keyboard_layout", "notifications", "sony-headphones", "volume", "battery", "control-center"]
 
 [widget.launcher.actions]
 left = "exec uwsm app -- tofi-drun --drun-launch=true"
@@ -148,6 +148,7 @@ enabled = [
   "srounce/systemd",
   "cleboost/ssh-launcher",
   "knyrps/nix-search",
+  "estvoid/sony_headphones",
 ]
 
 [[plugins.source]]
@@ -171,3 +172,7 @@ show_idle_on_horizontal = false
 [widget.tailnet]
 type = "rylos/tailnet:bar"
 show_count = false
+
+[widget.sony-headphones]
+type = "estvoid/sony_headphones:sony_headphones"
+hide_when_disconnected = true
