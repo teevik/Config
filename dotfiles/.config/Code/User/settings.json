@@ -12,8 +12,136 @@
   "explorer.confirmDragAndDrop": false,
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
+  "editor.lineNumbers": "relative",
+  "editor.cursorBlinking": "solid",
+  "editor.renderWhitespace": "boundary",
   "notebook.output.lineHeight": 1.2,
   "diffEditor.renderSideBySide": false,
+
+  // Vim (shared muscle memory with Zed)
+  "vim.leader": "<space>",
+  "vim.useSystemClipboard": false,
+  "vim.hlsearch": true,
+  "vim.handleKeys": {
+    "<C-d>": false,
+    "<C-p>": false,
+    "<C-t>": false,
+    "<C-s>": false,
+  },
+  "vim.normalModeKeyBindingsNonRecursive": [
+    // Files, search, explorer, Git, and diagnostics
+    {
+      "before": ["<leader>", "f", "f"],
+      "commands": ["workbench.action.quickOpen"],
+    },
+    {
+      "before": ["<leader>", "f", "g"],
+      "commands": ["workbench.action.findInFiles"],
+    },
+    {
+      "before": ["<leader>", "/"],
+      "commands": ["workbench.action.findInFiles"],
+    },
+    {
+      "before": ["<leader>", "f", "b"],
+      "commands": ["workbench.action.showAllEditors"],
+    },
+    {
+      "before": ["<leader>", "f", "r"],
+      "commands": ["workbench.action.openRecent"],
+    },
+    {
+      "before": ["<leader>", "e"],
+      "commands": ["workbench.action.toggleSidebarVisibility"],
+    },
+    { "before": ["<leader>", "g", "s"], "commands": ["workbench.view.scm"] },
+    { "before": ["<leader>", "g", "b"], "commands": ["git.checkout"] },
+    {
+      "before": ["<leader>", "s", "d"],
+      "commands": ["workbench.actions.view.problems"],
+    },
+    { "before": ["U"], "after": ["<C-r>"] },
+    { "before": ["<Esc>"], "commands": [":nohl"] },
+
+    // Explicit system clipboard, leaving ordinary Vim registers independent
+    { "before": ["<leader>", "y"], "after": ["\"", "+", "y"] },
+    { "before": ["<leader>", "p"], "after": ["\"", "+", "p"] },
+
+    // Language navigation, actions, and symbols
+    { "before": ["g", "d"], "commands": ["editor.action.revealDefinition"] },
+    { "before": ["g", "r"], "commands": ["editor.action.goToReferences"] },
+    { "before": ["g", "I"], "commands": ["editor.action.goToImplementation"] },
+    { "before": ["g", "y"], "commands": ["editor.action.goToTypeDefinition"] },
+    { "before": ["<leader>", "a"], "commands": ["editor.action.quickFix"] },
+    {
+      "before": ["<leader>", "s", "s"],
+      "commands": ["workbench.action.gotoSymbol"],
+    },
+    {
+      "before": ["<leader>", "s", "S"],
+      "commands": ["workbench.action.showAllSymbols"],
+    },
+
+    // Buffers and file rename
+    {
+      "before": ["<leader>", "b", "c"],
+      "commands": ["workbench.action.closeActiveEditor"],
+    },
+    {
+      "before": ["g", "n"],
+      "commands": ["workbench.action.nextEditorInGroup"],
+    },
+    {
+      "before": ["g", "p"],
+      "commands": ["workbench.action.previousEditorInGroup"],
+    },
+    {
+      "before": ["<leader>", "c", "R"],
+      "commands": [
+        "workbench.files.action.showActiveFileInExplorer",
+        "renameFile",
+      ],
+    },
+    { "before": ["W"], "after": ["b"] },
+  ],
+  "vim.visualModeKeyBindingsNonRecursive": [
+    { "before": ["<leader>", "y"], "after": ["\"", "+", "y"] },
+    { "before": ["<leader>", "p"], "after": ["\"", "+", "p"] },
+    { "before": ["g", "d"], "commands": ["editor.action.revealDefinition"] },
+    { "before": ["g", "r"], "commands": ["editor.action.goToReferences"] },
+    { "before": ["g", "I"], "commands": ["editor.action.goToImplementation"] },
+    { "before": ["g", "y"], "commands": ["editor.action.goToTypeDefinition"] },
+    { "before": ["<leader>", "a"], "commands": ["editor.action.quickFix"] },
+    {
+      "before": ["<leader>", "s", "s"],
+      "commands": ["workbench.action.gotoSymbol"],
+    },
+    {
+      "before": ["<leader>", "s", "S"],
+      "commands": ["workbench.action.showAllSymbols"],
+    },
+    {
+      "before": ["<leader>", "b", "c"],
+      "commands": ["workbench.action.closeActiveEditor"],
+    },
+    {
+      "before": ["g", "n"],
+      "commands": ["workbench.action.nextEditorInGroup"],
+    },
+    {
+      "before": ["g", "p"],
+      "commands": ["workbench.action.previousEditorInGroup"],
+    },
+    {
+      "before": ["<leader>", "c", "R"],
+      "commands": [
+        "workbench.files.action.showActiveFileInExplorer",
+        "renameFile",
+      ],
+    },
+    { "before": ["W"], "after": ["b"] },
+    { "before": [":"], "commands": ["workbench.action.showCommands"] },
+  ],
 
   // Git and workspace behavior
   "git.autofetch": true,

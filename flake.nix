@@ -54,13 +54,6 @@
       url = "github:DeterminateSystems/nix-src";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Unmerged nix-src PRs applied by packages/determinate-nix/. Pinned to
-    # PR commits; a patch stops applying once its PR lands on main.
-    # https://github.com/DeterminateSystems/nix-src/pull/572
-    determinate-nix-pr-572 = {
-      url = "file+https://github.com/DeterminateSystems/nix-src/compare/7ed15851f9ff328b9f8c42099a4b7f7ed174974b...3f13349a527b6aa3096e7a36b21f61886c552a95.diff";
-      flake = false;
-    };
     hyprland-contrib = {
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -135,6 +128,8 @@
           # Temporary: solidtime-desktop's usocket dependency fails on Electron 42.
           "electron-41.10.6"
           "electron-41.10.7"
+          # Temporary: Zotero 10 bundles ESR 140, which reached end-of-life on 2026-10-13.
+          "firefox-esr-140-bin-unwrapped-140.17.0esr"
         ];
       };
       systems = [

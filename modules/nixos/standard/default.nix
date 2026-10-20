@@ -38,6 +38,9 @@
 
   # Persistent cache for project derivations that opt into ccache.
   programs.ccache.enable = true;
+  # Temporary: nixpkgs' wrapper integrity check rejects this setgid Perl script,
+  # failing the system build. Inspect the cache with `sudo ccache -d /var/cache/ccache -s`.
+  security.wrappers.nix-ccache.enable = false;
 
   # Boot
   boot = {

@@ -1,12 +1,10 @@
 {
-  inputs,
   perSystem,
   pkgs,
   ...
 }:
-# Determinate Nix with unmerged upstream PRs
+# Determinate Nix with local optimizations
 (perSystem.determinate-nix.default.appendPatches [
-  inputs.determinate-nix-pr-572
   ./slop-optimizations.patch
 ]).overrideAllMesonComponents
   (

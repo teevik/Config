@@ -41,6 +41,9 @@ pkgs.python3Packages.buildPythonApplication {
       --prefix PATH : ${pkgs.lib.makeBinPath [ openconnect ]}
       --unset QT_PLUGIN_PATH
       "''${qtWrapperArgs[@]}"
+      --set QTWEBENGINE_RESOURCES_PATH ${pkgs.qt6.qtwebengine}/resources
+      --set QTWEBENGINE_LOCALES_PATH ${pkgs.qt6.qtwebengine}/qtwebengine_locales
+      --set QTWEBENGINEPROCESS_PATH ${pkgs.qt6.qtwebengine}/libexec/QtWebEngineProcess
       --set QT_STYLE_OVERRIDE Fusion
     )
   '';
@@ -64,6 +67,10 @@ pkgs.python3Packages.buildPythonApplication {
     export XDG_CACHE_HOME="$TMPDIR/openconnect-cache"
     export XDG_DATA_HOME="$TMPDIR/openconnect-data"
     mkdir -p "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$XDG_DATA_HOME"
+    # Tests launch Python directly, before the application wrapper is used.
+    export QTWEBENGINE_RESOURCES_PATH=${pkgs.qt6.qtwebengine}/resources
+    export QTWEBENGINE_LOCALES_PATH=${pkgs.qt6.qtwebengine}/qtwebengine_locales
+    export QTWEBENGINEPROCESS_PATH=${pkgs.qt6.qtwebengine}/libexec/QtWebEngineProcess
     export QT_QPA_PLATFORM=offscreen
     export QTWEBENGINE_DISABLE_SANDBOX=1
     export QTWEBENGINE_CHROMIUM_FLAGS="--disable-gpu"

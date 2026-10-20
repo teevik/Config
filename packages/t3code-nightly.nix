@@ -31,24 +31,18 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.0.46-nightly.20261011.2994";
+  version = "0.1.1-nightly.20261020.3411";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-pmPFSlF2hIPdqsqgzbFiv3ylrKoSumznFMKBX7obvOg=";
+    hash = "sha256-2VTtUgGHv90noh5YtdqIPip0XgP87cjr9SVJbBAVD90=";
   };
 
-  # Opt-in LaTeX math rendering (Settings -> Appearance -> Render math), from
-  # pingdotgg/t3code#14574. It also edits pnpm-lock.yaml, so the dependency
-  # fetch is patched too; refresh pnpmDeps by hand when replacing the patch.
   # Codex follow-up chips from pingdotgg/t3code#15252, pinned to its reviewed
-  # desktop/shared changes. Apply after math; it adds no dependencies.
-  patches = [
-    ./t3code-math.patch
-    ./t3code-followup.patch
-  ];
+  # desktop/shared changes. Math rendering is included in upstream nightlies.
+  patches = [ ./t3code-followup.patch ];
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
   # separately so the application build stays offline. The name omits the
@@ -74,7 +68,7 @@ let
     dontFixup = true;
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-yMRQkeJHLv9BWMpDV2Dc57n41fQvM4GUM5I9ljnah0c=";
+    outputHash = "sha256-17UgEQnakrM5bTjfpZBWWYex/odEVWV+qSYykbppRgw=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -98,7 +92,7 @@ let
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     inherit patches;
     fetcherVersion = 4;
-    hash = "sha256-BBaYpycqDdfzLxMilUMGnW/TdmtTGBIgQpaBqcSmlfk=";
+    hash = "sha256-witoens1UicKE+SIQCrRk9YtbAVIW5x+2MqDrFh4F0s=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {

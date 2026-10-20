@@ -40,5 +40,111 @@
     "key": "ctrl+shift+-",
     "command": "-workbench.action.navigateForward",
     "when": "canNavigateForward"
+  },
+  {
+    "key": "ctrl+/",
+    "command": "editor.action.commentLine",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "alt+f",
+    "command": "workbench.action.toggleMaximizeEditorGroup",
+    "when": "!terminalFocus"
+  },
+  {
+    "key": "ctrl+b",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Normal'",
+    "args": {
+      "after": ["y", "s", "i", "w", "*"]
+    }
+  },
+  {
+    "key": "ctrl+b",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && (vim.mode == 'Visual' || vim.mode == 'VisualLine' || vim.mode == 'VisualBlock')",
+    "args": {
+      "after": ["S", "*"]
+    }
+  },
+  {
+    "key": "ctrl+b",
+    "command": "editor.action.insertSnippet",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Insert'",
+    "args": {
+      "snippet": "*${0}*"
+    }
+  },
+  {
+    "key": "ctrl+i",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Normal'",
+    "args": {
+      "after": ["y", "s", "i", "w", "_"]
+    }
+  },
+  {
+    "key": "ctrl+i",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && (vim.mode == 'Visual' || vim.mode == 'VisualLine' || vim.mode == 'VisualBlock')",
+    "args": {
+      "after": ["S", "_"]
+    }
+  },
+  {
+    "key": "ctrl+i",
+    "command": "editor.action.insertSnippet",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Insert'",
+    "args": {
+      "snippet": "_${0}_"
+    }
+  },
+  {
+    "key": "ctrl+e",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Normal'",
+    "args": {
+      "after": ["y", "s", "i", "w", "`"]
+    }
+  },
+  {
+    "key": "ctrl+e",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && (vim.mode == 'Visual' || vim.mode == 'VisualLine' || vim.mode == 'VisualBlock')",
+    "args": {
+      "after": ["S", "`"]
+    }
+  },
+  {
+    "key": "ctrl+e",
+    "command": "editor.action.insertSnippet",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Insert'",
+    "args": {
+      "snippet": "`${0}`"
+    }
+  },
+  {
+    "key": "ctrl+m",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Normal'",
+    "args": {
+      "after": ["y", "s", "i", "w", "$"]
+    }
+  },
+  {
+    "key": "ctrl+m",
+    "command": "vim.remap",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && (vim.mode == 'Visual' || vim.mode == 'VisualLine' || vim.mode == 'VisualBlock')",
+    "args": {
+      "after": ["S", "$"]
+    }
+  },
+  {
+    "key": "ctrl+m",
+    "command": "editor.action.insertSnippet",
+    "when": "editorTextFocus && !editorReadonly && editorLangId == typst && vim.active && vim.mode == 'Insert'",
+    "args": {
+      "snippet": "\\$${0}\\$"
+    }
   }
 ]

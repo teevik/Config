@@ -1,92 +1,8 @@
-T3 Code PR #15252: render Codex follow-up suggestions as composer chips
-https://github.com/pingdotgg/t3code/pull/15252 at e5bca463420281c684e9cf88db2c4fb68c426719
-
-Desktop/shared changes only. Rebased onto v0.0.46-nightly.20261010.2922
-with t3code-math.patch applied first. Directive helpers and sanitizer changes
-follow their upstream move to packages/shared. No dependency changes.
-
-diff --git a/apps/web/src/components/ChatMarkdown.test.tsx b/apps/web/src/components/ChatMarkdown.test.tsx
-index 3c12647..d9bf94c 100644
---- a/apps/web/src/components/ChatMarkdown.test.tsx
-+++ b/apps/web/src/components/ChatMarkdown.test.tsx
-@@ -932,6 +932,72 @@ describe("ChatMarkdown artifact-template cards", () => {
-   });
- });
- 
-+const FOLLOW_UP_DIRECTIVE =
-+  ':codex-followup[Prepare print version]{prompt="Prepare the document for printing."}';
-+
-+describe("ChatMarkdown Codex follow-ups", () => {
-+  it.each([true, false])(
-+    "fills the composer with the prompt when a follow-up is chosen, parseRawHtml=%s",
-+    async (parseRawHtml) => {
-+      vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-+      const onUseCodexFollowUp = vi.fn();
-+      let renderer: ReactTestRenderer | undefined;
-+      try {
-+        await act(async () => {
-+          renderer = create(
-+            <ChatMarkdown
-+              cwd="/tmp/project"
-+              text={`Done.\n\n${FOLLOW_UP_DIRECTIVE}\n:codex-followup[Summarize]{prompt="Summarize it."}`}
-+              parseRawHtml={parseRawHtml}
-+              onUseCodexFollowUp={onUseCodexFollowUp}
-+            />,
-+          );
-+        });
-+        const followUps = renderer!.root.findAll(
-+          (node) => node.type === "button" && node.props["data-chat-markdown-follow-up"] === true,
-+        );
-+        expect(followUps.map((button) => button.props["data-markdown-copy"])).toEqual([
-+          "Prepare print version",
-+          "Summarize",
-+        ]);
-+
-+        await act(async () => {
-+          followUps[0]!.props.onClick();
-+        });
-+        expect(onUseCodexFollowUp).toHaveBeenCalledExactlyOnceWith(
-+          "Prepare the document for printing.",
-+        );
-+      } finally {
-+        await act(async () => renderer?.unmount());
-+        vi.unstubAllGlobals();
-+      }
-+    },
-+  );
-+
-+  it("shows only the label outside a composer-backed timeline", () => {
-+    const html = renderToStaticMarkup(
-+      <ChatMarkdown cwd="/tmp/project" text={`Next: ${FOLLOW_UP_DIRECTIVE}`} />,
-+    );
-+
-+    expect(html).toContain("Prepare print version");
-+    expect(html).not.toContain(":codex-followup");
-+    expect(html).not.toContain("<button");
-+  });
-+
-+  it("leaves follow-up examples inside code literal", () => {
-+    const html = renderToStaticMarkup(
-+      <ChatMarkdown
-+        cwd="/tmp/project"
-+        text={`\`${FOLLOW_UP_DIRECTIVE}\``}
-+        onUseCodexFollowUp={() => undefined}
-+      />,
-+    );
-+
-+    expect(html).toContain(":codex-followup");
-+    expect(html).not.toContain("<button");
-+  });
-+});
-+
- describe("ChatMarkdown heading levels", () => {
-   it("exposes headings below the host heading without changing their tags", () => {
-     const html = renderToStaticMarkup(
 diff --git a/apps/web/src/components/ChatMarkdown.tsx b/apps/web/src/components/ChatMarkdown.tsx
-index e468d7b..567c6dd 100644
+index baf23d2b..3b7ef645 100644
 --- a/apps/web/src/components/ChatMarkdown.tsx
 +++ b/apps/web/src/components/ChatMarkdown.tsx
-@@ -27,6 +27,7 @@ import {
+@@ -29,6 +29,7 @@ import {
  import {
    ChevronRightIcon,
    CodeIcon,
@@ -94,27 +10,27 @@ index e468d7b..567c6dd 100644
    FileSpreadsheetIcon,
    FileTextIcon,
    GlobeIcon,
-@@ -110,6 +111,8 @@ import { isWindowsAbsolutePath } from "@t3tools/shared/path";
- import { mathKind, mayContainMath, remarkChatMath } from "../markdown-math";
+@@ -117,6 +118,8 @@ import { mathKind } from "@t3tools/shared/markdownMath";
+ import remarkMath from "remark-math";
  import {
    artifactTemplateFromHastProperties,
 +  codexFollowUpFromHastProperties,
 +  type CodexFollowUp,
-   renderCodexFileCitationsAsMarkdown,
+   renderCodexInlineDirectivesAsMarkdown,
  } from "@t3tools/shared/codexMarkdownDirectives";
  import { renderSkillInlineMarkdownChildren } from "./chat/SkillInlineText";
-@@ -231,6 +234,8 @@ interface ChatMarkdownProps {
+@@ -257,6 +260,8 @@ interface ChatMarkdownProps {
+   lineBreaks?: boolean;
    parseRawHtml?: boolean;
-   /** Append a prompt that invokes a newly created artifact-template skill. */
    onUseArtifactTemplate?: ((template: CodexArtifactTemplate) => void) | undefined;
 +  /** Append a Codex follow-up's prompt to the composer; without it a follow-up is plain text. */
 +  onUseCodexFollowUp?: ((prompt: string) => void) | undefined;
    onRunShellCommand?: ((command: string) => void) | undefined;
-   /** Directory that anchors relative links and images; defaults to `cwd`. Set
-       to the file's own directory when rendering a markdown file. */
-@@ -369,6 +374,33 @@ function CodexArtifactTemplateCard(props: {
-   );
- }
+   imageBaseDir?: string | undefined;
+   workspaceMutationId?: string | null | undefined;
+@@ -345,6 +350,33 @@ const ARTIFACT_TEMPLATE_ICON_BY_KIND = {
+   slack: MessageSquareIcon,
+ } satisfies Record<CodexArtifactTemplateKind, LucideIcon>;
  
 +function CodexFollowUpChip(props: {
 +  readonly followUp: CodexFollowUp;
@@ -143,34 +59,26 @@ index e468d7b..567c6dd 100644
 +  );
 +}
 +
- const CODE_FENCE_LANGUAGE_REGEX = /(?:^|\s)language-([^\s]+)/;
- const WINDOWS_DRIVE_PATH_REGEX = /^[A-Za-z]:[\\/]/;
- const MAX_HIGHLIGHT_CACHE_ENTRIES = 500;
-@@ -2317,6 +2349,7 @@ function useChatMarkdownState({
+ function CodexArtifactTemplateCard(props: {
+   readonly template: CodexArtifactTemplate;
+   readonly onUse?: ((template: CodexArtifactTemplate) => void) | undefined;
+@@ -2376,6 +2408,7 @@ function useChatMarkdownState({
    isStreaming = false,
    skills = EMPTY_MARKDOWN_SKILLS,
    onUseArtifactTemplate,
 +  onUseCodexFollowUp,
    onRunShellCommand,
    imageBaseDir,
-   onImageExpand,
-@@ -2737,6 +2770,7 @@ function useChatMarkdownState({
-       markdownFileLinkMetaByHref,
-       onTaskListChange,
-       onUseArtifactTemplate,
-+      onUseCodexFollowUp,
-       onRunShellCommand,
-       openChangeRequestLink,
-       openDeferredMarkdownLink,
-@@ -2770,6 +2804,7 @@ function useChatMarkdownState({
-       markdownFileLinkMetaByHref,
-       onTaskListChange,
-       onUseArtifactTemplate,
-+      onUseCodexFollowUp,
-       onRunShellCommand,
-       openChangeRequestLink,
-       openDeferredMarkdownLink,
-@@ -2837,6 +2872,14 @@ const CHAT_MARKDOWN_COMPONENTS = {
+   workspaceMutationId,
+@@ -2832,6 +2865,7 @@ function useChatMarkdownState({
+     markdownFileLinkMetaByHref,
+     onTaskListChange,
+     onUseArtifactTemplate,
++    onUseCodexFollowUp,
+     onRunShellCommand,
+     openChangeRequestLink,
+     openDeferredMarkdownLink,
+@@ -2898,6 +2932,14 @@ const CHAT_MARKDOWN_COMPONENTS = {
      }
      return <div {...props}>{children}</div>;
    },
@@ -185,38 +93,11 @@ index e468d7b..567c6dd 100644
    p: function MarkdownParagraph({ node: _node, children, ...props }) {
      const { skills } = use(ChatMarkdownRendererContext);
      return <p {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</p>;
-diff --git a/apps/web/src/components/ChatView.logic.test.ts b/apps/web/src/components/ChatView.logic.test.ts
-index f870182..1a3e0ad 100644
---- a/apps/web/src/components/ChatView.logic.test.ts
-+++ b/apps/web/src/components/ChatView.logic.test.ts
-@@ -55,6 +55,7 @@ import {
-   timelineHasEphemeralPreviewUrls,
-   scheduleEnvironmentReconnectWarning,
-   codexArtifactTemplatePromptToAppend,
-+  codexFollowUpPromptToAppend,
-   shouldDockDraftHeroForSubmission,
-   shouldReleaseTimelineAnchorForToolActivity,
-   shouldRefocusComposerOnWindowFocus,
-@@ -967,6 +968,14 @@ describe("artifact template composer insertion", () => {
-   });
- });
- 
-+describe("Codex follow-up composer insertion", () => {
-+  it("adds the prompt once, keeping the existing draft", () => {
-+    expect(codexFollowUpPromptToAppend("", "Summarize it.")).toBe("Summarize it.");
-+    expect(codexFollowUpPromptToAppend("Also,", "Summarize it.")).toBe("Summarize it.");
-+    expect(codexFollowUpPromptToAppend("Also, Summarize it.", "Summarize it.")).toBeNull();
-+  });
-+});
-+
- describe("draft hero submission transition", () => {
-   it("does not dock the composer before a background submission", () => {
-     expect(
 diff --git a/apps/web/src/components/ChatView.logic.ts b/apps/web/src/components/ChatView.logic.ts
-index 1e79964..9d381c4 100644
+index c132c668..a1cf63ac 100644
 --- a/apps/web/src/components/ChatView.logic.ts
 +++ b/apps/web/src/components/ChatView.logic.ts
-@@ -36,6 +36,7 @@ import {
+@@ -37,6 +37,7 @@ import {
  import { videoMimeType } from "@t3tools/shared/video";
  import {
    appendCodexArtifactTemplateUsePrompt,
@@ -224,7 +105,7 @@ index 1e79964..9d381c4 100644
    codexArtifactTemplateUsePrompt,
    type CodexArtifactTemplate,
  } from "@t3tools/shared/codexArtifactTemplates";
-@@ -214,6 +215,11 @@ export function codexArtifactTemplatePromptToAppend(
+@@ -221,6 +222,11 @@ export function codexArtifactTemplatePromptToAppend(
      : codexArtifactTemplateUsePrompt(template);
  }
  
@@ -237,10 +118,10 @@ index 1e79964..9d381c4 100644
  
  export function resolveEffectiveInteractionMode(input: {
 diff --git a/apps/web/src/components/ChatView.tsx b/apps/web/src/components/ChatView.tsx
-index 2aeca85..c003f8a 100644
+index 1f9eb813..5e0ce497 100644
 --- a/apps/web/src/components/ChatView.tsx
 +++ b/apps/web/src/components/ChatView.tsx
-@@ -551,6 +551,7 @@ import {
+@@ -524,6 +524,7 @@ import {
    revokeUserMessagePreviewUrls,
    startNewThreadForProject,
    codexArtifactTemplatePromptToAppend,
@@ -248,101 +129,80 @@ index 2aeca85..c003f8a 100644
    waitForStartedServerThread,
    shouldRefocusComposerOnWindowFocus,
  } from "./ChatView.logic";
-@@ -4600,13 +4601,12 @@ export default function ChatView(props: ChatViewProps) {
-       focusComposer();
+@@ -3477,12 +3478,11 @@ export default function ChatView(props: ChatViewProps) {
      });
-   }, [focusComposer]);
--  const useArtifactTemplate = useCallback(
--    (template: CodexArtifactTemplate) => {
-+  const appendToComposer = useCallback(
-+    (promptToAppend: (currentDraft: string) => string | null) => {
-       const composer = composerRef.current;
-       if (!composer) return;
+   };
+   const scheduleComposerFocusStable = useStableCallback(scheduleComposerFocus);
+-  const insertArtifactTemplate = (template: CodexArtifactTemplate) => {
++  const appendToComposer = (promptToAppend: (currentDraft: string) => string | null) => {
+     const composer = composerRef.current;
+     if (!composer) return;
  
--      const currentDraft = composer.getSendContext().prompt;
--      const prompt = codexArtifactTemplatePromptToAppend(currentDraft, template);
-+      const prompt = promptToAppend(composer.getSendContext().prompt);
-       if (prompt !== null && !composer.insertTextAtEnd(prompt, { ensureLeadingBoundary: true })) {
-         toastManager.add({
-           type: "error",
-@@ -4643,6 +4643,18 @@ export default function ChatView(props: ChatViewProps) {
-     },
-     [activeThreadId, environmentId, interactionMode, isServerThread, runtimeMode, startThreadTurn],
-   );
-+  const useArtifactTemplate = useCallback(
-+    (template: CodexArtifactTemplate) =>
-+      appendToComposer((currentDraft) =>
-+        codexArtifactTemplatePromptToAppend(currentDraft, template),
-+      ),
-+    [appendToComposer],
-+  );
-+  const useCodexFollowUp = useCallback(
-+    (prompt: string) =>
-+      appendToComposer((currentDraft) => codexFollowUpPromptToAppend(currentDraft, prompt)),
-+    [appendToComposer],
-+  );
-   const editQueuedRunCommand = useAtomCommand(threadEnvironment.editQueuedRun, {
-     reportFailure: false,
-   });
-@@ -11490,7 +11502,12 @@ export default function ChatView(props: ChatViewProps) {
-                   paintOnlyDisplayedTimeline ? noopHeldRevert : onRevertTimelineTurn
-                 }
-                 {...(!paintOnlyDisplayedTimeline
--                  ? { onUseArtifactTemplate: useArtifactTemplate, onSendAppMessage: sendAppMessage }
-+                  ? {
-+                      onUseArtifactTemplate: useArtifactTemplate,
-+                      onSendAppMessage: sendAppMessage,
+-    const currentDraft = composer.getSendContext().prompt;
+-    const prompt = codexArtifactTemplatePromptToAppend(currentDraft, template);
++    const prompt = promptToAppend(composer.getSendContext().prompt);
+     if (prompt !== null && !composer.insertTextAtEnd(prompt, { ensureLeadingBoundary: true })) {
+       toastManager.add({
+         type: "error",
+@@ -3493,7 +3493,12 @@ export default function ChatView(props: ChatViewProps) {
+     }
+     scheduleComposerFocus();
+   };
++  const insertArtifactTemplate = (template: CodexArtifactTemplate) =>
++    appendToComposer((currentDraft) => codexArtifactTemplatePromptToAppend(currentDraft, template));
+   const insertArtifactTemplateStable = useStableCallback(insertArtifactTemplate);
++  const insertCodexFollowUp = (prompt: string) =>
++    appendToComposer((currentDraft) => codexFollowUpPromptToAppend(currentDraft, prompt));
++  const insertCodexFollowUpStable = useStableCallback(insertCodexFollowUp);
+   const sendAppMessage = async (text: string) => {
+     if (!isServerThread || activeThreadId === null) {
+       throw new Error("Messages from apps need a started thread.");
+@@ -8293,6 +8298,8 @@ export default function ChatView(props: ChatViewProps) {
+                   ? {
+                       onUseArtifactTemplate: insertArtifactTemplateStable,
+                       onSendAppMessage: sendAppMessageStable,
 +                      // Provider subagent threads have no composer to fill.
-+                      ...(composerMounted ? { onUseCodexFollowUp: useCodexFollowUp } : {}),
-+                    }
++                      ...(composerMounted ? { onUseCodexFollowUp: insertCodexFollowUpStable } : {}),
+                     }
                    : {})}
                  isRevertingCheckpoint={isRevertingCheckpoint}
-                 onImageExpand={onExpandTimelineImage}
 diff --git a/apps/web/src/components/chat/MessagesTimeline.tsx b/apps/web/src/components/chat/MessagesTimeline.tsx
-index 0518c96..bccffb3 100644
+index 1e591b56..d9271ade 100644
 --- a/apps/web/src/components/chat/MessagesTimeline.tsx
 +++ b/apps/web/src/components/chat/MessagesTimeline.tsx
-@@ -327,6 +327,7 @@ interface TimelineRowSharedState {
+@@ -324,6 +324,7 @@ interface TimelineRowSharedState {
    activeThreadEnvironmentId: EnvironmentId;
    onRevertToTurnCount: (targetTurnCount: number, messageId: MessageId) => void;
    onUseArtifactTemplate: (template: CodexArtifactTemplate) => void;
 +  onUseCodexFollowUp: ((prompt: string) => void) | undefined;
-   /** Sends text an MCP App asked to post, after the user approved it. */
    onSendAppMessage: ((text: string) => Promise<void>) | undefined;
-   /**
-@@ -497,6 +498,7 @@ interface MessagesTimelineProps {
-   supportsConversationRollback: boolean;
+   onAppFullscreenChange: (rowId: string, fullscreen: boolean) => void;
+   onRunShellCommand: ((command: string) => void) | undefined;
+@@ -490,6 +491,7 @@ interface MessagesTimelineProps {
+   availableRevertTurnCounts?: ReadonlySet<number> | undefined;
    onRevertToTurnCount: (targetTurnCount: number, messageId: MessageId) => void;
    onUseArtifactTemplate?: (template: CodexArtifactTemplate) => void;
 +  onUseCodexFollowUp?: (prompt: string) => void;
    onSendAppMessage?: (text: string) => Promise<void>;
    onRunShellCommand?: (command: string) => void;
    isRevertingCheckpoint: boolean;
-@@ -602,6 +604,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
-   supportsConversationRollback,
+@@ -590,6 +592,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
+   availableRevertTurnCounts,
    onRevertToTurnCount,
    onUseArtifactTemplate = NOOP_USE_ARTIFACT_TEMPLATE,
 +  onUseCodexFollowUp,
    onSendAppMessage,
    onRunShellCommand,
    isRevertingCheckpoint,
-@@ -1317,6 +1320,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
-       onImageExpand,
-       onFileOpen,
-       onUseArtifactTemplate,
-+      onUseCodexFollowUp,
-       onSendAppMessage,
-       onAppFullscreenChange,
-       onFileDownload,
-@@ -1355,6 +1359,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
-       onImageExpand,
-       onFileOpen,
-       onUseArtifactTemplate,
-+      onUseCodexFollowUp,
-       onSendAppMessage,
-       onAppFullscreenChange,
-       onFileDownload,
-@@ -2774,6 +2779,7 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
+@@ -1300,6 +1303,7 @@ const ConversationTimeline = memo(function ConversationTimeline({
+     onImageExpand,
+     onFileOpen,
+     onUseArtifactTemplate,
++    onUseCodexFollowUp,
+     onSendAppMessage,
+     onAppFullscreenChange,
+     onFileDownload,
+@@ -2686,6 +2690,7 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
                skills={ctx.skills}
                headingLevelOffset={MESSAGE_HEADING_LEVEL}
                onUseArtifactTemplate={ctx.onUseArtifactTemplate}
@@ -351,10 +211,10 @@ index 0518c96..bccffb3 100644
                onImageExpand={ctx.onImageExpand}
              />
 diff --git a/packages/shared/src/codexArtifactTemplates.ts b/packages/shared/src/codexArtifactTemplates.ts
-index 052a60f..b8f2fb0 100644
+index 08fa5a28..e8b6e015 100644
 --- a/packages/shared/src/codexArtifactTemplates.ts
 +++ b/packages/shared/src/codexArtifactTemplates.ts
-@@ -119,7 +119,11 @@ export function appendCodexArtifactTemplateUsePrompt(
+@@ -118,7 +118,11 @@ export function appendCodexArtifactTemplateUsePrompt(
    draft: string,
    template: CodexArtifactTemplate,
  ): string {
@@ -367,184 +227,11 @@ index 052a60f..b8f2fb0 100644
    const trimmedDraft = draft.trimEnd();
    const promptStart = trimmedDraft.length - prompt.length;
    const alreadyEndsWithPrompt =
-diff --git a/packages/shared/src/codexMarkdownDirectives.test.ts b/packages/shared/src/codexMarkdownDirectives.test.ts
-index 2cfd1a0..034bf93 100644
---- a/packages/shared/src/codexMarkdownDirectives.test.ts
-+++ b/packages/shared/src/codexMarkdownDirectives.test.ts
-@@ -3,9 +3,12 @@ import remarkParse from "remark-parse";
- import { unified } from "unified";
- 
- import {
-+  codexFollowUpFromHastProperties,
-+  codexFollowUpPromptFromHref,
-   remarkCodexDirectives,
-   renderCodexDirectivesForCopy,
-   renderCodexFileCitationsAsMarkdown,
-+  renderCodexFollowUpsAsMarkdown,
-   splitCodexArtifactTemplateMarkdown,
- } from "./codexMarkdownDirectives.ts";
- import { parseMarkdownFileLink } from "./markdownLinks.ts";
-@@ -26,6 +29,8 @@ interface TestNode {
- }
- 
- const FILE_CITATION = ':codex-file-citation{path="outputs/report.xlsx" purpose="output"}';
-+const FOLLOW_UP =
-+  ':codex-followup[Prepare print version]{prompt="Prepare the document for printing."}';
- const ARTIFACT_TEMPLATE =
-   '::artifact-template{skill_name="artifact-template-hello-world" skill_directory="/Users/test/.codex/skills/artifact-template-hello-world" display_name="Hello World" artifact_kind="document"}';
- 
-@@ -70,6 +75,34 @@ describe("remarkCodexDirectives", () => {
-     });
-   });
- 
-+  it("renders a follow-up as a labelled span that carries its prompt", () => {
-+    const markdown = `Next: ${FOLLOW_UP}`;
-+    const followUp = parse(markdown).children?.[0]?.children?.[1];
-+
-+    expect(followUp).toMatchObject({
-+      type: "codexFollowUp",
-+      children: [{ type: "text", value: "Prepare print version" }],
-+      data: {
-+        hName: "span",
-+        hProperties: {
-+          dataCodexFollowUp: "true",
-+          dataPrompt: "Prepare the document for printing.",
-+        },
-+      },
-+      position: {
-+        start: { offset: markdown.indexOf(FOLLOW_UP) },
-+        end: { offset: markdown.length },
-+      },
-+    });
-+  });
-+
-+  it("renders each follow-up on consecutive lines", () => {
-+    const second = ':codex-followup[Summarize]{prompt="Summarize the changes."}';
-+    const children = parse(`${FOLLOW_UP}\n${second}`).children?.[0]?.children ?? [];
-+
-+    expect(children.filter((child) => child.type === "codexFollowUp")).toHaveLength(2);
-+  });
-+
-   it.each([
-     "Meeting at 10:30",
-     "Open src/main.ts:42",
-@@ -78,6 +111,7 @@ describe("remarkCodexDirectives", () => {
-     ":::note\ncontent\n:::",
-     ':codex-file-citation-extra{path="outputs/report.xlsx"}',
-     "::artifact-template-extra",
-+    ':codex-followup-extra[Label]{prompt="Prompt"}',
-   ])("does not change unrelated colon syntax: %s", (markdown) => {
-     expect(parse(markdown)).toEqual(parseOrdinaryMarkdown(markdown));
-   });
-@@ -85,6 +119,11 @@ describe("remarkCodexDirectives", () => {
-   it.each([
-     ':codex-file-citation{purpose="output"}',
-     '::artifact-template{skill_name="artifact-template-hello-world"}',
-+    ":codex-followup[Label]",
-+    ':codex-followup[Label]{prompt=""}',
-+    ':codex-followup[Label]{prompt="   "}',
-+    ':codex-followup[]{prompt="Prompt"}',
-+    ':codex-followup{prompt="Prompt"}',
-   ])("keeps malformed supported directives literal: %s", (markdown) => {
-     expect(parse(markdown)).toEqual(parseOrdinaryMarkdown(markdown));
-   });
-@@ -157,6 +196,70 @@ describe("native Markdown adapters", () => {
-   });
- });
- 
-+describe("follow-up adapters", () => {
-+  it.each([
-+    `\\${FOLLOW_UP}`,
-+    `\`${FOLLOW_UP}\``,
-+    `\`\`\`text\n${FOLLOW_UP}\n\`\`\``,
-+    `[See ${FOLLOW_UP}](https://example.com)`,
-+    ":codex-followup[Prepare print",
-+    ':codex-followup[Prepare print version]{prompt="Prepare the',
-+  ])("leaves excluded and incomplete follow-up syntax literal: %s", (markdown) => {
-+    expect(renderCodexFollowUpsAsMarkdown(markdown, { actionable: true })).toBe(markdown);
-+    expect(renderCodexDirectivesForCopy(markdown)).toBe(markdown);
-+  });
-+
-+  it("renders an actionable follow-up as a link that reads back to its prompt", () => {
-+    const markdown = renderCodexFollowUpsAsMarkdown(
-+      ':codex-followup[Fix *all* [tests]]{prompt="Run tests (all of them) & fix > 1 failure"}',
-+      { actionable: true },
-+    );
-+    const link = parseOrdinaryMarkdown(markdown).children?.[0]?.children?.[0];
-+
-+    expect(link?.type).toBe("link");
-+    expect(link?.children).toEqual([
-+      // Label Markdown is flattened to its text, then escaped so it stays literal.
-+      expect.objectContaining({ type: "text", value: "Fix all [tests]" }),
-+    ]);
-+    expect(codexFollowUpPromptFromHref(link?.url ?? "")).toBe(
-+      "Run tests (all of them) & fix > 1 failure",
-+    );
-+  });
-+
-+  it("escapes GFM strikethrough markers so a label stays literal", () => {
-+    expect(
-+      renderCodexFollowUpsAsMarkdown(':codex-followup[Drop ~~old~~ code]{prompt="Remove it."}', {
-+        actionable: false,
-+      }),
-+    ).toBe("Drop \\~\\~old\\~\\~ code");
-+  });
-+
-+  it("renders a passive follow-up as its label", () => {
-+    expect(renderCodexFollowUpsAsMarkdown(`Next: ${FOLLOW_UP}`, { actionable: false })).toBe(
-+      "Next: Prepare print version",
-+    );
-+  });
-+
-+  it("ignores links that are not follow-ups", () => {
-+    expect(codexFollowUpPromptFromHref("https://example.com")).toBeNull();
-+    expect(codexFollowUpPromptFromHref("t3-follow-up:")).toBeNull();
-+    expect(codexFollowUpPromptFromHref("t3-follow-up:%E0%A4%A")).toBeNull();
-+  });
-+
-+  it("reads a follow-up back from sanitized element properties", () => {
-+    expect(
-+      codexFollowUpFromHastProperties(
-+        { dataCodexFollowUp: "true", dataPrompt: "Prepare the document for printing." },
-+        "Prepare print version",
-+      ),
-+    ).toEqual({ label: "Prepare print version", prompt: "Prepare the document for printing." });
-+    expect(codexFollowUpFromHastProperties({ dataPrompt: "Prompt" }, "Label")).toBeNull();
-+    expect(
-+      codexFollowUpFromHastProperties({ dataCodexFollowUp: "true", dataPrompt: "" }, "Label"),
-+    ).toBeNull();
-+  });
-+});
-+
- describe("directive copy adapter", () => {
-   it("copies the Markdown representations shown by citation chips and template cards", () => {
-     expect(renderCodexDirectivesForCopy(`Created ${FILE_CITATION}.\n\n${ARTIFACT_TEMPLATE}`)).toBe(
-@@ -164,6 +267,10 @@ describe("directive copy adapter", () => {
-     );
-   });
- 
-+  it("copies a follow-up as the label it shows", () => {
-+    expect(renderCodexDirectivesForCopy(`Next: ${FOLLOW_UP}`)).toBe("Next: Prepare print version");
-+  });
-+
-   it("leaves excluded and malformed directive source unchanged", () => {
-     const markdown = [
-       `\`${FILE_CITATION}\``,
 diff --git a/packages/shared/src/codexMarkdownDirectives.ts b/packages/shared/src/codexMarkdownDirectives.ts
-index 64a981a..e11363d 100644
+index 6ff396ed..fa5b862a 100644
 --- a/packages/shared/src/codexMarkdownDirectives.ts
 +++ b/packages/shared/src/codexMarkdownDirectives.ts
-@@ -20,7 +20,9 @@ const COLON = 58;
- const DASH = 45;
- const UNDERSCORE = 95;
- const CODEX_FILE_CITATION_NAME = "codex-file-citation";
-+const CODEX_FOLLOW_UP_NAME = "codex-followup";
- const CODEX_ARTIFACT_TEMPLATE_NAME = "artifact-template";
-+const CODEX_FOLLOW_UP_HREF_PREFIX = "t3-follow-up:";
- 
- export const CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES = [
-   "dataCodexArtifactTemplate",
-@@ -31,6 +33,14 @@ export const CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES = [
+@@ -32,6 +32,14 @@ export const CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES = [
    "dataSkillName",
  ] as const;
  
@@ -559,162 +246,39 @@ index 64a981a..e11363d 100644
  interface MarkdownPosition {
    readonly start: { readonly offset?: number };
    readonly end: { readonly offset?: number };
-@@ -46,6 +56,7 @@ interface MarkdownAstNode {
-   data?: {
-     codexArtifactTemplate?: CodexArtifactTemplate;
-     codexFileCitationMarkdown?: string;
-+    codexFollowUp?: CodexFollowUp;
-     hName?: string;
-     hProperties?: Record<string, unknown>;
-   };
-@@ -132,7 +143,10 @@ function codexDirectiveSyntax(): Extension {
- 
-   return {
-     text: {
--      [COLON]: restrictedDirective(textDirective, 1, CODEX_FILE_CITATION_NAME),
-+      [COLON]: [
-+        restrictedDirective(textDirective, 1, CODEX_FILE_CITATION_NAME),
-+        restrictedDirective(textDirective, 1, CODEX_FOLLOW_UP_NAME),
-+      ],
-     },
-     flow: {
-       [COLON]: restrictedDirective(leafDirective, 2, CODEX_ARTIFACT_TEMPLATE_NAME),
-@@ -199,6 +213,38 @@ function renderFileCitation(node: MarkdownAstNode, source: string, insideLink: b
+@@ -209,13 +217,19 @@ function renderFileCitation(node: MarkdownAstNode, source: string, insideLink: b
    delete node.value;
  }
  
-+function plainText(node: MarkdownAstNode): string {
-+  if (typeof node.value === "string") return node.value;
-+  return (node.children ?? []).map(plainText).join("");
-+}
-+
-+function resolveCodexFollowUp(node: MarkdownAstNode): CodexFollowUp | null {
-+  const label = plainText(node).replace(/\s+/g, " ").trim();
-+  const prompt = node.attributes?.prompt?.trim();
-+  return label && prompt ? { label, prompt } : null;
-+}
-+
+-function renderFollowUp(node: MarkdownAstNode, source: string): void {
+-  if (!node.attributes?.prompt?.trim() || !textContent(node).trim()) {
 +function renderFollowUp(node: MarkdownAstNode, source: string, insideLink: boolean): void {
-+  const followUp = resolveCodexFollowUp(node);
-+  // A follow-up becomes a button, and a button cannot sit inside a link.
-+  if (!followUp || insideLink) {
-+    restoreTextDirective(node, source);
-+    return;
-+  }
-+
-+  node.type = "codexFollowUp";
-+  node.children = [{ type: "text", value: followUp.label }];
-+  node.data = {
-+    codexFollowUp: followUp,
-+    hName: "span",
-+    hProperties: { dataCodexFollowUp: "true", dataPrompt: followUp.prompt },
-+  };
-+  delete node.name;
-+  delete node.attributes;
-+  delete node.value;
-+  delete node.url;
-+}
-+
- function renderArtifactTemplate(node: MarkdownAstNode, source: string): void {
-   const template = resolveCodexArtifactTemplate(node.attributes);
-   if (!template) {
-@@ -231,6 +277,10 @@ function transformCodexDirectives(node: MarkdownAstNode, source: string, insideL
-     renderFileCitation(node, source, insideLink);
++  const prompt = node.attributes?.prompt?.trim();
++  if (!prompt || !textContent(node).trim()) {
+     restoreTextDirective(node, source);
      return;
    }
-+  if (node.type === "textDirective" && node.name === CODEX_FOLLOW_UP_NAME) {
+ 
+-  node.data = { codexFollowUp: true, hName: "span" };
++  // A follow-up becomes a button, and a button cannot sit inside a link.
++  node.data = {
++    codexFollowUp: true,
++    hName: "span",
++    ...(insideLink ? {} : { hProperties: { dataCodexFollowUp: "true", dataPrompt: prompt } }),
++  };
+   delete node.name;
+   delete node.attributes;
+ }
+@@ -253,7 +267,7 @@ function transformCodexDirectives(node: MarkdownAstNode, source: string, insideL
+     return;
+   }
+   if (node.type === "textDirective" && node.name === CODEX_FOLLOW_UP_NAME) {
+-    renderFollowUp(node, source);
 +    renderFollowUp(node, source, insideLink);
-+    return;
-+  }
+   }
    if (node.type === "leafDirective" && node.name === CODEX_ARTIFACT_TEMPLATE_NAME) {
      renderArtifactTemplate(node, source);
-     return;
-@@ -242,7 +292,7 @@ function transformCodexDirectives(node: MarkdownAstNode, source: string, insideL
-   }
- }
- 
--/** Adds grammar only for the two directives emitted by Codex, then renders them as mdast. */
-+/** Adds grammar only for the directives emitted by Codex, then renders them as mdast. */
- function attachCodexDirectives(this: Processor) {
-   const data = this.data();
-   const micromarkExtensions = data.micromarkExtensions ?? (data.micromarkExtensions = []);
-@@ -270,6 +320,7 @@ interface DirectiveMatch {
-   readonly end: number;
-   readonly markdown?: string;
-   readonly template?: CodexArtifactTemplate;
-+  readonly followUp?: CodexFollowUp;
- }
- 
- function collectDirectiveMatches(node: MarkdownAstNode, matches: DirectiveMatch[]): void {
-@@ -284,6 +335,10 @@ function collectDirectiveMatches(node: MarkdownAstNode, matches: DirectiveMatch[
-       matches.push({ start, end, template: node.data.codexArtifactTemplate });
-       return;
-     }
-+    if (node.data?.codexFollowUp !== undefined) {
-+      matches.push({ start, end, followUp: node.data.codexFollowUp });
-+      return;
-+    }
-   }
-   for (const child of node.children ?? []) collectDirectiveMatches(child, matches);
- }
-@@ -315,6 +370,7 @@ export function renderCodexFileCitationsAsMarkdown(markdown: string): string {
- export function renderCodexDirectivesForCopy(markdown: string): string {
-   if (
-     !markdown.includes(`:${CODEX_FILE_CITATION_NAME}`) &&
-+    !markdown.includes(`:${CODEX_FOLLOW_UP_NAME}`) &&
-     !markdown.includes(`::${CODEX_ARTIFACT_TEMPLATE_NAME}`)
-   ) {
-     return markdown;
-@@ -322,11 +378,48 @@ export function renderCodexDirectivesForCopy(markdown: string): string {
- 
-   return renderDirectiveMatches(markdown, (match) => {
-     if (match.markdown !== undefined) return match.markdown;
-+    if (match.followUp !== undefined) return match.followUp.label;
-     if (match.template === undefined) return undefined;
-     return `${match.template.displayName} (${codexArtifactTemplatePresentationLabel(match.template.artifactKind)})`;
-   });
- }
- 
-+// Enough to keep a label literal inside link text; a label is a short phrase, not a block.
-+const MARKDOWN_TEXT_SPECIAL_CHARACTERS = /[\\`*_[\]~]/g;
-+
-+function escapeMarkdownText(text: string): string {
-+  return text.replace(MARKDOWN_TEXT_SPECIAL_CHARACTERS, (character) => `\\${character}`);
-+}
-+
-+/**
-+ * Native renderers cannot host a button inside Markdown text, so a follow-up becomes a link
-+ * that `codexFollowUpPromptFromHref` reads back. Without `actionable` it is only its label.
-+ */
-+export function renderCodexFollowUpsAsMarkdown(
-+  markdown: string,
-+  options: { readonly actionable: boolean },
-+): string {
-+  if (!markdown.includes(`:${CODEX_FOLLOW_UP_NAME}`)) return markdown;
-+
-+  return renderDirectiveMatches(markdown, (match) => {
-+    if (match.followUp === undefined) return undefined;
-+    const label = escapeMarkdownText(match.followUp.label);
-+    if (!options.actionable) return label;
-+    return `[${label}](<${CODEX_FOLLOW_UP_HREF_PREFIX}${encodeURIComponent(match.followUp.prompt)}>)`;
-+  });
-+}
-+
-+/** Reads the prompt back from a link made by `renderCodexFollowUpsAsMarkdown`. */
-+export function codexFollowUpPromptFromHref(href: string): string | null {
-+  if (!href.startsWith(CODEX_FOLLOW_UP_HREF_PREFIX)) return null;
-+  try {
-+    const prompt = decodeURIComponent(href.slice(CODEX_FOLLOW_UP_HREF_PREFIX.length)).trim();
-+    return prompt || null;
-+  } catch {
-+    return null;
-+  }
-+}
-+
- /** Native renderers split cards out because they cannot host a view inside Markdown text. */
- export function splitCodexArtifactTemplateMarkdown(
-   markdown: string,
-@@ -386,3 +479,13 @@ export function artifactTemplateFromHastProperties(
+@@ -421,3 +435,13 @@ export function artifactTemplateFromHastProperties(
      skill_name: stringProperty("dataSkillName"),
    });
  }
@@ -725,11 +289,11 @@ index 64a981a..e11363d 100644
 +): CodexFollowUp | null {
 +  if (properties?.dataCodexFollowUp !== "true") return null;
 +  const prompt = typeof properties.dataPrompt === "string" ? properties.dataPrompt.trim() : "";
-+  const trimmedLabel = label.trim();
++  const trimmedLabel = label.replace(/\s+/g, " ").trim();
 +  return prompt && trimmedLabel ? { label: trimmedLabel, prompt } : null;
 +}
 diff --git a/packages/shared/src/markdownPipeline.ts b/packages/shared/src/markdownPipeline.ts
-index c41b68b..96f212e 100644
+index a3282584..14df9ce0 100644
 --- a/packages/shared/src/markdownPipeline.ts
 +++ b/packages/shared/src/markdownPipeline.ts
 @@ -9,6 +9,7 @@ import { remarkGithubAlerts } from "./markdownGithubAlerts.ts";
@@ -740,7 +304,7 @@ index c41b68b..96f212e 100644
    remarkCodexDirectives,
  } from "./codexMarkdownDirectives.ts";
  import { isWindowsDrivePathHref } from "./markdownLinks.ts";
-@@ -153,6 +154,7 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
+@@ -140,6 +141,7 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
      ],
      blockquote: [...(defaultSchema.attributes?.blockquote ?? []), "dataAlert"],
      div: [...(defaultSchema.attributes?.div ?? []), ...CODEX_ARTIFACT_TEMPLATE_HAST_PROPERTIES],
