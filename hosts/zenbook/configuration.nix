@@ -6,28 +6,6 @@
   pkgs,
   ...
 }:
-let
-  # Temporary: nixpkgs applies VTK 9.6's vendored-PEGTL module rename to 9.5
-  # as well, so vtk-9.5.2 fails to configure ("Could NOT find PEGTL") and
-  # takes opencv4Full and linux-enable-ir-emitter down with it. Fixed by
-  # https://github.com/NixOS/nixpkgs/pull/572295 (merged 2026-10-10). Delete
-  # this block and the `package` line below once the fix reaches
-  # nixos-unstable; the throw turns the obsolete workaround into a build error.
-  vtkPegtlWorkaroundNeeded =
-    lib.versionOlder pkgs.vtk.version "9.6" && lib.hasInfix "VTK::vtkpegtl" (pkgs.vtk.postPatch or "");
-  vtk =
-    if vtkPegtlWorkaroundNeeded then
-      pkgs.vtk.overrideAttrs { postPatch = ""; }
-    else
-      throw "nixpkgs has fixed vtk's PEGTL rename; remove the vtk workaround in hosts/zenbook/configuration.nix";
-  linux-enable-ir-emitter = pkgs.linux-enable-ir-emitter.override {
-    python3 = pkgs.python3.override {
-      packageOverrides = _: prev: {
-        opencv4Full = prev.opencv4Full.override { inherit vtk; };
-      };
-    };
-  };
-in
 {
   imports = [
     ./hardware.nix
@@ -115,7 +93,6 @@ in
     # hardware discovery is still an explicit, one-time command after rebuild.
     linux-enable-ir-emitter = {
       enable = true;
-      package = linux-enable-ir-emitter;
       device = "video2";
     };
 
