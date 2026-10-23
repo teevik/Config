@@ -31,18 +31,14 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.1.2-nightly.20261021.3457";
+  version = "0.1.3-nightly.20261023.3566";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-h/XY4IT+pECr51Ti4zk0oT8riBT4x3ccjXmXLxlEDLg=";
+    hash = "sha256-kpNnb9MU0Xl8OuE1741NUzHjPLGEeme4udi4200yxzU=";
   };
-
-  # Codex follow-up chips from pingdotgg/t3code#15252, pinned to its reviewed
-  # desktop/shared changes. Math rendering is included in upstream nightlies.
-  patches = [ ./t3code-followup.patch ];
 
   # Upstream generates notices from a pinned SPDX revision. Fetch its cache
   # separately so the application build stays offline. The name omits the
@@ -90,9 +86,8 @@ let
     pname = "t3code";
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
-    inherit patches;
     fetcherVersion = 4;
-    hash = "sha256-orGBM0sIMm5jJpXvWE91+jFu/ZtI9nllT+Fxd3t3kyI=";
+    hash = "sha256-xRmOrOZbBljaF1IJr0JFUFzdhkld6+ehLIlpVOg/J3E=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
@@ -102,8 +97,6 @@ let
       pnpmDeps
       resourceMonitor
       ;
-
-    patches = (oldAttrs.patches or [ ]) ++ patches;
 
     postPatch = (oldAttrs.postPatch or "") + ''
       # Upstream seeds this cache with SPDX symlinks into the Nix store.
