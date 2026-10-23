@@ -37,6 +37,9 @@ let
             "ssh-launcher"
             "nix-search"
             "sony_headphones"
+            "nix-status"
+            "crashes"
+            "agent-glow"
           ]
         }
 
@@ -45,6 +48,11 @@ let
         patch -d "$out/share/noctalia/plugins" -p1 < ${./sony-xm6.patch}
         PYTHONDONTWRITEBYTECODE=1 python3 ${../../tests/noctalia-sony-headphones.py} \
           "$out/share/noctalia/plugins/sony_headphones/scripts/sony_ctl.py"
+
+        # Agent Glow reads cached family names as command lines and only knows
+        # `--resume`, so it never matches sessions that T3 Code starts.
+        chmod -R u+w "$out/share/noctalia/plugins/agent-glow"
+        patch -d "$out/share/noctalia/plugins" -p1 < ${./agent-glow-sessions.patch}
 
         install -m755 ${community}/taildrop/bin/noctalia-taildrop "$out/bin/noctalia-taildrop"
         substituteInPlace "$out/bin/noctalia-taildrop" \
@@ -59,6 +67,8 @@ let
     glib # gio, used by Tailnet to open the Tailscale login URL
     gnutar
     gpuScreenRecorder
+    jq # Crashes filters coredumpctl and journal output
+    libnotify # notify-send, used by Crashes
     nix-search-tv
     openssh
     procps

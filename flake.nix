@@ -102,7 +102,35 @@
   outputs =
     unpatchedInputs:
     let
+      # Patches applied to nixpkgs before anything evaluates it. Building the
+      # patched source fails once a patch is already upstream, so drop it then.
+      nixpkgsPatches = [
+        # Temporary: nvidia-x11 bin/ tools segfault in ld.so since patchelf
+        # 0.19.2 (NixOS/nixpkgs#576412). Backport of NixOS/nixpkgs#576397.
+        ./patches/nixpkgs/576397-nvidia-split-patchelf.patch
+      ];
+
+      nixpkgs =
+        let
+          unpatched = unpatchedInputs.nixpkgs;
+          src = unpatched.legacyPackages.x86_64-linux.applyPatches {
+            name = "nixpkgs-patched";
+            src = unpatched;
+            patches = nixpkgsPatches;
+          };
+          outputs = (import "${src}/flake.nix").outputs { self = patched; };
+          patched =
+            unpatched
+            // outputs
+            // {
+              inherit outputs;
+              outPath = src.outPath;
+            };
+        in
+        if nixpkgsPatches == [ ] then unpatched else patched;
+
       inputs = unpatchedInputs // {
+        inherit nixpkgs;
         # The public packages set eagerly filters the whole catalog by
         # platform. Use its lazy constructor with the SAME upstream pkgs,
         # not our system pkgs, to preserve all selected package derivations.

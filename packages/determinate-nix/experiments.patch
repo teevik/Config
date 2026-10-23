@@ -1,0 +1,3254 @@
+Experimental patches ported onto 0548f0b2300d + local slop optimizations.
+
+Sources (retrieved 2026-10-20):
+https://github.com/NixOS/nix/pull/16598
+https://github.com/NixOS/nix/pull/15794
+https://github.com/DeterminateSystems/nix-src/pull/646
+https://github.com/DeterminateSystems/nix-src/pull/710
+https://github.com/DeterminateSystems/nix-src/pull/611
+
+Porting: preserve mutable BindingsBuilder API while finalizing lazy size;
+retain atomic memoization and finished flag; move aterm.cc changes into
+derivations.cc; adapt forceValueDeep context. No #706 progress TUI.
+
+diff --git a/src/libexpr/eval.cc b/src/libexpr/eval.cc
+--- a/src/libexpr/eval.cc
++++ b/src/libexpr/eval.cc
+@@ -2104,17 +2104,15 @@
+         return;
+     }
+ 
+-    /* Simple heuristic for determining whether attrs2 should be "layered" on top of
+-       attrs1 instead of copying to a new Bindings. */
+-    bool shouldLayer = [&]() -> bool {
+-        if (bindings1.isLayerListFull())
+-            return false;
+-
+-        if (bindings2.size() > state.settings.bindingsUpdateLayerRhsSizeThreshold)
+-            return false;
+-
+-        return true;
+-    }();
++    /* Layer attrs2 on attrs1 whenever it's cheaper than a full copy: attrs2
++       smaller than attrs1 (the common `prev // overlay` pattern), or under
++       the absolute threshold. The relative-size check doesn't read
++       `threshold` at all, so without the explicit `threshold != 0 &&` guard
++       it would keep layering even when the setting's documented "0 disables
++       this optimization completely" contract says it shouldn't. */
++    auto threshold = state.settings.bindingsUpdateLayerRhsSizeThreshold.get();
++    bool shouldLayer = threshold != 0 && !bindings1.isLayerListFull()
++                       && (bindings2.size() <= threshold || bindings2.size() < bindings1.size());
+ 
+     if (shouldLayer) {
+         auto attrs = state.buildBindings(bindings2.size());
+@@ -2326,17 +2324,17 @@
+ 
+ void EvalState::forceValueDeep(Value & v)
+ {
+-    std::set<const Value *> seen;
++    /* Only containers can recurse cyclically; leaves need no hash lookup. */
++    boost::unordered_flat_set<const Value *> seen;
+ 
+     [&, &state(*this)](this const auto & recurse, Value & v) {
+         auto _level = state.addCallDepth(v.determinePos(noPos));
+ 
+-        if (!seen.insert(&v).second)
+-            return;
+-
+         state.forceValue(v, v.determinePos(noPos));
+ 
+         if (v.type() == nAttrs) {
++            if (!seen.insert(&v).second)
++                return;
+             for (auto & i : *v.attrs())
+                 try {
+                     // If the value is a thunk, we're evaling. Otherwise no trace necessary.
+@@ -2358,6 +2356,8 @@
+         }
+ 
+         else if (v.isList()) {
++            if (!seen.insert(&v).second)
++                return;
+             size_t index = 0;
+             for (auto v2 : v.listView())
+                 try {
+@@ -2539,6 +2539,61 @@
+     }
+ 
+     return {};
++}
++
++void EvalState::preForceListElements(Value & v, const PosIdx pos, std::function<void(Value &)> consume)
++{
++    if (!executor->enabled || Executor::amWorkerThread || !v.isList() || v.listSize() < 2)
++        return;
++
++    std::vector<Value *> pending;
++    pending.reserve(v.listSize());
++    for (auto v2 : v.listView()) {
++        if (!v2->isFinished())
++            pending.push_back(v2);
++        else if (consume) {
++            /* Finished WHNF still has work if consume walks into it. */
++            switch (v2->type()) {
++            case nAttrs:
++            case nList:
++            case nPath:
++                pending.push_back(v2);
++                break;
++            default:
++                break;
++            }
++        }
++    }
++    if (pending.size() < 2)
++        return;
++
++    auto sharedConsume = std::make_shared<std::function<void(Value &)>>(std::move(consume));
++    /* At most 4 work items per core so a long list of cheap elements
++       does not contend on the executor queue. */
++    size_t nChunks = std::min<size_t>(pending.size(), size_t(executor->evalCores) * 4);
++    size_t chunkSize = (pending.size() + nChunks - 1) / nChunks;
++
++    Executor::WorkItems work;
++    work.reserve(nChunks);
++    for (size_t i = 0; i < pending.size(); i += chunkSize) {
++        std::vector<RootValue> slice;
++        size_t n = std::min(chunkSize, pending.size() - i);
++        slice.reserve(n);
++        for (size_t j = 0; j < n; ++j)
++            slice.push_back(RootValue(pending[i + j]));
++        addWork(work, 0, [slice = std::move(slice), sharedConsume, this, pos]() {
++            for (auto & rv : slice) {
++                try {
++                    if (*sharedConsume)
++                        (*sharedConsume)(**rv);
++                    else
++                        forceValue(**rv, pos);
++                } catch (const Error &) {
++                }
++            }
++        });
++    }
++    executor->spawn(std::move(work));
+ }
+ 
+ BackedStringView EvalState::coerceToString(
+@@ -2621,6 +2676,19 @@
+         if (v.isList()) {
+             std::string result;
+             auto listView = v.listView();
++
++            preForceListElements(v, pos, [this, pos, coerceMore, canonicalizePath](Value & elem) {
++                NixStringContext scratch;
++                coerceToString(
++                    pos,
++                    elem,
++                    scratch,
++                    "while evaluating one element of the list",
++                    coerceMore,
++                    false,
++                    canonicalizePath);
++            });
++
+             for (auto [n, v2] : enumerate(listView)) {
+                 try {
+                     result += *coerceToString(
+diff --git a/src/libexpr/include/nix/expr/attr-set.hh b/src/libexpr/include/nix/expr/attr-set.hh
+--- a/src/libexpr/include/nix/expr/attr-set.hh
++++ b/src/libexpr/include/nix/expr/attr-set.hh
+@@ -3,11 +3,13 @@
+ 
+ #include "nix/expr/nixexpr.hh"
+ #include "nix/expr/symbol-table.hh"
++#include "nix/util/config.hh"
+ 
+ #include <boost/container/static_vector.hpp>
+ #include <boost/iterator/function_output_iterator.hpp>
+ 
+ #include <algorithm>
++#include <atomic>
+ #include <functional>
+ #include <ranges>
+ #include <optional>
+@@ -79,17 +81,39 @@
+     size_type numAttrs = 0;
+ 
+     /**
+-     * Number of attributes with unique names in the layer chain.
++     * Number of attributes with unique names in the layer chain -- the
++     * *real* size, whereas @ref numAttrs is just this layer's own count.
+      *
+-     * This is the *real* user-facing size of bindings, whereas @ref numAttrs is
+-     * an implementation detail of the data structure.
+-     */
+-    size_type numAttrsInChain = 0;
+-
+-    /**
+-     * Length of the layers list.
+-     */
+-    uint32_t numLayers = 1;
++     * Only meaningful for a *layered* Bindings -- @ref size reads
++     * @ref numAttrs directly for a flat one, never touching this field.
++     * Starts at 0 ("not yet computed") and @ref size computes and
++     * memoizes it lazily on first call: 0 is never the real result of
++     * that computation, since layering only happens between two
++     * non-empty Bindings, so there's no ambiguity between "not yet
++     * computed" and "genuinely empty".
++     *
++     * Atomic (relaxed) rather than a plain `mutable`: the computed value is
++     * deterministic, so concurrent writers racing to compute and store it
++     * would always agree on the value, but a plain non-atomic write would
++     * still be a data race (undefined behavior) under any future
++     * multi-threaded evaluator. Relaxed ordering is enough since no other
++     * memory access needs to be ordered against this one -- it's a pure
++     * function of already-fixed data, not a synchronization point.
++     */
++    mutable std::atomic<size_type> numAttrsInChain{0};
++
++    /**
++     * Set once construction finishes; catches a lazy @ref size running
++     * too early. Free: shares the alignment gap before @ref baseLayer
++     * with @ref numLayers below.
++     */
++    bool finished = false;
++
++    /**
++     * Length of the layers list. uint8_t since maxLayers is 16 --
++     * see the sizeof(Bindings) static_assert.
++     */
++    uint8_t numLayers = 1;
+ 
+     /**
+      * Bindings that this attrset is "layered" on top of.
+@@ -114,17 +138,69 @@
+     /**
+      * Maximum length of the Bindings layer chains.
+      */
+-    static constexpr unsigned maxLayers = 8;
++    static constexpr unsigned maxLayers = 16;
+ 
+ public:
++    /**
++     * Number of attributes with unique names in the layer chain -- a flat
++     * Bindings' @ref numAttrs is already the exact count, no computation
++     * needed; see @ref numAttrsInChain's doc comment for the layered case.
++     *
++     * If the bindings gets "layered" on top of another we need to
++     * recalculate the number of unique attributes in the chain, the
++     * first time it's asked for, then memoize it: either iterate over
++     * the base "layer" and the newly added attributes with
++     * std::set_intersection, O(|base| + |attrs|), or do an O(|attrs| *
++     * log(|base|)) per-attr binary search in the base "layer" -- picked
++     * per-call based on which is cheaper for the actual sizes, since
++     * |attrs| isn't bounded small here the way it is under the absolute
++     * threshold alone (relative-size layering lets a RHS bigger than
++     * the threshold still layer, as long as it's smaller than the
++     * accumulator).
++     */
+     size_type size() const
+     {
+-        return numAttrsInChain;
++        if (!baseLayer)
++            return numAttrs;
++
++        auto cached = numAttrsInChain.load(std::memory_order_relaxed);
++        if (cached != 0)
++            return cached;
++
++        if (!finished) [[unlikely]]
++            nixUnreachableWhenHardened();
++
++        auto & base = *baseLayer;
++        auto ownAttrs = std::span(attrs, numAttrs);
++
++        size_type duplicates = 0;
++
++        if (ownAttrs.size() > base.size()) {
++            std::set_intersection(
++                base.begin(),
++                base.end(),
++                ownAttrs.begin(),
++                ownAttrs.end(),
++                boost::make_function_output_iterator([&]([[maybe_unused]] auto && _) { ++duplicates; }));
++        } else {
++            for (const auto & attr : ownAttrs)
++                if (base.get(attr.name))
++                    ++duplicates;
++        }
++
++        size_type result = base.size() + ownAttrs.size() - duplicates;
++        numAttrsInChain.store(result, std::memory_order_relaxed);
++        return result;
+     }
+ 
+     bool empty() const
+     {
+-        return size() == 0;
++        /* A layered chain is never empty (layering only happens between
++           two non-empty Bindings), so this avoids forcing size()'s
++           computation on every `//` for the long-lived "prev" accumulator. */
++        if (baseLayer)
++            return false;
++        return numAttrs == 0;
+     }
+ 
+     class iterator
+@@ -212,7 +288,7 @@
+         void push(BindingsCursor cursor) noexcept
+         {
+             cursorHeap.push_back(cursor);
+-            std::ranges::make_heap(cursorHeap, comp);
++            std::ranges::push_heap(cursorHeap, comp);
+         }
+ 
+         [[nodiscard]] BindingsCursor pop() noexcept
+@@ -344,7 +420,6 @@
+     void push_back(const Attr & attr)
+     {
+         attrs[numAttrs++] = attr;
+-        numAttrsInChain = numAttrs;
+     }
+ 
+     /**
+@@ -419,13 +494,23 @@
+      */
+     std::vector<const Attr *> lexicographicOrder(const SymbolTable & symbols) const
+     {
++        /* Cache string_views once instead of re-resolving in the comparator
++           on every O(N log N) compare. */
++        struct AttrWithName
++        {
++            std::string_view sv;
++            const Attr * a;
++        };
++
++        std::vector<AttrWithName> tagged;
++        tagged.reserve(size());
++        for (const auto & a : *this)
++            tagged.push_back({symbols[a.name], &a});
++        std::ranges::sort(tagged, {}, &AttrWithName::sv);
+         std::vector<const Attr *> res;
+-        res.reserve(size());
+-        std::ranges::transform(*this, std::back_inserter(res), [](const Attr & a) { return &a; });
+-        std::ranges::sort(res, [&](const Attr * a, const Attr * b) {
+-            std::string_view sa = symbols[a->name], sb = symbols[b->name];
+-            return sa < sb;
+-        });
++        res.reserve(tagged.size());
++        for (const auto & t : tagged)
++            res.push_back(t.a);
+         return res;
+     }
+ 
+@@ -434,6 +519,11 @@
+ 
+ static_assert(std::forward_iterator<Bindings::iterator>);
+ static_assert(std::ranges::forward_range<Bindings>);
++
++/* 24 bytes with an 8-byte baseLayer pointer (64-bit), 20 with a
++   4-byte one (32-bit) -- the small fields round up to the same 16
++   either way, only the trailing pointer's width differs. */
++static_assert(sizeof(Bindings) == 16 + sizeof(void *));
+ 
+ /**
+  * A wrapper around Bindings that ensures that its always in sorted
+@@ -461,53 +551,11 @@
+     {
+     }
+ 
+-    bool hasBaseLayer() const noexcept
+-    {
+-        return bindings->baseLayer;
+-    }
+-
+-    /**
+-     * If the bindings gets "layered" on top of another we need to recalculate
+-     * the number of unique attributes in the chain.
+-     *
+-     * This is done by either iterating over the base "layer" and the newly added
+-     * attributes and counting duplicates. If the base "layer" is big this approach
+-     * is inefficient and we fall back to doing per-element binary search in the base
+-     * "layer".
+-     */
+-    void finishSizeIfNecessary()
+-    {
+-        if (!hasBaseLayer())
+-            return;
+-
+-        auto & base = *bindings->baseLayer;
+-        auto attrs = std::span(bindings->attrs, bindings->numAttrs);
+-
+-        Bindings::size_type duplicates = 0;
+-
+-        /* If the base bindings is smaller than the newly added attributes
+-           iterate using std::set_intersection to run in O(|base| + |attrs|) =
+-           O(|attrs|). Otherwise use an O(|attrs| * log(|base|)) per-attr binary
+-           search to check for duplicates. Note that if we are in this code path then
+-           |attrs| <= bindingsUpdateLayerRhsSizeThreshold, which 16 by default. We are
+-           optimizing for the case when a small attribute set gets "layered" on top of
+-           a much larger one. When attrsets are already small it's fine to do a linear
+-           scan, but we should avoid expensive iterations over large "base" attrsets. */
+-        if (attrs.size() > base.size()) {
+-            std::set_intersection(
+-                base.begin(),
+-                base.end(),
+-                attrs.begin(),
+-                attrs.end(),
+-                boost::make_function_output_iterator([&]([[maybe_unused]] auto && _) { ++duplicates; }));
+-        } else {
+-            for (const auto & attr : attrs) {
+-                if (base.get(attr.name))
+-                    ++duplicates;
+-            }
+-        }
+-
+-        bindings->numAttrsInChain = base.numAttrsInChain + attrs.size() - duplicates;
++    Bindings * finalize()
++    {
++        assert(!bindings->baseLayer || (bindings->numAttrs > 0 && !bindings->baseLayer->empty()));
++        bindings->finished = true;
++        return bindings;
+     }
+ 
+ public:
+@@ -544,6 +592,8 @@
+     {
+         bindings->baseLayer = &base;
+         bindings->numLayers = base.numLayers + 1;
++        // Reset to the "not computed" sentinel now that it's layered.
++        bindings->numAttrsInChain.store(0, std::memory_order_relaxed);
+     }
+ 
+     Value & alloc(Symbol name, PosIdx pos = noPos);
+@@ -553,14 +603,12 @@
+     Bindings * finish()
+     {
+         bindings->sort();
+-        finishSizeIfNecessary();
+-        return bindings;
++        return finalize();
+     }
+ 
+     Bindings * alreadySorted()
+     {
+-        finishSizeIfNecessary();
+-        return bindings;
++        return finalize();
+     }
+ 
+     size_t capacity() const noexcept
+diff --git a/src/libexpr/include/nix/expr/eval-settings.hh b/src/libexpr/include/nix/expr/eval-settings.hh
+--- a/src/libexpr/include/nix/expr/eval-settings.hh
++++ b/src/libexpr/include/nix/expr/eval-settings.hh
+@@ -503,13 +503,14 @@
+         1,
+         "eval-cores",
+         R"(
+-          The number of threads used to evaluate Nix expressions. This currently affects the following commands:
++          The number of threads used to evaluate Nix expressions. This currently affects:
+ 
+           * `nix search`
+           * `nix flake check`
+           * `nix flake show`
+           * `nix eval --json`
+-          * Any evaluation that uses `builtins.parallel`
++          * `builtins.parallel`
++          * `builtins.concatStringsSep` and string coercion of lists
+ 
+           The value `0` causes Nix to use all available CPU cores in the system.
+ 
+diff --git a/src/libexpr/include/nix/expr/eval.hh b/src/libexpr/include/nix/expr/eval.hh
+--- a/src/libexpr/include/nix/expr/eval.hh
++++ b/src/libexpr/include/nix/expr/eval.hh
+@@ -764,6 +764,28 @@
+     std::string devirtualize(std::string_view s, const NixStringContext & context);
+ 
+     /**
++     * Run `consume` on the elements of list `v` on the worker pool.
++     * Returns without waiting; the caller then walks the list sequentially
++     * to build the result and to report errors.
++     *
++     * No-op unless the parallel evaluator is enabled, the caller is not
++     * already a worker thread, and at least two elements need work.
++     *
++     * `consume` may run concurrently with the caller and after this
++     * function returns. It must not capture pointers into the caller's
++     * stack. It may only force values and do other memoized, thread-safe
++     * work (for example `coerceToString` into a scratch context with
++     * `copyToStore = false`). It must not write the caller's string
++     * context.
++     *
++     * `Error` thrown by `consume` is discarded; the sequential walk
++     * rethrows it. `Interrupted` propagates and stops the worker pool.
++     *
++     * If `consume` is empty, elements are forced to weak-head normal form.
++     */
++    void preForceListElements(Value & v, const PosIdx pos, std::function<void(Value &)> consume = {});
++
++    /**
+      * String coercion.
+      *
+      * Converts strings, paths and derivations to a
+diff --git a/src/libexpr/primops.cc b/src/libexpr/primops.cc
+--- a/src/libexpr/primops.cc
++++ b/src/libexpr/primops.cc
+@@ -5245,6 +5245,17 @@
+         pos,
+         "while evaluating the second argument (the list of strings to concat) passed to builtins.concatStringsSep");
+ 
++    state.preForceListElements(*args[1], pos, [&state, pos](Value & elem) {
++        NixStringContext scratch;
++        state.coerceToString(
++            pos,
++            elem,
++            scratch,
++            "while evaluating one element of the list of strings to concat passed to builtins.concatStringsSep",
++            false,
++            false);
++    });
++
+     std::string res;
+     res.reserve((args[1]->listSize() + 32) * sep.size());
+     bool first = true;
+diff --git a/src/libexpr-tests/meson.build b/src/libexpr-tests/meson.build
+--- a/src/libexpr-tests/meson.build
++++ b/src/libexpr-tests/meson.build
+@@ -58,6 +58,7 @@
+   'nix_api_external.cc',
+   'nix_api_value.cc',
+   'nix_api_value_internal.cc',
++  'parallel-eval.cc',
+   'primops.cc',
+   'search-path.cc',
+   'trivial.cc',
+diff --git a/src/libexpr-tests/parallel-eval.cc b/src/libexpr-tests/parallel-eval.cc
+--- /dev/null
++++ b/src/libexpr-tests/parallel-eval.cc
+@@ -0,0 +1,63 @@
++#include <gmock/gmock.h>
++#include <gtest/gtest.h>
++
++#include "nix/expr/tests/libexpr.hh"
++#include "nix/expr/parallel-eval.hh"
++
++namespace nix {
++
++class ParallelEvalTest : public LibExprTest
++{
++public:
++    ParallelEvalTest()
++        : LibExprTest(openStore("dummy://"), [](bool & readOnlyMode) {
++            EvalSettings settings{readOnlyMode};
++            settings.nixPath = {};
++            settings.evalCores = 4;
++            return settings;
++        })
++    {
++    }
++};
++
++TEST_F(ParallelEvalTest, executorEnabled)
++{
++    ASSERT_TRUE(state.executor->enabled);
++    ASSERT_EQ(state.executor->evalCores, 4u);
++}
++
++TEST_F(ParallelEvalTest, concatStringsSepThunks)
++{
++    auto v = eval("builtins.concatStringsSep \",\" (builtins.genList (i: builtins.toString (i + 1)) 32)");
++    ASSERT_THAT(
++        v, IsStringEq("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32"));
++}
++
++TEST_F(ParallelEvalTest, concatStringsSepReportsFirstThrow)
++{
++    try {
++        eval("builtins.concatStringsSep \"\" (builtins.genList (i: throw \"e${builtins.toString i}\") 16)");
++        FAIL() << "expected ThrownError";
++    } catch (const ThrownError & e) {
++        ASSERT_THAT(e.what(), testing::HasSubstr("e0"));
++    }
++}
++
++TEST_F(ParallelEvalTest, toStringNestedListThunks)
++{
++    auto v = eval("builtins.toString (builtins.genList (i: builtins.genList (j: i * 4 + j + 1) 4) 4)");
++    ASSERT_THAT(v, IsStringEq("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16"));
++}
++
++TEST_F(ParallelEvalTest, preForceListElementsDefaultForce)
++{
++    auto v = eval("builtins.genList (i: i + 1) 8", false);
++    ASSERT_EQ(v.type(), nList);
++    state.preForceListElements(v, noPos);
++    for (auto elem : v.listView()) {
++        state.forceValue(*elem, noPos);
++        ASSERT_EQ(elem->type(), nInt);
++    }
++}
++
++} // namespace nix
+diff --git a/src/libfetchers/git-utils.cc b/src/libfetchers/git-utils.cc
+--- a/src/libfetchers/git-utils.cc
++++ b/src/libfetchers/git-utils.cc
+@@ -1632,32 +1632,6 @@
+     return result;
+ }
+ 
+-namespace fetchers {
+-
+-ref<GitRepo> Settings::getTarballCache() const
+-{
+-    /* v1: Had either only loose objects or thin packfiles referring to loose objects
+-     * v2: Must have only packfiles with no loose objects. Should get repacked periodically
+-     * for optimal packfiles.
+-     */
+-    static auto repoDir = std::filesystem::path(getCacheDir()) / "tarball-cache-v2";
+-    auto tarballCache(_tarballCache.lock());
+-    if (!*tarballCache)
+-        *tarballCache = GitRepo::openRepo(
+-            repoDir,
+-            {
+-                .create = true,
+-                .bare = true,
+-                .packfilesOnly = true,
+-                /* Tarball unpacking is not expected to benefit from deltas much,
+-                   compared to how much CPU times it takes to find. */
+-                .dontFindDeltas = true,
+-            });
+-    return ref<GitRepo>(*tarballCache);
+-}
+-
+-} // namespace fetchers
+-
+ static Sync<std::map<std::filesystem::path, GitRepo::WorkdirInfo>> workdirInfoCache_;
+ 
+ GitRepo::WorkdirInfo GitRepo::getCachedWorkdirInfo(const std::filesystem::path & path)
+diff --git a/src/libfetchers/github.cc b/src/libfetchers/github.cc
+--- a/src/libfetchers/github.cc
++++ b/src/libfetchers/github.cc
+@@ -9,6 +9,7 @@
+ #include "nix/fetchers/tarball.hh"
+ #include "nix/util/tarfile.hh"
+ #include "nix/fetchers/git-utils.hh"
++#include "nix/fetchers/tarball-cache.hh"
+ 
+ #include <optional>
+ #include <nlohmann/json.hpp>
+@@ -287,7 +288,7 @@
+             if (auto lastModifiedAttrs = cache->lookup(lastModifiedKey)) {
+                 auto treeHash = getRevAttr(*treeHashAttrs, "treeHash");
+                 auto lastModified = getIntAttr(*lastModifiedAttrs, "lastModified");
+-                if (settings.getTarballCache()->hasObject(treeHash))
++                if (settings.getTarballCache()->hasTree(treeHash))
+                     return {
+                         {std::move(input), TarballInfo{.treeHash = treeHash, .lastModified = (time_t) lastModified}}};
+                 else
+@@ -308,7 +309,7 @@
+         });
+ 
+         auto act = std::make_unique<Activity>(
+-            *logger, lvlInfo, actUnknown, fmt("unpacking '%s' into the Git cache", input.to_string()));
++            *logger, lvlInfo, actUnknown, fmt("unpacking '%s' into the tarball cache", input.to_string()));
+ 
+         TarArchive archive{*source};
+         auto tarballCache = settings.getTarballCache();
+@@ -351,7 +352,7 @@
+         input.attrs.insert_or_assign("lastModified", uint64_t(tarballInfo.lastModified));
+ 
+         auto accessor =
+-            settings.getTarballCache()->getAccessor(tarballInfo.treeHash, {}, "«" + input.to_string(true) + "»");
++            settings.getTarballCache()->getAccessor(tarballInfo.treeHash, "«" + input.to_string(true) + "»");
+ 
+         if (!settings.trustTarballsFromGitForges)
+             // FIXME: computing the NAR hash here is wasteful if
+diff --git a/src/libfetchers/include/nix/fetchers/fetch-settings.hh b/src/libfetchers/include/nix/fetchers/fetch-settings.hh
+--- a/src/libfetchers/include/nix/fetchers/fetch-settings.hh
++++ b/src/libfetchers/include/nix/fetchers/fetch-settings.hh
+@@ -13,7 +13,6 @@
+ 
+ namespace nix {
+ 
+-struct GitRepo;
+ struct SrcToStore;
+ 
+ } // namespace nix
+@@ -21,6 +20,7 @@
+ namespace nix::fetchers {
+ 
+ struct Cache;
++struct TarballCache;
+ 
+ struct Settings : public Config
+ {
+@@ -155,7 +155,7 @@
+ 
+     ref<Cache> getCache() const;
+ 
+-    ref<GitRepo> getTarballCache() const;
++    ref<TarballCache> getTarballCache() const;
+ 
+     /**
+      * In-memory cache for calls to fetchToStore(); maps source paths to their store
+@@ -171,7 +171,7 @@
+ 
+     mutable Sync<std::shared_ptr<Cache>> _cache;
+ 
+-    mutable Sync<std::shared_ptr<GitRepo>> _tarballCache;
++    mutable Sync<std::shared_ptr<TarballCache>> _tarballCache;
+ };
+ 
+ } // namespace nix::fetchers
+diff --git a/src/libfetchers/include/nix/fetchers/meson.build b/src/libfetchers/include/nix/fetchers/meson.build
+--- a/src/libfetchers/include/nix/fetchers/meson.build
++++ b/src/libfetchers/include/nix/fetchers/meson.build
+@@ -12,5 +12,6 @@
+   'input-cache.hh',
+   'provenance.hh',
+   'registry.hh',
++  'tarball-cache.hh',
+   'tarball.hh',
+ )
+diff --git a/src/libfetchers/include/nix/fetchers/tarball-cache.hh b/src/libfetchers/include/nix/fetchers/tarball-cache.hh
+--- /dev/null
++++ b/src/libfetchers/include/nix/fetchers/tarball-cache.hh
+@@ -0,0 +1,59 @@
++#pragma once
++///@file
++
++#include "nix/fetchers/git-utils.hh"
++#include "nix/util/hash.hh"
++#include "nix/util/ref.hh"
++#include "nix/util/source-accessor.hh"
++
++#include <filesystem>
++
++namespace nix::fetchers {
++
++struct Settings;
++
++/**
++ * A content-addressed cache of unpacked tarballs, stored in a SQLite
++ * database. Files and directories are identified by their Git (SHA-1)
++ * blob and tree hashes.
++ */
++struct TarballCache
++{
++    virtual ~TarballCache() = default;
++
++    /**
++     * Open (and create if necessary) the tarball cache stored in the
++     * SQLite database `dbPath`.
++     */
++    static ref<TarballCache> open(const std::filesystem::path & dbPath);
++
++    /**
++     * Whether the cache contains the tree `treeHash`. If so, then
++     * everything reachable from that tree is present as well.
++     */
++    virtual bool hasTree(const Hash & treeHash) = 0;
++
++    virtual ref<SourceAccessor> getAccessor(const Hash & treeHash, std::string displayPrefix) = 0;
++
++    /**
++     * Return a sink that imports a file system tree into the cache.
++     * Calling `flush()` on the sink returns the hash of the root
++     * tree.
++     */
++    virtual ref<GitFileSystemObjectSink> getFileSystemObjectSink() = 0;
++
++    /**
++     * Given a Git tree hash, compute the hash of its NAR
++     * serialisation. This is memoised on-disk.
++     */
++    virtual Hash treeHashToNarHash(const Settings & settings, const Hash & treeHash) = 0;
++
++    /**
++     * If the specified tree is a directory with a single entry that
++     * is a directory, return the hash of that entry. Otherwise return
++     * the passed hash unchanged.
++     */
++    virtual Hash dereferenceSingletonDirectory(const Hash & treeHash) = 0;
++};
++
++} // namespace nix::fetchers
+diff --git a/src/libfetchers/meson.build b/src/libfetchers/meson.build
+--- a/src/libfetchers/meson.build
++++ b/src/libfetchers/meson.build
+@@ -31,6 +31,9 @@
+ libgit2 = dependency('libgit2', version : '>= 1.9')
+ deps_private += libgit2
+ 
++zstd = dependency('libzstd', version : '>= 1.4.0')
++deps_private += zstd
++
+ subdir('nix-meson-build-support/common')
+ 
+ sources = files(
+@@ -51,6 +54,7 @@
+   'path.cc',
+   'provenance.cc',
+   'registry.cc',
++  'tarball-cache.cc',
+   'tarball.cc',
+ )
+ 
+diff --git a/src/libfetchers/package.nix b/src/libfetchers/package.nix
+--- a/src/libfetchers/package.nix
++++ b/src/libfetchers/package.nix
+@@ -6,6 +6,7 @@
+   nix-store,
+   nlohmann_json,
+   libgit2,
++  zstd,
+ 
+   # Configuration Options
+ 
+@@ -35,6 +36,7 @@
+ 
+   buildInputs = [
+     libgit2
++    zstd
+   ];
+ 
+   propagatedBuildInputs = [
+diff --git a/src/libfetchers/tarball-cache.cc b/src/libfetchers/tarball-cache.cc
+--- /dev/null
++++ b/src/libfetchers/tarball-cache.cc
+@@ -0,0 +1,1016 @@
++#include "nix/fetchers/tarball-cache.hh"
++#include "nix/fetchers/cache.hh"
++#include "nix/fetchers/fetch-settings.hh"
++#include "nix/store/globals.hh"
++#include "nix/store/sqlite.hh"
++#include "nix/util/file-descriptor.hh"
++#include "nix/util/file-system.hh"
++#include "nix/util/finally.hh"
++#include "nix/util/git.hh"
++#include "nix/util/pool.hh"
++#include "nix/util/serialise.hh"
++#include "nix/util/signals.hh"
++#include "nix/util/sync.hh"
++#include "nix/util/thread-pool.hh"
++#include "nix/util/users.hh"
++#include "nix/util/util.hh"
++
++#include <boost/unordered/unordered_flat_map.hpp>
++#include <boost/unordered/unordered_flat_set.hpp>
++
++#include <zstd.h>
++
++#include <atomic>
++#include <cstring>
++#include <mutex>
++#include <thread>
++
++#include <unistd.h>
++
++namespace nix::fetchers {
++
++namespace {
++
++const char * schema = R"sql(
++
++-- A blob is stored as a sequence of chunks of at most `chunkSize` bytes, each compressed independently. The `Blobs`
++-- row is written after all of its chunks, so its existence implies that the blob is complete.
++create table if not exists Blobs (
++    oid  blob primary key not null,
++    size integer not null
++);
++
++create table if not exists BlobChunks (
++    oid         blob not null,
++    seq         integer not null,
++    size        integer not null,
++    compression integer not null,
++    data        blob not null,
++    primary key (oid, seq)
++);
++
++-- `entries` is a sequence of: mode (4 bytes LE), name length (2 bytes LE), name, child oid (20 bytes).
++create table if not exists Trees (
++    oid     blob primary key not null,
++    entries blob not null
++);
++
++)sql";
++
++/**
++ * Values of the `BlobChunks.compression` column.
++ */
++enum struct Compression : int64_t {
++    None = 0,
++    Zstd = 1,
++};
++
++/**
++ * The maximum (uncompressed) size of a blob chunk. Files larger than this are spilled to a temporary file during
++ * import, so this bounds the memory used per file.
++ */
++constexpr size_t chunkSize = 1024 * 1024;
++
++template<typename T>
++void appendLE(std::string & s, T n)
++{
++    unsigned char buf[sizeof(T)];
++    writeLittleEndian<T>(buf, n);
++    s.append((const char *) buf, sizeof(T));
++}
++
++template<typename T>
++T readLE(std::string_view s, size_t offset)
++{
++    if (offset + sizeof(T) > s.size())
++        throw Error("tarball cache contains a truncated value");
++    return readLittleEndian<T>((const unsigned char *) s.data() + offset);
++}
++
++Hash toOid(std::string_view s)
++{
++    Hash oid(HashAlgorithm::SHA1);
++    if (s.size() != oid.hashSize)
++        throw Error("tarball cache contains an object ID of %d bytes", s.size());
++    memcpy(oid.hash, s.data(), oid.hashSize);
++    return oid;
++}
++
++Hash hashBlob(std::string_view contents)
++{
++    HashSink sink(HashAlgorithm::SHA1);
++    git::dumpBlobPrefix(contents.size(), sink);
++    sink(contents);
++    return sink.finish().hash;
++}
++
++/* Note: we call libzstd directly rather than using `compress()` / `makeDecompressionSink()` from
++   `nix/util/compression.hh`. The latter set up a new zstd context (or for decompression, a libarchive reader) for every
++   call, which is expensive when (de)compressing a large number of small blobs: it made importing and reading Nixpkgs
++   about 60% slower. Here we reuse one zstd context per thread instead.
++
++   The zstd contexts are per-thread, but they're only used for the duration of a single (de)compression call, so
++   they're never shared between fibers running on the same thread. */
++
++/**
++ * Compress `contents` using zstd. Return `std::nullopt` if that doesn't make it smaller.
++ */
++std::optional<std::string> compress(std::string_view contents)
++{
++    if (contents.empty())
++        return std::nullopt;
++
++    thread_local std::unique_ptr<ZSTD_CCtx, decltype(&ZSTD_freeCCtx)> cctx{ZSTD_createCCtx(), ZSTD_freeCCtx};
++    if (!cctx)
++        throw Error("unable to create a zstd compression context");
++
++    std::string res;
++    res.resize(ZSTD_compressBound(contents.size()));
++    auto n =
++        ZSTD_compressCCtx(cctx.get(), res.data(), res.size(), contents.data(), contents.size(), ZSTD_CLEVEL_DEFAULT);
++    if (ZSTD_isError(n))
++        throw Error("zstd compression failed: %s", ZSTD_getErrorName(n));
++    if (n >= contents.size())
++        return std::nullopt;
++    res.resize(n);
++    return res;
++}
++
++std::string decompress(std::string_view data, uint64_t size)
++{
++    thread_local std::unique_ptr<ZSTD_DCtx, decltype(&ZSTD_freeDCtx)> dctx{ZSTD_createDCtx(), ZSTD_freeDCtx};
++    if (!dctx)
++        throw Error("unable to create a zstd decompression context");
++
++    std::string res;
++    res.resize(size);
++    auto n = ZSTD_decompressDCtx(dctx.get(), res.data(), res.size(), data.data(), data.size());
++    if (ZSTD_isError(n))
++        throw Error("zstd decompression failed: %s", ZSTD_getErrorName(n));
++    if (n != size)
++        throw Error("blob in tarball cache has size %d, expected %d", n, size);
++    return res;
++}
++
++struct Entry
++{
++    git::Mode mode;
++    Hash oid;
++};
++
++using Dir = std::map<std::string, Entry>;
++
++struct Connection
++{
++    SQLite db;
++    SQLiteStmt hasTree, queryEntries, hasBlob, queryBlob, insertBlob, insertChunk, insertTree;
++
++    Connection(const std::filesystem::path & dbPath)
++    {
++        db = SQLite(dbPath, {.useWAL = settings.useSQLiteWAL});
++        db.exec("pragma synchronous = normal");
++        /* Read pages via mmap rather than pread(). This reduces system time (and thus cold imports and copying
++           trees to the store) by about 7%. Writes still go through write(). */
++        db.exec("pragma mmap_size = 1073741824");
++        /* A larger page cache (16 MiB instead of 2 MiB) avoids spilling dirty pages to the WAL in the middle of a
++           write transaction. */
++        db.exec("pragma cache_size = -16384");
++
++        hasTree.create(db, "select 1 from Trees where oid = ?");
++        queryEntries.create(db, "select entries from Trees where oid = ?");
++        hasBlob.create(db, "select 1 from Blobs where oid = ?");
++        queryBlob.create(
++            db,
++            "select b.size, c.seq, c.size, c.compression, c.data from Blobs b join BlobChunks c on c.oid = b.oid "
++            "where b.oid = ? order by c.seq");
++        insertBlob.create(db, "insert or ignore into Blobs(oid, size) values (?, ?)");
++        insertChunk.create(
++            db, "insert or ignore into BlobChunks(oid, seq, size, compression, data) values (?, ?, ?, ?, ?)");
++        insertTree.create(db, "insert or ignore into Trees(oid, entries) values (?, ?)");
++    }
++};
++
++/**
++ * A blob chunk that is ready to be written to the database.
++ */
++struct PendingChunk
++{
++    Hash oid;
++    uint64_t seq;
++    uint64_t size;
++    Compression compression;
++    std::string data;
++};
++
++/**
++ * A blob whose chunks have all been queued for writing.
++ */
++struct PendingBlob
++{
++    Hash oid;
++    uint64_t size;
++};
++
++/**
++ * Rows waiting to be written to the database in a single transaction. Chunks are written before blobs, so a blob
++ * must be added after its chunks.
++ */
++struct Pending
++{
++    std::vector<PendingChunk> chunks;
++    std::vector<PendingBlob> blobs;
++
++    /** Total size of `chunks[*].data`. */
++    size_t size = 0;
++
++    void addChunk(PendingChunk && chunk)
++    {
++        size += chunk.data.size();
++        chunks.push_back(std::move(chunk));
++    }
++
++    void clear()
++    {
++        chunks.clear();
++        blobs.clear();
++        size = 0;
++    }
++};
++
++/**
++ * Compress `contents` into a chunk of a blob.
++ */
++PendingChunk makeChunk(const Hash & oid, uint64_t seq, std::string_view contents)
++{
++    PendingChunk chunk{.oid = oid, .seq = seq, .size = contents.size()};
++    if (auto compressed = compress(contents)) {
++        chunk.compression = Compression::Zstd;
++        chunk.data = std::move(*compressed);
++    } else {
++        chunk.compression = Compression::None;
++        chunk.data = contents;
++    }
++    return chunk;
++}
++
++struct TarballCacheImpl : TarballCache, std::enable_shared_from_this<TarballCacheImpl>
++{
++    std::filesystem::path dbPath;
++
++    /**
++     * SQLite connections. Every thread that accesses the database
++     * takes its own connection from this pool.
++     */
++    Pool<Connection> pool;
++
++    /**
++     * Mutex to serialize write transactions within this process, since SQLite only allows one writer at a time anyway.
++     * (Writers in other processes are handled by SQLite's busy handler.)
++     */
++    std::mutex writeMutex;
++
++    TarballCacheImpl(std::filesystem::path _dbPath)
++        : dbPath(std::move(_dbPath))
++        , pool(std::numeric_limits<size_t>::max(), [this]() { return make_ref<Connection>(dbPath); })
++    {
++        createDirs(dbPath.parent_path());
++
++        SQLite db(dbPath, {.useWAL = settings.useSQLiteWAL});
++        if (settings.useSQLiteWAL)
++            db.exec("pragma main.journal_mode = wal");
++        db.exec(schema);
++    }
++
++    bool hasTree(const Hash & treeHash) override
++    {
++        auto conn(pool.get());
++        return conn->hasTree.use().apply(treeHash.hash, treeHash.hashSize).next();
++    }
++
++    ref<const Dir> readTree(const Hash & treeHash)
++    {
++        auto dir = make_ref<Dir>();
++        auto conn(pool.get());
++        auto stmt(conn->queryEntries.use().apply(treeHash.hash, treeHash.hashSize));
++        if (!stmt.next())
++            throw Error("tree '%s' is missing from the tarball cache", treeHash.gitRev());
++        auto data = stmt.getBlob(0);
++        size_t pos = 0;
++        while (pos < data.size()) {
++            auto rawMode = readLE<uint32_t>(data, pos);
++            pos += 4;
++            auto mode = git::decodeMode(rawMode);
++            if (!mode)
++                throw Error("tarball cache contains an entry with unknown mode %o", rawMode);
++            auto nameLen = readLE<uint16_t>(data, pos);
++            pos += 2;
++            if (pos + nameLen + 20 > data.size())
++                throw Error("tarball cache contains a truncated tree");
++            std::string name(data.substr(pos, nameLen));
++            pos += nameLen;
++            dir->emplace(std::move(name), Entry{.mode = *mode, .oid = toOid(data.substr(pos, 20))});
++            pos += 20;
++        }
++        return dir;
++    }
++
++    void readBlob(const Hash & oid, Sink & sink, fun<void(uint64_t)> sizeCallback)
++    {
++        auto conn(pool.get());
++        auto stmt(conn->queryBlob.use().apply(oid.hash, oid.hashSize));
++
++        auto corrupt = [&](std::string_view what) {
++            throw Error("blob '%s' in the tarball cache is corrupt: %s", oid.gitRev(), what);
++        };
++
++        uint64_t size = 0, seq = 0, bytesRead = 0;
++
++        while (stmt.next()) {
++            if (seq == 0) {
++                size = stmt.getInt(0);
++                sizeCallback(size);
++            }
++
++            if ((uint64_t) stmt.getInt(1) != seq)
++                corrupt(fmt("chunk %d is missing", seq));
++
++            uint64_t chunkSize = stmt.getInt(2);
++            auto compression = (Compression) stmt.getInt(3);
++            auto data = stmt.getBlob(4);
++
++            switch (compression) {
++            case Compression::None:
++                if (data.size() != chunkSize)
++                    corrupt(fmt("chunk %d has size %d, expected %d", seq, data.size(), chunkSize));
++                sink(data);
++                break;
++            case Compression::Zstd:
++                sink(decompress(data, chunkSize));
++                break;
++            default:
++                corrupt(fmt("unknown compression type %d", (int64_t) compression));
++            }
++
++            bytesRead += chunkSize;
++            seq++;
++        }
++
++        if (seq == 0)
++            throw Error("blob '%s' is missing from the tarball cache", oid.gitRev());
++
++        if (bytesRead != size)
++            corrupt(fmt("expected %d bytes, got %d", size, bytesRead));
++    }
++
++    /**
++     * Write the chunks and blobs in `pending` to the database in a single transaction.
++     */
++    void writePending(const Pending & pending)
++    {
++        if (pending.chunks.empty() && pending.blobs.empty())
++            return;
++        std::lock_guard lock(writeMutex);
++        auto conn(pool.get());
++        retrySQLite<void>([&]() {
++            SQLiteTxn txn(conn->db);
++            for (auto & chunk : pending.chunks)
++                conn->insertChunk.use()
++                    .apply(chunk.oid.hash, chunk.oid.hashSize)
++                    .apply((int64_t) chunk.seq)
++                    .apply((int64_t) chunk.size)
++                    .apply((int64_t) chunk.compression)
++                    .apply((const unsigned char *) chunk.data.data(), chunk.data.size())
++                    .exec();
++            for (auto & blob : pending.blobs)
++                conn->insertBlob.use().apply(blob.oid.hash, blob.oid.hashSize).apply((int64_t) blob.size).exec();
++            txn.commit();
++        });
++    }
++
++    ref<SourceAccessor> getAccessor(const Hash & treeHash, std::string displayPrefix) override;
++
++    ref<GitFileSystemObjectSink> getFileSystemObjectSink() override;
++
++    Hash treeHashToNarHash(const Settings & settings, const Hash & treeHash) override
++    {
++        auto accessor = getAccessor(treeHash, "");
++
++        Cache::Key cacheKey{"treeHashToNarHash", {{"treeHash", treeHash.gitRev()}}};
++
++        if (auto res = settings.getCache()->lookup(cacheKey))
++            return Hash::parseAny(getStrAttr(*res, "narHash"), HashAlgorithm::SHA256);
++
++        auto narHash = accessor->hashPath(CanonPath::root);
++
++        settings.getCache()->upsert(cacheKey, Attrs({{"narHash", narHash.to_string(HashFormat::SRI, true)}}));
++
++        return narHash;
++    }
++
++    Hash dereferenceSingletonDirectory(const Hash & treeHash) override
++    {
++        auto dir = readTree(treeHash);
++        if (dir->size() == 1 && dir->begin()->second.mode == git::Mode::Directory)
++            return dir->begin()->second.oid;
++        return treeHash;
++    }
++};
++
++struct TarballCacheAccessor : SourceAccessor
++{
++    ref<TarballCacheImpl> cache;
++
++    Hash root;
++
++    /**
++     * Cache of directory listings. A null value denotes a path that is not a directory.
++     */
++    SharedSync<boost::unordered_flat_map<CanonPath, std::shared_ptr<const Dir>>> dirCache;
++
++    TarballCacheAccessor(ref<TarballCacheImpl> cache, const Hash & root)
++        : cache(cache)
++        , root(root)
++    {
++        if (!cache->hasTree(root))
++            throw Error("tree '%s' is missing from the tarball cache", root.gitRev());
++        fingerprint = GitAccessorOptions{}.makeFingerprint(root);
++    }
++
++    void anchor() override {}
++
++    /**
++     * Return the contents of the directory `path`, or null if `path` doesn't exist or is not a directory.
++     */
++    std::shared_ptr<const Dir> getDir(const CanonPath & path)
++    {
++        {
++            auto dirCache_(dirCache.readLock());
++            if (auto i = dirCache_->find(path); i != dirCache_->end())
++                return i->second;
++        }
++
++        std::shared_ptr<const Dir> dir;
++        if (auto entry = lookup(path); entry && entry->mode == git::Mode::Directory)
++            dir = cache->readTree(entry->oid).get_ptr();
++
++        dirCache.lock()->emplace(path, dir);
++
++        return dir;
++    }
++
++    std::optional<Entry> lookup(const CanonPath & path)
++    {
++        if (path.isRoot())
++            return Entry{.mode = git::Mode::Directory, .oid = root};
++
++        auto dir = getDir(*path.parent());
++        if (!dir)
++            return std::nullopt;
++
++        auto i = dir->find(std::string(*path.baseName()));
++        if (i == dir->end())
++            return std::nullopt;
++
++        return i->second;
++    }
++
++    Entry need(const CanonPath & path)
++    {
++        auto entry = lookup(path);
++        if (!entry)
++            throw FileNotFound("path '%s' does not exist", showPath(path));
++        return *entry;
++    }
++
++    void readFile(const CanonPath & path, Sink & sink, fun<void(uint64_t)> sizeCallback) override
++    {
++        auto entry = need(path);
++        if (entry.mode != git::Mode::Regular && entry.mode != git::Mode::Executable)
++            throw Error("'%s' is not a regular file", showPath(path));
++        cache->readBlob(entry.oid, sink, sizeCallback);
++    }
++
++    bool pathExists(const CanonPath & path) override
++    {
++        return (bool) lookup(path);
++    }
++
++    std::optional<Stat> maybeLstat(const CanonPath & path) override
++    {
++        auto entry = lookup(path);
++        if (!entry)
++            return std::nullopt;
++
++        switch (entry->mode) {
++        case git::Mode::Directory:
++            return Stat{.type = tDirectory};
++        case git::Mode::Regular:
++            return Stat{.type = tRegular};
++        case git::Mode::Executable:
++            return Stat{.type = tRegular, .isExecutable = true};
++        case git::Mode::Symlink:
++            return Stat{.type = tSymlink};
++        }
++        unreachable();
++    }
++
++    DirEntries readDirectory(const CanonPath & path) override
++    {
++        auto entry = need(path);
++        if (entry.mode != git::Mode::Directory)
++            throw Error("'%s' is not a directory", showPath(path));
++
++        auto dir = getDir(path);
++        assert(dir);
++
++        DirEntries res;
++        for (auto & [name, entry] : *dir)
++            res.emplace(
++                name,
++                entry.mode == git::Mode::Directory ? tDirectory
++                : entry.mode == git::Mode::Symlink ? tSymlink
++                                                   : tRegular);
++        return res;
++    }
++
++    std::string readLink(const CanonPath & path) override
++    {
++        auto entry = need(path);
++        if (entry.mode != git::Mode::Symlink)
++            throw Error("'%s' is not a symlink", showPath(path));
++        StringSink sink;
++        cache->readBlob(entry.oid, sink, [&](uint64_t size) { sink.s.reserve(size); });
++        return std::move(sink.s);
++    }
++};
++
++ref<SourceAccessor> TarballCacheImpl::getAccessor(const Hash & treeHash, std::string displayPrefix)
++{
++    auto accessor = make_ref<TarballCacheAccessor>(ref<TarballCacheImpl>(shared_from_this()), treeHash);
++    accessor->setPathDisplay(std::move(displayPrefix));
++    return accessor;
++}
++
++struct TarballCacheSink : GitFileSystemObjectSink
++{
++    ref<TarballCacheImpl> cache;
++
++    unsigned int concurrency = std::min(std::thread::hardware_concurrency(), 10U);
++
++    ThreadPool workers{concurrency};
++
++    /** Total file contents in flight. */
++    std::atomic<size_t> totalBufSize{0};
++
++    /** If the file contents in flight exceed this threshold, files are processed synchronously. */
++    static constexpr size_t maxBufSize = 64 * 1024 * 1024;
++
++    /** The amount of (compressed) blob data to write to the database in a single transaction. */
++    static constexpr size_t maxBatchSize = 16 * 1024 * 1024;
++
++    struct Child;
++
++    /// A directory to be written as a tree.
++    struct Directory
++    {
++        std::map<std::string, Child> children;
++        std::optional<Hash> oid;
++
++        Child & lookup(const CanonPath & path)
++        {
++            assert(!path.isRoot());
++            auto parent = path.parent();
++            auto cur = this;
++            for (auto & name : *parent) {
++                auto i = cur->children.find(std::string(name));
++                if (i == cur->children.end())
++                    throw Error("path '%s' does not exist", path);
++                auto dir = std::get_if<Directory>(&i->second.file);
++                if (!dir)
++                    throw Error("path '%s' has a non-directory parent", path);
++                cur = dir;
++            }
++
++            auto i = cur->children.find(std::string(*path.baseName()));
++            if (i == cur->children.end())
++                throw Error("path '%s' does not exist", path);
++            return i->second;
++        }
++    };
++
++    size_t nextId = 0; // for Child.id
++
++    struct Child
++    {
++        git::Mode mode;
++        std::variant<Directory, Hash> file;
++
++        /// Sequential numbering of the file in the tarball. This is
++        /// used to make sure we only import the latest version of a
++        /// path.
++        size_t id{0};
++    };
++
++    struct State
++    {
++        Directory root;
++    };
++
++    Sync<State> _state;
++
++    /** Rows waiting to be written to the database. */
++    Sync<Pending> _pending;
++
++    /** The blobs that have already been seen during this import. */
++    Sync<boost::unordered_flat_set<Hash>> _seen;
++
++    /**
++     * Connections used to check whether objects already exist. Each keeps a read transaction open for the duration
++     * of the import, so that the per-object queries don't each have to start a transaction (which involves locking).
++     * The transaction's snapshot doesn't include the objects written during this import, but those are tracked by
++     * `_seen`. Objects written by other processes in the meantime are simply written again (`insert or ignore`).
++     *
++     * Note: an open read transaction keeps the WAL from being reset, so it grows for the duration of the import.
++     */
++    Pool<Connection> readPool;
++
++    TarballCacheSink(ref<TarballCacheImpl> cache)
++        : cache(cache)
++        , readPool(std::numeric_limits<size_t>::max(), [cache]() {
++            auto conn = make_ref<Connection>(cache->dbPath);
++            conn->db.exec("begin");
++            return conn;
++        })
++    {
++    }
++
++    ~TarballCacheSink()
++    {
++        // Make sure the worker threads are destroyed before any state
++        // they're referring to.
++        workers.shutdown();
++    }
++
++    void addNode(State & state, const CanonPath & path, Child && child)
++    {
++        assert(!path.isRoot());
++        auto parent = path.parent();
++
++        Directory * cur = &state.root;
++
++        for (auto & i : *parent) {
++            auto child = std::get_if<Directory>(
++                &cur->children.emplace(std::string(i), Child{git::Mode::Directory, {Directory()}}).first->second.file);
++            if (!child)
++                throw Error("path '%s' has a non-directory parent", path);
++            cur = child;
++        }
++
++        std::string name(*path.baseName());
++
++        if (auto prev = cur->children.find(name); prev == cur->children.end() || prev->second.id < child.id)
++            cur->children.insert_or_assign(name, std::move(child));
++    }
++
++    /**
++     * Queue a chunk for writing, and write the queued rows if there are enough of them.
++     */
++    void queueChunk(PendingChunk && chunk)
++    {
++        Pending batch;
++
++        {
++            auto pending(_pending.lock());
++            pending->addChunk(std::move(chunk));
++            if (pending->size < maxBatchSize)
++                return;
++            batch = std::move(*pending);
++            pending->clear();
++        }
++
++        cache->writePending(batch);
++    }
++
++    /**
++     * Return whether the blob `oid` still needs to be written, i.e. it's not in the cache and hasn't been queued
++     * during this import.
++     */
++    bool needBlob(const Hash & oid)
++    {
++        if (!_seen.lock()->insert(oid).second)
++            return false;
++
++        auto conn(readPool.get());
++        return !conn->hasBlob.use().apply(oid.hash, oid.hashSize).next();
++    }
++
++    /**
++     * Add a blob to the cache, unless it's already there. Returns its Git hash.
++     */
++    Hash addBlob(std::string_view contents)
++    {
++        assert(contents.size() <= chunkSize);
++
++        auto oid = hashBlob(contents);
++
++        if (!needBlob(oid))
++            return oid;
++
++        auto chunk = makeChunk(oid, 0, contents);
++
++        Pending batch;
++
++        {
++            auto pending(_pending.lock());
++            pending->addChunk(std::move(chunk));
++            pending->blobs.push_back({.oid = oid, .size = contents.size()});
++            if (pending->size < maxBatchSize)
++                return oid;
++            batch = std::move(*pending);
++            pending->clear();
++        }
++
++        cache->writePending(batch);
++
++        return oid;
++    }
++
++    /**
++     * Add a blob that was spilled to a temporary file to the cache, unless it's already there. Returns its Git hash.
++     */
++    Hash addBlobFromFile(Descriptor fd, uint64_t size)
++    {
++        auto rewind = [&]() {
++            if (lseek(fd, 0, SEEK_SET) == -1)
++                throw SysError("seeking in temporary file");
++        };
++
++        /* First pass: compute the Git hash. */
++        auto oid = [&]() {
++            rewind();
++            HashSink hashSink(HashAlgorithm::SHA1);
++            git::dumpBlobPrefix(size, hashSink);
++            FdSource source(fd);
++            source.drainInto(hashSink);
++            return hashSink.finish().hash;
++        }();
++
++        if (!needBlob(oid))
++            return oid;
++
++        /* Second pass: compress and queue the chunks. */
++        rewind();
++        FdSource source(fd);
++        std::string buf;
++        uint64_t seq = 0, left = size;
++        do {
++            buf.resize(std::min<uint64_t>(chunkSize, left));
++            source(buf.data(), buf.size());
++            left -= buf.size();
++            queueChunk(makeChunk(oid, seq++, buf));
++        } while (left);
++
++        _pending.lock()->blobs.push_back({.oid = oid, .size = size});
++
++        return oid;
++    }
++
++    /**
++     * Asynchronously add a blob to the cache and register it as `path` in the tree.
++     */
++    void addBlobNode(const CanonPath & path, git::Mode mode, std::string contents_, size_t id)
++    {
++        auto contents = std::make_shared<std::string>(std::move(contents_));
++
++        totalBufSize += contents->size();
++
++        auto work = [this, path, mode, contents, id]() {
++            Finally releaseBuf([&]() { totalBufSize -= contents->size(); });
++            auto oid = addBlob(*contents);
++            addNode(*_state.lock(), path, Child{mode, oid, id});
++        };
++
++        /* To avoid unbounded memory usage, process the file synchronously if there is too much data in flight. */
++        if (totalBufSize > maxBufSize)
++            work();
++        else
++            workers.enqueue(std::move(work));
++    }
++
++    void createRegularFile(const CanonPath & path, fun<void(CreateRegularFileSink &)> func) override
++    {
++        checkInterrupt();
++
++        /* The contents are buffered in memory up to `chunkSize` bytes. Beyond that, they're spilled to a temporary
++           file, which is processed after the whole file has been received. */
++        struct CRF : CreateRegularFileSink
++        {
++            std::string contents;
++            bool executable = false;
++
++            AutoCloseFD tempFd;
++            AutoDelete tempDel;
++            uint64_t size = 0;
++
++            void operator()(std::string_view data) override
++            {
++                size += data.size();
++
++                if (!tempFd) {
++                    if (contents.size() + data.size() <= chunkSize) {
++                        contents.append(data);
++                        return;
++                    }
++
++                    auto [fd, path] = createTempFile("nix-tarball-cache");
++                    tempFd = std::move(fd);
++                    tempDel = AutoDelete(path, /*recursive=*/false);
++                    writeFull(tempFd.get(), contents);
++                    contents.clear();
++                    contents.shrink_to_fit();
++                }
++
++                writeFull(tempFd.get(), data);
++            }
++
++            void isExecutable() override
++            {
++                executable = true;
++            }
++
++            void preallocateContents(uint64_t size) override
++            {
++                if (size <= chunkSize)
++                    contents.reserve(size);
++            }
++        };
++
++        auto crf = std::make_shared<CRF>();
++
++        func(*crf);
++
++        auto mode = crf->executable ? git::Mode::Executable : git::Mode::Regular;
++        auto id = nextId++;
++
++        if (!crf->tempFd) {
++            addBlobNode(path, mode, std::move(crf->contents), id);
++            return;
++        }
++
++        workers.enqueue([this, path, mode, crf, id]() {
++            auto oid = addBlobFromFile(crf->tempFd.get(), crf->size);
++            addNode(*_state.lock(), path, Child{mode, oid, id});
++        });
++    }
++
++    void createDirectory(const CanonPath & path) override
++    {
++        if (path.isRoot())
++            return;
++        auto state(_state.lock());
++        addNode(*state, path, {git::Mode::Directory, Directory()});
++    }
++
++    void createSymlink(const CanonPath & path, const std::string & target) override
++    {
++        addBlobNode(path, git::Mode::Symlink, target, 0);
++    }
++
++    std::map<CanonPath, CanonPath> hardLinks;
++
++    void createHardlink(const CanonPath & path, const CanonPath & target) override
++    {
++        hardLinks.insert_or_assign(path, target);
++    }
++
++    /**
++     * Compute the Git tree hashes of `dir` and its subdirectories.
++     */
++    static Hash hashTree(Directory & dir)
++    {
++        git::Tree tree;
++
++        for (auto & [name, child] : dir.children) {
++            if (auto subdir = std::get_if<Directory>(&child.file))
++                // `git::Tree` expects directory names to have a trailing slash.
++                tree.emplace(name + "/", git::TreeEntry{.mode = git::Mode::Directory, .hash = hashTree(*subdir)});
++            else
++                tree.emplace(name, git::TreeEntry{.mode = child.mode, .hash = std::get<Hash>(child.file)});
++        }
++
++        HashSink sink(HashAlgorithm::SHA1);
++        git::dumpTree(tree, sink);
++        dir.oid = sink.finish().hash;
++        return *dir.oid;
++    }
++
++    Hash flush() override
++    {
++        workers.process();
++
++        // Write the remaining chunks and blobs.
++        {
++            auto pending(_pending.lock());
++            cache->writePending(*pending);
++            pending->clear();
++        }
++
++        auto state(_state.lock());
++
++        /* Create hard links. */
++        for (auto & [path, target] : hardLinks) {
++            if (target.isRoot())
++                continue;
++            try {
++                auto child = state->root.lookup(target);
++                auto oid = std::get_if<Hash>(&child.file);
++                if (!oid)
++                    throw Error("cannot create a hard link to a directory");
++                addNode(*state, path, {child.mode, *oid});
++            } catch (Error & e) {
++                e.addTrace(nullptr, "while creating a hard link from '%s' to '%s'", path, target);
++                throw;
++            }
++        }
++
++        auto rootOid = hashTree(state->root);
++
++        /* Figure out which trees are not in the database yet. Note that if a tree is already in the database, then so
++           are all its children. */
++        std::vector<const Directory *> missing;
++        {
++            boost::unordered_flat_set<Hash> visited;
++            auto conn(readPool.get());
++
++            [&](this const auto & visit, const Directory & dir) -> void {
++                checkInterrupt();
++
++                auto & oid = dir.oid.value();
++                if (!visited.insert(oid).second)
++                    return;
++                if (conn->hasTree.use().apply(oid.hash, oid.hashSize).next())
++                    return;
++
++                for (auto & child : dir.children)
++                    if (auto subdir = std::get_if<Directory>(&child.second.file))
++                        visit(*subdir);
++
++                missing.push_back(&dir);
++            }(state->root);
++        }
++
++        /* Close the read connections (discarding their transactions), so the WAL can be reset again. */
++        readPool.clear();
++
++        /* Write the missing trees. This must be done after writing the blobs, since the existence of a tree implies
++           that all its children exist. */
++        if (!missing.empty()) {
++            std::lock_guard lock(cache->writeMutex);
++            auto conn(cache->pool.get());
++            retrySQLite<void>([&]() {
++                SQLiteTxn txn(conn->db);
++                for (auto dir : missing) {
++                    auto & oid = dir->oid.value();
++                    std::string entries;
++                    for (auto & [name, child] : dir->children) {
++                        auto subdir = std::get_if<Directory>(&child.file);
++                        auto & childOid = subdir ? subdir->oid.value() : std::get<Hash>(child.file);
++                        appendLE<uint32_t>(entries, (uint32_t) child.mode);
++                        appendLE<uint16_t>(entries, (uint16_t) name.size());
++                        entries += name;
++                        entries.append((const char *) childOid.hash, childOid.hashSize);
++                    }
++                    conn->insertTree.use()
++                        .apply(oid.hash, oid.hashSize)
++                        .apply((const unsigned char *) entries.data(), entries.size())
++                        .exec();
++                }
++                txn.commit();
++            });
++        }
++
++        return rootOid;
++    }
++};
++
++ref<GitFileSystemObjectSink> TarballCacheImpl::getFileSystemObjectSink()
++{
++    return make_ref<TarballCacheSink>(ref<TarballCacheImpl>(shared_from_this()));
++}
++
++} // namespace
++
++ref<TarballCache> TarballCache::open(const std::filesystem::path & dbPath)
++{
++    return make_ref<TarballCacheImpl>(dbPath);
++}
++
++ref<TarballCache> Settings::getTarballCache() const
++{
++    auto tarballCache(_tarballCache.lock());
++    if (!*tarballCache)
++        *tarballCache = TarballCache::open(getCacheDir() / "tarball-cache-v3.sqlite").get_ptr();
++    return ref<TarballCache>(*tarballCache);
++}
++
++} // namespace nix::fetchers
+diff --git a/src/libfetchers/tarball.cc b/src/libfetchers/tarball.cc
+--- a/src/libfetchers/tarball.cc
++++ b/src/libfetchers/tarball.cc
+@@ -8,6 +8,7 @@
+ #include "nix/util/types.hh"
+ #include "nix/store/store-api.hh"
+ #include "nix/fetchers/git-utils.hh"
++#include "nix/fetchers/tarball-cache.hh"
+ #include "nix/fetchers/fetch-settings.hh"
+ #include "nix/fetchers/provenance.hh"
+ 
+@@ -152,11 +153,11 @@
+             .treeHash = treeHash,
+             .lastModified = (time_t) getIntAttr(infoAttrs, "lastModified"),
+             .immutableUrl = maybeGetStrAttr(infoAttrs, "immutableUrl"),
+-            .accessor = settings.getTarballCache()->getAccessor(treeHash, {}, displayPrefix),
++            .accessor = settings.getTarballCache()->getAccessor(treeHash, displayPrefix),
+         };
+     };
+ 
+-    if (cached && !settings.getTarballCache()->hasObject(getRevAttr(cached->value, "treeHash")))
++    if (cached && !settings.getTarballCache()->hasTree(getRevAttr(cached->value, "treeHash")))
+         cached.reset();
+ 
+     if (cached && !cached->expired)
+@@ -177,7 +178,8 @@
+ 
+     // TODO: fall back to cached value if download fails.
+ 
+-    auto act = std::make_unique<Activity>(*logger, lvlInfo, actUnknown, fmt("unpacking '%s' into the Git cache", url));
++    auto act =
++        std::make_unique<Activity>(*logger, lvlInfo, actUnknown, fmt("unpacking '%s' into the tarball cache", url));
+ 
+     AutoDelete cleanupTemp;
+ 
+diff --git a/src/libstore/derivations.cc b/src/libstore/derivations.cc
+--- a/src/libstore/derivations.cc
++++ b/src/libstore/derivations.cc
+@@ -1,3 +1,4 @@
++#include <cstring>
+ #include "nix/store/derivations.hh"
+ #include "nix/store/downstream-placeholder.hh"
+ #include "nix/store/store-api.hh"
+@@ -553,32 +554,46 @@
+  */
+ static void printString(std::string & res, std::string_view s)
+ {
+-    res += '"';
+-    static constexpr auto chunkSize = 1024;
+-    std::array<char, 2 * chunkSize + 2> buffer;
+-    while (!s.empty()) {
+-        auto chunk = s.substr(0, /*n=*/chunkSize);
+-        s.remove_prefix(chunk.size());
+-        char * buf = buffer.data();
+-        char * p = buf;
+-        for (auto c : chunk)
+-            if (c == '\"' || c == '\\') {
+-                *p++ = '\\';
+-                *p++ = c;
+-            } else if (c == '\n') {
+-                *p++ = '\\';
++    /* Bulk-memcpy unescaped runs and handle escapes inline; write straight
++       into res via resize_and_overwrite (no zero-fill, no scratch buffer). */
++    auto oldSize = res.size();
++    res.resize_and_overwrite(oldSize + s.size() * 2 + 2, [&](char * data, size_t) -> size_t {
++        char * p = data + oldSize;
++        *p++ = '"';
++        while (!s.empty()) {
++            size_t i = 0;
++            while (i < s.size()) {
++                char c = s[i];
++                if (c == '"' || c == '\\' || c == '\n' || c == '\r' || c == '\t')
++                    break;
++                ++i;
++            }
++            if (i > 0) {
++                std::memcpy(p, s.data(), i);
++                p += i;
++            }
++            if (i == s.size())
++                break;
++            *p++ = '\\';
++            switch (s[i]) {
++            case '\n':
+                 *p++ = 'n';
+-            } else if (c == '\r') {
+-                *p++ = '\\';
++                break;
++            case '\r':
+                 *p++ = 'r';
+-            } else if (c == '\t') {
+-                *p++ = '\\';
++                break;
++            case '\t':
+                 *p++ = 't';
+-            } else
+-                *p++ = c;
+-        res.append(buf, p - buf);
+-    }
+-    res += '"';
++                break;
++            default:
++                *p++ = s[i];
++                break;
++            }
++            s.remove_prefix(i + 1);
++        }
++        *p++ = '"';
++        return p - data;
++    });
+ }
+ 
+ static void printUnquotedString(std::string & res, std::string_view s)
+diff --git a/src/libstore/include/nix/store/sqlite.hh b/src/libstore/include/nix/store/sqlite.hh
+--- a/src/libstore/include/nix/store/sqlite.hh
++++ b/src/libstore/include/nix/store/sqlite.hh
+@@ -157,6 +157,13 @@
+         bool next();
+ 
+         std::string getStr(int col);
++
++        /**
++         * Return the contents of a blob (or text) column. The result is
++         * only valid until the next call to `next()` or until this
++         * `Use` is destroyed.
++         */
++        std::string_view getBlob(int col);
+         int64_t getInt(int col);
+         bool isNull(int col);
+     };
+diff --git a/src/libstore/sqlite.cc b/src/libstore/sqlite.cc
+--- a/src/libstore/sqlite.cc
++++ b/src/libstore/sqlite.cc
+@@ -270,6 +270,13 @@
+     return s;
+ }
+ 
++std::string_view SQLiteStmt::Use::getBlob(int col)
++{
++    auto data = (const char *) sqlite3_column_blob(stmt, col);
++    /* Note: `sqlite3_column_blob()` returns null for zero-length blobs. */
++    return data ? std::string_view(data, sqlite3_column_bytes(stmt, col)) : std::string_view();
++}
++
+ int64_t SQLiteStmt::Use::getInt(int col)
+ {
+     // FIXME: detect nulls?
+diff --git a/src/libutil/base-n.cc b/src/libutil/base-n.cc
+--- a/src/libutil/base-n.cc
++++ b/src/libutil/base-n.cc
+@@ -1,3 +1,4 @@
++#include <cstring>
+ #include <string_view>
+ 
+ #include "nix/util/array-from-string-literal.hh"
+@@ -10,13 +11,24 @@
+ 
+ constexpr static const std::array<char, 16> base16Chars = "0123456789abcdef"_arrayNoNull;
+ 
++/* Two-char hex encoding per input byte; written via memcpy so the encoder
++   emits two characters per iteration without bounds checks. */
++constexpr static const std::array<std::array<char, 2>, 256> base16Pairs = []() {
++    std::array<std::array<char, 2>, 256> arr{};
++    for (int i = 0; i < 256; ++i) {
++        arr[i][0] = base16Chars[i >> 4];
++        arr[i][1] = base16Chars[i & 0xf];
++    }
++    return arr;
++}();
++
+ std::string base16::encode(std::span<const std::byte> b)
+ {
+-    std::string buf;
+-    buf.reserve(b.size() * 2);
++    std::string buf(b.size() * 2, '\0');
++    char * p = buf.data();
+     for (size_t i = 0; i < b.size(); i++) {
+-        buf.push_back(base16Chars[(uint8_t) b.data()[i] >> 4]);
+-        buf.push_back(base16Chars[(uint8_t) b.data()[i] & 0x0f]);
++        std::memcpy(p, base16Pairs[static_cast<uint8_t>(b.data()[i])].data(), 2);
++        p += 2;
+     }
+     return buf;
+ }
+diff --git a/src/libutil/git.cc b/src/libutil/git.cc
+--- a/src/libutil/git.cc
++++ b/src/libutil/git.cc
+@@ -48,15 +48,8 @@
+     return v;
+ }
+ 
+-void parseBlob(
+-    FileSystemObjectSink & sink,
+-    const CanonPath & sinkPath,
+-    Source & source,
+-    BlobMode blobMode,
+-    const ExperimentalFeatureSettings & xpSettings)
+-{
+-    xpSettings.require(Xp::GitHashing);
+-
++void parseBlob(FileSystemObjectSink & sink, const CanonPath & sinkPath, Source & source, BlobMode blobMode)
++{
+     const unsigned long long size = std::stoi(getStringUntil(source, 0));
+ 
+     auto doRegularFile = [&](bool executable) {
+@@ -103,8 +96,7 @@
+     const CanonPath & sinkPath,
+     Source & source,
+     HashAlgorithm hashAlgo,
+-    fun<SinkHook> hook,
+-    const ExperimentalFeatureSettings & xpSettings)
++    fun<SinkHook> hook)
+ {
+     const unsigned long long size = std::stoi(getStringUntil(source, 0));
+     unsigned long long left = size;
+@@ -146,10 +138,8 @@
+     }
+ }
+ 
+-ObjectType parseObjectType(Source & source, const ExperimentalFeatureSettings & xpSettings)
+-{
+-    xpSettings.require(Xp::GitHashing);
+-
++ObjectType parseObjectType(Source & source)
++{
+     auto type = getString(source, 5);
+ 
+     if (type == "blob ") {
+@@ -166,19 +156,16 @@
+     Source & source,
+     BlobMode rootModeIfBlob,
+     HashAlgorithm hashAlgo,
+-    fun<SinkHook> hook,
+-    const ExperimentalFeatureSettings & xpSettings)
+-{
+-    xpSettings.require(Xp::GitHashing);
+-
+-    auto type = parseObjectType(source, xpSettings);
++    fun<SinkHook> hook)
++{
++    auto type = parseObjectType(source);
+ 
+     switch (type) {
+     case ObjectType::Blob:
+-        parseBlob(sink, sinkPath, source, rootModeIfBlob, xpSettings);
++        parseBlob(sink, sinkPath, source, rootModeIfBlob);
+         break;
+     case ObjectType::Tree:
+-        parseTree(sink, sinkPath, source, hashAlgo, hook, xpSettings);
++        parseTree(sink, sinkPath, source, hashAlgo, hook);
+         break;
+     default:
+         assert(false);
+@@ -228,17 +215,14 @@
+     });
+ }
+ 
+-void dumpBlobPrefix(uint64_t size, Sink & sink, const ExperimentalFeatureSettings & xpSettings)
+-{
+-    xpSettings.require(Xp::GitHashing);
++void dumpBlobPrefix(uint64_t size, Sink & sink)
++{
+     auto s = fmt("blob %d\0"s, std::to_string(size));
+     sink(s);
+ }
+ 
+-void dumpTree(const Tree & entries, Sink & sink, const ExperimentalFeatureSettings & xpSettings)
+-{
+-    xpSettings.require(Xp::GitHashing);
+-
++void dumpTree(const Tree & entries, Sink & sink)
++{
+     std::string v1;
+ 
+     for (auto & [name, entry] : entries) {
+@@ -260,18 +244,13 @@
+     sink(v1);
+ }
+ 
+-Mode dump(
+-    const SourcePath & path,
+-    Sink & sink,
+-    fun<DumpHook> hook,
+-    PathFilter & filter,
+-    const ExperimentalFeatureSettings & xpSettings)
++Mode dump(const SourcePath & path, Sink & sink, fun<DumpHook> hook, PathFilter & filter)
+ {
+     auto st = path.lstat();
+ 
+     switch (st.type) {
+     case SourceAccessor::tRegular: {
+-        path.readFile(sink, [&](uint64_t size) { dumpBlobPrefix(size, sink, xpSettings); });
++        path.readFile(sink, [&](uint64_t size) { dumpBlobPrefix(size, sink); });
+         return st.isExecutable ? Mode::Executable : Mode::Regular;
+     }
+ 
+@@ -290,13 +269,13 @@
+ 
+             entries.insert_or_assign(std::move(name2), std::move(entry));
+         }
+-        dumpTree(entries, sink, xpSettings);
++        dumpTree(entries, sink);
+         return Mode::Directory;
+     }
+ 
+     case SourceAccessor::tSymlink: {
+         auto target = path.readLink();
+-        dumpBlobPrefix(target.size(), sink, xpSettings);
++        dumpBlobPrefix(target.size(), sink);
+         sink(target);
+         return Mode::Symlink;
+     }
+diff --git a/src/libutil/include/nix/util/git.hh b/src/libutil/include/nix/util/git.hh
+--- a/src/libutil/include/nix/util/git.hh
++++ b/src/libutil/include/nix/util/git.hh
+@@ -72,8 +72,7 @@
+  *
+  * @throws if prefix not recognized
+  */
+-ObjectType
+-parseObjectType(Source & source, const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++ObjectType parseObjectType(Source & source);
+ 
+ /**
+  * These 3 modes are represented by blob objects.
+@@ -87,12 +86,7 @@
+     Symlink = static_cast<RawMode>(Mode::Symlink),
+ };
+ 
+-void parseBlob(
+-    FileSystemObjectSink & sink,
+-    const CanonPath & sinkPath,
+-    Source & source,
+-    BlobMode blobMode,
+-    const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++void parseBlob(FileSystemObjectSink & sink, const CanonPath & sinkPath, Source & source, BlobMode blobMode);
+ 
+ /**
+  * @param hashAlgo must be `HashAlgo::SHA1` or `HashAlgo::SHA256` for now.
+@@ -102,8 +96,7 @@
+     const CanonPath & sinkPath,
+     Source & source,
+     HashAlgorithm hashAlgo,
+-    fun<SinkHook> hook,
+-    const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++    fun<SinkHook> hook);
+ 
+ /**
+  * Helper putting the previous three `parse*` functions together.
+@@ -120,8 +113,7 @@
+     Source & source,
+     BlobMode rootModeIfBlob,
+     HashAlgorithm hashAlgo,
+-    fun<SinkHook> hook,
+-    const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++    fun<SinkHook> hook);
+ 
+ /**
+  * Assists with writing a `SinkHook` step (2).
+@@ -145,17 +137,13 @@
+ 
+ /**
+  * Dumps a single file to a sink
+- *
+- * @param xpSettings for testing purposes
+- */
+-void dumpBlobPrefix(
+-    uint64_t size, Sink & sink, const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++ */
++void dumpBlobPrefix(uint64_t size, Sink & sink);
+ 
+ /**
+  * Dumps a representation of a git tree to a sink
+  */
+-void dumpTree(
+-    const Tree & entries, Sink & sink, const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++void dumpTree(const Tree & entries, Sink & sink);
+ 
+ /**
+  * Callback for processing a child with `dump`
+@@ -168,12 +156,7 @@
+  */
+ using DumpHook = TreeEntry(const SourcePath & path);
+ 
+-Mode dump(
+-    const SourcePath & path,
+-    Sink & sink,
+-    fun<DumpHook> hook,
+-    PathFilter & filter = defaultPathFilter,
+-    const ExperimentalFeatureSettings & xpSettings = experimentalFeatureSettings);
++Mode dump(const SourcePath & path, Sink & sink, fun<DumpHook> hook, PathFilter & filter = defaultPathFilter);
+ 
+ /**
+  * Recursively dumps path, hashing as we go.
+diff --git a/src/libutil/include/nix/util/util.hh b/src/libutil/include/nix/util/util.hh
+--- a/src/libutil/include/nix/util/util.hh
++++ b/src/libutil/include/nix/util/util.hh
+@@ -179,7 +179,7 @@
+  * Convert a little-endian integer to host order.
+  */
+ template<typename T>
+-T readLittleEndian(unsigned char * p)
++T readLittleEndian(const unsigned char * p)
+ {
+     T x = 0;
+     /* Byte types such as char/unsigned char/std::byte are a bit special because
+@@ -206,6 +206,17 @@
+ }
+ 
+ /**
++ * Convert a host order integer to little-endian.
++ */
++template<typename T>
++void writeLittleEndian(unsigned char * p, T x)
++{
++    if constexpr (std::endian::native != std::endian::little)
++        x = std::byteswap(x);
++    std::memcpy(p, &x, sizeof(T));
++}
++
++/**
+  * @return true iff `s` starts with `prefix`.
+  */
+ bool hasPrefix(std::string_view s, std::string_view prefix);
+diff --git a/src/libutil-tests/git.cc b/src/libutil-tests/git.cc
+--- a/src/libutil-tests/git.cc
++++ b/src/libutil-tests/git.cc
+@@ -16,19 +16,6 @@
+     std::filesystem::path goldenMaster(std::string_view testStem) const override
+     {
+         return unitTestData / std::string(testStem);
+-    }
+-
+-    /**
+-     * We set these in tests rather than the regular globals so we don't have
+-     * to worry about race conditions if the tests run concurrently.
+-     */
+-    ExperimentalFeatureSettings mockXpSettings;
+-
+-private:
+-
+-    void SetUp() override
+-    {
+-        mockXpSettings.set("experimental-features", "git-hashing");
+     }
+ };
+ 
+@@ -75,8 +62,8 @@
+         StringSource in{encoded};
+         StringSink out;
+         RegularFileSink out2{out};
+-        ASSERT_EQ(parseObjectType(in, mockXpSettings), ObjectType::Blob);
+-        parseBlob(out2, CanonPath::root, in, BlobMode::Regular, mockXpSettings);
++        ASSERT_EQ(parseObjectType(in), ObjectType::Blob);
++        parseBlob(out2, CanonPath::root, in, BlobMode::Regular);
+ 
+         auto expected = readFile(goldenMaster("hello-world.bin"));
+ 
+@@ -90,7 +77,7 @@
+     writeTest("hello-world-blob.bin", [&]() {
+         auto decoded = readFile(goldenMaster("hello-world.bin"));
+         StringSink s;
+-        dumpBlobPrefix(decoded.size(), s, mockXpSettings);
++        dumpBlobPrefix(decoded.size(), s);
+         s(decoded);
+         return s.s;
+     });
+@@ -176,26 +163,20 @@
+     },
+ };
+ 
+-static auto mkTreeReadTest(HashAlgorithm hashAlgo, git::Tree tree, const ExperimentalFeatureSettings & mockXpSettings)
+-{
+-    using namespace git;
+-    return [hashAlgo, tree, mockXpSettings](const auto & encoded) {
++static auto mkTreeReadTest(HashAlgorithm hashAlgo, git::Tree tree)
++{
++    using namespace git;
++    return [hashAlgo, tree](const auto & encoded) {
+         StringSource in{encoded};
+         NullFileSystemObjectSink out;
+         Tree got;
+-        ASSERT_EQ(parseObjectType(in, mockXpSettings), ObjectType::Tree);
+-        parseTree(
+-            out,
+-            CanonPath::root,
+-            in,
+-            hashAlgo,
+-            [&](auto & name, auto entry) {
+-                auto name2 = std::string{name.rel()};
+-                if (entry.mode == Mode::Directory)
+-                    name2 += '/';
+-                got.insert_or_assign(name2, std::move(entry));
+-            },
+-            mockXpSettings);
++        ASSERT_EQ(parseObjectType(in), ObjectType::Tree);
++        parseTree(out, CanonPath::root, in, hashAlgo, [&](auto & name, auto entry) {
++            auto name2 = std::string{name.rel()};
++            if (entry.mode == Mode::Directory)
++                name2 += '/';
++            got.insert_or_assign(name2, std::move(entry));
++        });
+ 
+         ASSERT_EQ(got, tree);
+     };
+@@ -203,12 +184,12 @@
+ 
+ TEST_F(GitTest, tree_sha1_read)
+ {
+-    readTest("tree-sha1.bin", mkTreeReadTest(HashAlgorithm::SHA1, treeSha1, mockXpSettings));
++    readTest("tree-sha1.bin", mkTreeReadTest(HashAlgorithm::SHA1, treeSha1));
+ }
+ 
+ TEST_F(GitTest, tree_sha256_read)
+ {
+-    readTest("tree-sha256.bin", mkTreeReadTest(HashAlgorithm::SHA256, treeSha256, mockXpSettings));
++    readTest("tree-sha256.bin", mkTreeReadTest(HashAlgorithm::SHA256, treeSha256));
+ }
+ 
+ TEST_F(GitTest, tree_sha1_write)
+@@ -216,7 +197,7 @@
+     using namespace git;
+     writeTest("tree-sha1.bin", [&]() {
+         StringSink s;
+-        dumpTree(treeSha1, s, mockXpSettings);
++        dumpTree(treeSha1, s);
+         return s.s;
+     });
+ }
+@@ -226,7 +207,7 @@
+     using namespace git;
+     writeTest("tree-sha256.bin", [&]() {
+         StringSink s;
+-        dumpTree(treeSha256, s, mockXpSettings);
++        dumpTree(treeSha256, s);
+         return s.s;
+     });
+ }
+@@ -249,7 +230,7 @@
+             StringSink s;
+             HashSink hashSink{hashAlgo};
+             TeeSink s2{s, hashSink};
+-            auto mode = dump(path, s2, dumpHook, defaultPathFilter, mockXpSettings);
++            auto mode = dump(path, s2, dumpHook, defaultPathFilter);
+             auto hash = hashSink.finish().hash;
+             cas.insert_or_assign(hash, std::move(s.s));
+             return TreeEntry{
+@@ -267,22 +248,15 @@
+         std::function<void(const CanonPath, const Hash &, BlobMode)> mkSinkHook;
+         mkSinkHook = [&](auto prefix, auto & hash, auto blobMode) {
+             StringSource in{cas[hash]};
+-            parse(
+-                sinkFiles2,
+-                prefix,
+-                in,
+-                blobMode,
+-                hashAlgo,
+-                [&](const CanonPath & name, const auto & entry) {
+-                    mkSinkHook(
+-                        prefix / name,
+-                        entry.hash,
+-                        // N.B. this cast would not be acceptable in real
+-                        // code, because it would make an assert reachable,
+-                        // but it should harmless in this test.
+-                        static_cast<BlobMode>(entry.mode));
+-                },
+-                mockXpSettings);
++            parse(sinkFiles2, prefix, in, blobMode, hashAlgo, [&](const CanonPath & name, const auto & entry) {
++                mkSinkHook(
++                    prefix / name,
++                    entry.hash,
++                    // N.B. this cast would not be acceptable in real
++                    // code, because it would make an assert reachable,
++                    // but it should harmless in this test.
++                    static_cast<BlobMode>(entry.mode));
++            });
+         };
+ 
+         mkSinkHook(CanonPath::root, root.hash, BlobMode::Regular);
+diff --git a/src/nix/ps.cc b/src/nix/ps.cc
+--- a/src/nix/ps.cc
++++ b/src/nix/ps.cc
+@@ -6,10 +6,97 @@
+ #include "nix/store/active-builds.hh"
+ #include "nix/util/table.hh"
+ #include "nix/util/terminal.hh"
++#include "nix/util/finally.hh"
++#include "nix/util/signals.hh"
+ 
+ #include <nlohmann/json.hpp>
+ 
++#include <algorithm>
++#include <array>
++#include <sstream>
++
++#ifndef _WIN32
++#  include <poll.h>
++#  include <termios.h>
++#  include <unistd.h>
++#endif
++
+ using namespace nix;
++
++/* Helper to format user info: show name if available, else UID. */
++static std::string formatUser(const UserInfo & user)
++{
++    return user.name ? *user.name : std::to_string(user.uid);
++}
++
++static std::string formatCpuTime(std::chrono::microseconds cpuTime)
++{
++    return fmt(
++        "%.1fs",
++        std::chrono::duration_cast<std::chrono::duration<float, std::chrono::seconds::period>>(cpuTime).count());
++}
++
++/**
++ * The total CPU time of a process, including that of its reaped children, or `std::nullopt` if not available.
++ */
++static std::optional<std::chrono::microseconds> getProcessCpuTime(const ActiveBuildInfo::ProcessInfo & process)
++{
++    if (!process.utime && !process.stime && !process.cutime && !process.cstime)
++        return std::nullopt;
++    return process.utime.value_or(std::chrono::microseconds(0)) + process.stime.value_or(std::chrono::microseconds(0))
++           + process.cutime.value_or(std::chrono::microseconds(0))
++           + process.cstime.value_or(std::chrono::microseconds(0));
++}
++
++/**
++ * The CPU time of a build. Use cgroup stats if available, otherwise sum process times.
++ */
++static std::chrono::microseconds getBuildCpuTime(const ActiveBuildInfo & build)
++{
++    if (build.utime && build.stime)
++        return *build.utime + *build.stime;
++    std::chrono::microseconds total{0};
++    for (const auto & process : build.processes)
++        total += getProcessCpuTime(process).value_or(std::chrono::microseconds(0));
++    return total;
++}
++
++static std::string formatArgv(const ActiveBuildInfo::ProcessInfo & process)
++{
++    return concatStringsSep(" ", tokenizeString<std::vector<std::string>>(concatStringsSep(" ", process.argv)));
++}
++
++/**
++ * Call `visit` on the processes of `build` in tree order. `prefix` is the tree drawing to put in front of the
++ * process.
++ */
++static void visitProcessTree(
++    const ActiveBuildInfo & build,
++    std::function<void(const ActiveBuildInfo::ProcessInfo & process, std::string_view prefix)> visit)
++{
++    /* Recover the tree structure of the processes. */
++    std::set<pid_t> pids;
++    for (auto & process : build.processes)
++        pids.insert(process.pid);
++
++    using Processes = std::set<const ActiveBuildInfo::ProcessInfo *>;
++    std::map<pid_t, Processes> children;
++    Processes rootProcesses;
++    for (auto & process : build.processes) {
++        if (pids.contains(process.parentPid))
++            children[process.parentPid].insert(&process);
++        else
++            rootProcesses.insert(&process);
++    }
++
++    [&](this auto const & recurse, const Processes & processes, std::string_view prefix) -> void {
++        for (const auto & [n, process] : enumerate(processes)) {
++            bool last = n + 1 == processes.size();
++            visit(*process, fmt("%s%s", prefix, last ? treeLast : treeConn));
++            recurse(children[process->pid], last ? std::string(prefix) + treeNull : std::string(prefix) + treeLine);
++        }
++    }(rootProcesses, "");
++}
+ 
+ struct CmdPs : MixJSON, StoreCommand
+ {
+@@ -46,36 +133,17 @@
+             return;
+         }
+ 
+-        /* Helper to format user info: show name if available, else UID */
+-        auto formatUser = [](const UserInfo & user) -> std::string {
+-            return user.name ? *user.name : std::to_string(user.uid);
+-        };
+-
+         Table table;
+ 
+         /* Add column headers. */
+         table.push_back({{"USER"}, {"PID"}, {"CPU", TableCell::Alignment::Right}, {"DERIVATION/COMMAND"}});
+ 
+         for (const auto & build : builds) {
+-            /* Calculate CPU time - use cgroup stats if available, otherwise sum process times. */
+-            std::chrono::microseconds cpuTime = build.utime && build.stime ? *build.utime + *build.stime : [&]() {
+-                std::chrono::microseconds total{0};
+-                for (const auto & process : build.processes)
+-                    total += process.utime.value_or(std::chrono::microseconds(0))
+-                             + process.stime.value_or(std::chrono::microseconds(0))
+-                             + process.cutime.value_or(std::chrono::microseconds(0))
+-                             + process.cstime.value_or(std::chrono::microseconds(0));
+-                return total;
+-            }();
+-
+             /* Add build summary row. */
+             table.push_back(
+                 {formatUser(build.mainUser),
+                  std::to_string(build.mainPid),
+-                 {fmt("%.1fs",
+-                      std::chrono::duration_cast<std::chrono::duration<float, std::chrono::seconds::period>>(cpuTime)
+-                          .count()),
+-                  TableCell::Alignment::Right},
++                 {formatCpuTime(getBuildCpuTime(build)), TableCell::Alignment::Right},
+                  fmt(ANSI_BOLD "%s" ANSI_NORMAL " (wall=%ds)",
+                      store->printStorePath(build.derivation),
+                      time(nullptr) - build.startTime)});
+@@ -87,60 +155,535 @@
+                      {"", TableCell::Alignment::Right},
+                      fmt("%s" ANSI_ITALIC "(no process info)" ANSI_NORMAL, treeLast)});
+             } else {
+-                /* Recover the tree structure of the processes. */
+-                std::set<pid_t> pids;
+-                for (auto & process : build.processes)
+-                    pids.insert(process.pid);
+-
+-                using Processes = std::set<const ActiveBuildInfo::ProcessInfo *>;
+-                std::map<pid_t, Processes> children;
+-                Processes rootProcesses;
++                /* Render the process tree. */
++                visitProcessTree(build, [&](const ActiveBuildInfo::ProcessInfo & process, std::string_view prefix) {
++                    auto cpuTime = getProcessCpuTime(process);
++                    table.push_back(
++                        {formatUser(process.user),
++                         std::to_string(process.pid),
++                         {cpuTime ? formatCpuTime(*cpuTime) : "", TableCell::Alignment::Right},
++                         fmt("%s%s", prefix, formatArgv(process))});
++                });
++            }
++        }
++
++        auto width = isTTY() && isatty(STDOUT_FILENO) ? getWindowWidth() : std::numeric_limits<unsigned int>::max();
++
++        printTable(std::cout, table, width);
++    }
++};
++
++static auto rCmdPs = registerCommand2<CmdPs>({"ps"});
++
++#ifndef _WIN32
++
++static std::string formatWallTime(time_t secs)
++{
++    secs = std::max<time_t>(secs, 0);
++    if (secs < 60)
++        return fmt("%ds", secs);
++    if (secs < 3600)
++        return fmt("%dm%02ds", secs / 60, secs % 60);
++    return fmt("%dh%02dm", secs / 3600, (secs / 60) % 60);
++}
++
++struct CmdTop : StoreCommand
++{
++    std::string description() override
++    {
++        return "interactively show active builds";
++    }
++
++    Category category() override
++    {
++        return catUtility;
++    }
++
++    std::string doc() override
++    {
++        return
++#  include "top.md"
++            ;
++    }
++
++    using Clock = std::chrono::steady_clock;
++
++    enum class SortOrder { Cpu, Wall, Name };
++
++    /* Builds are identified by the Nix process that runs them, their main process and their derivation. */
++    using BuildKey = std::tuple<pid_t, pid_t, StorePath>;
++
++    static BuildKey getBuildKey(const ActiveBuildInfo & build)
++    {
++        return {build.nixPid, build.mainPid, build.derivation};
++    }
++
++    /**
++     * The CPU time of a process itself, excluding reaped children (so that a shell doesn't show a CPU spike
++     * when a child exits).
++     */
++    static std::optional<std::chrono::microseconds> getOwnCpuTime(const ActiveBuildInfo::ProcessInfo & process)
++    {
++        if (!process.utime && !process.stime)
++            return std::nullopt;
++        return process.utime.value_or(std::chrono::microseconds(0))
++               + process.stime.value_or(std::chrono::microseconds(0));
++    }
++
++    void run(ref<Store> store) override
++    {
++        auto & tracker = require<QueryActiveBuildsStore>(*store);
++
++        if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO))
++            throw UsageError("'nix top' requires a terminal");
++
++        /* Put the terminal in non-canonical mode without echo. Signal generation is also disabled so that Ctrl-Z
++           cannot leave the shell in the alternate screen; Ctrl-C is handled as a key instead. */
++        struct termios savedTermios;
++        if (tcgetattr(STDIN_FILENO, &savedTermios))
++            throw SysError("getting terminal attributes");
++
++        logger->pause();
++        Finally restoreLogger([&] { logger->resume(); });
++
++        auto rawTermios = savedTermios;
++        rawTermios.c_lflag &= ~(ICANON | ECHO | ISIG);
++        rawTermios.c_cc[VMIN] = 0;
++        rawTermios.c_cc[VTIME] = 0;
++        if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &rawTermios))
++            throw SysError("setting terminal attributes");
++
++        Finally restoreTerminal([&] {
++            try {
++                /* Show the cursor and leave the alternate screen. */
++                writeFull(STDOUT_FILENO, "\e[?25h\e[?1049l", false);
++            } catch (...) {
++                ignoreExceptionInDestructor();
++            }
++            tcsetattr(STDIN_FILENO, TCSAFLUSH, &savedTermios);
++        });
++
++        /* Enter the alternate screen and hide the cursor. */
++        writeFull(STDOUT_FILENO, "\e[?1049h\e[?25l");
++
++        std::chrono::milliseconds refreshInterval{2000};
++        SortOrder sortOrder = SortOrder::Cpu;
++        bool showTree = true;
++        size_t scroll = 0;
++        bool clearScreen = true;
++
++        /* The most recent sample. */
++        std::vector<ActiveBuildInfo> builds;
++        std::optional<std::string> queryError;
++        std::optional<Clock::time_point> lastSample;
++
++        /* CPU times from the most recent sample, and CPU usage computed from the last two samples. */
++        std::map<BuildKey, std::chrono::microseconds> buildCpuTimes;
++        std::map<pid_t, std::chrono::microseconds> processCpuTimes;
++        std::map<BuildKey, double> buildCpuUsage;
++        std::map<pid_t, double> processCpuUsage;
++
++        auto takeSample = [&]() {
++            try {
++                builds = tracker.queryActiveBuilds();
++                queryError.reset();
++            } catch (Interrupted &) {
++                throw;
++            } catch (Error & e) {
++                queryError = e.info().msg.str();
++                return;
++            }
++
++            auto now = Clock::now();
++            auto elapsed =
++                lastSample ? std::chrono::duration_cast<std::chrono::microseconds>(now - *lastSample).count() : 0;
++
++            auto usage =
++                [&](auto & prevTimes, const auto & key, std::chrono::microseconds cpuTime) -> std::optional<double> {
++                auto prev = prevTimes.find(key);
++                if (prev == prevTimes.end() || elapsed <= 0)
++                    return std::nullopt;
++                return std::max<double>((cpuTime - prev->second).count(), 0) * 100.0 / elapsed;
++            };
++
++            decltype(buildCpuTimes) newBuildCpuTimes;
++            decltype(processCpuTimes) newProcessCpuTimes;
++            buildCpuUsage.clear();
++            processCpuUsage.clear();
++
++            for (auto & build : builds) {
++                auto key = getBuildKey(build);
++                auto cpuTime = getBuildCpuTime(build);
++                if (auto u = usage(buildCpuTimes, key, cpuTime))
++                    buildCpuUsage[key] = *u;
++                newBuildCpuTimes[key] = cpuTime;
++
+                 for (auto & process : build.processes) {
+-                    if (pids.contains(process.parentPid))
+-                        children[process.parentPid].insert(&process);
+-                    else
+-                        rootProcesses.insert(&process);
++                    if (auto cpuTime = getOwnCpuTime(process)) {
++                        if (auto u = usage(processCpuTimes, process.pid, *cpuTime))
++                            processCpuUsage[process.pid] = *u;
++                        newProcessCpuTimes[process.pid] = *cpuTime;
++                    }
+                 }
+-
+-                /* Render the process tree. */
+-                [&](this auto const & visit, const Processes & processes, std::string_view prefix) -> void {
+-                    for (const auto & [n, process] : enumerate(processes)) {
+-                        bool last = n + 1 == processes.size();
+-
+-                        // Format CPU time if available
+-                        std::string cpuInfo;
+-                        if (process->utime || process->stime || process->cutime || process->cstime) {
+-                            auto totalCpu = process->utime.value_or(std::chrono::microseconds(0))
+-                                            + process->stime.value_or(std::chrono::microseconds(0))
+-                                            + process->cutime.value_or(std::chrono::microseconds(0))
+-                                            + process->cstime.value_or(std::chrono::microseconds(0));
+-                            auto totalSecs =
+-                                std::chrono::duration_cast<std::chrono::duration<float, std::chrono::seconds::period>>(
+-                                    totalCpu)
+-                                    .count();
+-                            cpuInfo = fmt("%.1fs", totalSecs);
+-                        }
+-
+-                        // Format argv with tree structure
+-                        auto argv = concatStringsSep(
+-                            " ", tokenizeString<std::vector<std::string>>(concatStringsSep(" ", process->argv)));
+-
+-                        table.push_back(
+-                            {formatUser(process->user),
+-                             std::to_string(process->pid),
+-                             {cpuInfo, TableCell::Alignment::Right},
+-                             fmt("%s%s%s", prefix, last ? treeLast : treeConn, argv)});
+-
+-                        visit(children[process->pid], last ? prefix + treeNull : prefix + treeLine);
+-                    }
+-                }(rootProcesses, "");
+-            }
++            }
++
++            buildCpuTimes = std::move(newBuildCpuTimes);
++            processCpuTimes = std::move(newProcessCpuTimes);
++            lastSample = now;
++        };
++
++        auto formatUsage = [](const auto & map, const auto & key) -> std::string {
++            auto i = map.find(key);
++            return i == map.end() ? "" : fmt("%.1f", i->second);
++        };
++
++        auto render = [&]() {
++            auto [rows, cols] = getWindowSize();
++            if (rows == 0 || cols == 0) {
++                rows = 24;
++                cols = 80;
++            }
++
++            /* Sort the builds. */
++            std::vector<const ActiveBuildInfo *> sorted;
++            for (auto & build : builds)
++                sorted.push_back(&build);
++            std::ranges::stable_sort(sorted, [&](const ActiveBuildInfo * a, const ActiveBuildInfo * b) {
++                switch (sortOrder) {
++                case SortOrder::Cpu: {
++                    auto ua = buildCpuUsage.find(getBuildKey(*a));
++                    auto ub = buildCpuUsage.find(getBuildKey(*b));
++                    return (ua == buildCpuUsage.end() ? -1.0 : ua->second)
++                           > (ub == buildCpuUsage.end() ? -1.0 : ub->second);
++                }
++                case SortOrder::Wall:
++                    return a->startTime < b->startTime;
++                case SortOrder::Name:
++                    return std::pair(a->derivation.name(), a->derivation.to_string())
++                           < std::pair(b->derivation.name(), b->derivation.to_string());
++                }
++                unreachable();
++            });
++
++            /* Render the table. */
++            Table table;
++            table.push_back(
++                {{"USER"},
++                 {"PID", TableCell::Alignment::Right},
++                 {"%CPU", TableCell::Alignment::Right},
++                 {"TIME", TableCell::Alignment::Right},
++                 {"WALL", TableCell::Alignment::Right},
++                 {"DERIVATION/COMMAND"}});
++
++            auto now = time(nullptr);
++            size_t nrProcesses = 0;
++            double totalUsage = 0;
++
++            for (auto build : sorted) {
++                auto key = getBuildKey(*build);
++                nrProcesses += build->processes.size();
++                if (auto i = buildCpuUsage.find(key); i != buildCpuUsage.end())
++                    totalUsage += i->second;
++
++                table.push_back(
++                    {formatUser(build->mainUser),
++                     {std::to_string(build->mainPid), TableCell::Alignment::Right},
++                     {formatUsage(buildCpuUsage, key), TableCell::Alignment::Right},
++                     {formatCpuTime(getBuildCpuTime(*build)), TableCell::Alignment::Right},
++                     {formatWallTime(now - build->startTime), TableCell::Alignment::Right},
++                     fmt(ANSI_BOLD "%s" ANSI_NORMAL, store->printStorePath(build->derivation))});
++
++                if (!showTree)
++                    continue;
++
++                if (build->processes.empty())
++                    table.push_back(
++                        {formatUser(build->mainUser),
++                         {"", TableCell::Alignment::Right},
++                         {"", TableCell::Alignment::Right},
++                         {"", TableCell::Alignment::Right},
++                         {"", TableCell::Alignment::Right},
++                         fmt("%s" ANSI_ITALIC "(no process info)" ANSI_NORMAL, treeLast)});
++                else
++                    visitProcessTree(
++                        *build, [&](const ActiveBuildInfo::ProcessInfo & process, std::string_view prefix) {
++                            auto cpuTime = getProcessCpuTime(process);
++                            table.push_back(
++                                {formatUser(process.user),
++                                 {std::to_string(process.pid), TableCell::Alignment::Right},
++                                 {formatUsage(processCpuUsage, process.pid), TableCell::Alignment::Right},
++                                 {cpuTime ? formatCpuTime(*cpuTime) : "", TableCell::Alignment::Right},
++                                 {"", TableCell::Alignment::Right},
++                                 fmt("%s%s", prefix, formatArgv(process))});
++                        });
++            }
++
++            std::stringstream tableStream;
++            printTable(tableStream, table);
++
++            std::vector<std::string> tableLines;
++            for (std::string line; std::getline(tableStream, line);)
++                tableLines.push_back(std::move(line));
++            assert(!tableLines.empty());
++
++            /* Compute the visible part of the table body. */
++            size_t bodyHeight = rows > 3 ? rows - 3 : 1;
++            size_t bodySize = tableLines.size() - 1;
++            scroll = std::min(scroll, bodySize > bodyHeight ? bodySize - bodyHeight : 0);
++
++            std::vector<std::string> lines;
++
++            /* Status line. */
++            char timeStr[16];
++            struct tm tm;
++            strftime(timeStr, sizeof(timeStr), "%H:%M:%S", localtime_r(&now, &tm));
++            auto status =
++                fmt(ANSI_BOLD "nix top" ANSI_NORMAL " - %s  %d builds, %d processes, %.1f%% CPU",
++                    timeStr,
++                    builds.size(),
++                    nrProcesses,
++                    totalUsage);
++            if (queryError)
++                status += fmt("  " ANSI_RED "%s" ANSI_NORMAL, *queryError);
++            lines.push_back(status);
++
++            /* Column headers in reverse video, spanning the full width. */
++            auto header = filterANSIEscapes(tableLines[0], true, cols);
++            header.resize(std::max<size_t>(header.size(), cols), ' ');
++            lines.push_back("\e[7m" + header + ANSI_NORMAL);
++
++            /* Table body. */
++            if (builds.empty())
++                lines.push_back(ANSI_FAINT "No active builds." ANSI_NORMAL);
++            else
++                for (size_t i = 0; i < bodyHeight && scroll + 1 + i < tableLines.size(); ++i)
++                    lines.push_back(tableLines[scroll + 1 + i]);
++            while (lines.size() < bodyHeight + 2)
++                lines.push_back("");
++
++            /* Footer. */
++            static constexpr std::array sortNames = {"%CPU", "wall time", "name"};
++            auto footer =
++                fmt(ANSI_FAINT "q quit  ↑↓ PgUp PgDn scroll  t tree  s sort (%s)  +/- refresh (%.1fs)",
++                    sortNames[static_cast<size_t>(sortOrder)],
++                    std::chrono::duration<double>(refreshInterval).count());
++            if (bodySize > bodyHeight)
++                footer += fmt("  [%d-%d/%d]", scroll + 1, std::min(scroll + bodyHeight, bodySize), bodySize);
++            lines.push_back(footer + ANSI_NORMAL);
++
++            /* Write the frame in one go, overwriting the previous one. Don't write a newline after the last line
++               to prevent scrolling. */
++            std::string frame = clearScreen ? "\e[2J\e[H" : "\e[H";
++            clearScreen = false;
++            for (const auto & [n, line] : enumerate(lines)) {
++                if (n == rows)
++                    break;
++                if (n)
++                    frame += "\n";
++                frame += filterANSIEscapes(line, false, cols);
++                frame += ANSI_NORMAL "\e[K";
++            }
++            frame += "\e[J";
++            writeFull(STDOUT_FILENO, frame);
++        };
++
++        enum class Key {
++            None,
++            Quit,
++            Up,
++            Down,
++            PageUp,
++            PageDown,
++            Home,
++            End,
++            ToggleTree,
++            Sort,
++            Faster,
++            Slower,
++            Refresh,
++            Redraw
++        };
++
++        auto parseKey = [](std::string_view & input) -> Key {
++            auto c = input[0];
++            if (c == '\e') {
++                /* Parse an escape sequence (CSI or SS3). Incomplete or unknown sequences are discarded. */
++                if (input.size() < 3 || (input[1] != '[' && input[1] != 'O')) {
++                    input.remove_prefix(1);
++                    return Key::None;
++                }
++                size_t end = 2;
++                while (end < input.size() && !(input[end] >= 0x40 && input[end] <= 0x7e))
++                    end++;
++                if (end == input.size()) {
++                    input = {};
++                    return Key::None;
++                }
++                auto seq = input.substr(1, end);
++                input.remove_prefix(end + 1);
++                if (seq == "[A" || seq == "OA")
++                    return Key::Up;
++                if (seq == "[B" || seq == "OB")
++                    return Key::Down;
++                if (seq == "[5~")
++                    return Key::PageUp;
++                if (seq == "[6~")
++                    return Key::PageDown;
++                if (seq == "[H" || seq == "OH" || seq == "[1~" || seq == "[7~")
++                    return Key::Home;
++                if (seq == "[F" || seq == "OF" || seq == "[4~" || seq == "[8~")
++                    return Key::End;
++                return Key::None;
++            }
++            input.remove_prefix(1);
++            switch (c) {
++            case 'q':
++            case 'Q':
++            case 0x03: // Ctrl-C
++                return Key::Quit;
++            case 'k':
++                return Key::Up;
++            case 'j':
++                return Key::Down;
++            case ' ':
++                return Key::Refresh;
++            case 'g':
++                return Key::Home;
++            case 'G':
++                return Key::End;
++            case 't':
++            case '\r':
++            case '\n':
++                return Key::ToggleTree;
++            case 's':
++                return Key::Sort;
++            case '+':
++            case '=':
++                return Key::Slower;
++            case '-':
++                return Key::Faster;
++            case 0x0c: // Ctrl-L
++                return Key::Redraw;
++            default:
++                return Key::None;
++            }
++        };
++
++        /* Take the second sample quickly so that CPU usage is shown soon after startup. */
++        auto nextSample = Clock::now();
++        bool firstSample = true;
++        bool dirty = true;
++        auto lastWindowSize = getWindowSize();
++
++        while (true) {
++            checkInterrupt();
++
++            if (Clock::now() >= nextSample) {
++                takeSample();
++                nextSample =
++                    Clock::now()
++                    + (firstSample ? std::min(refreshInterval, std::chrono::milliseconds(500)) : refreshInterval);
++                firstSample = false;
++                dirty = true;
++            }
++
++            if (auto windowSize = getWindowSize(); windowSize != lastWindowSize) {
++                lastWindowSize = windowSize;
++                clearScreen = true;
++                dirty = true;
++            }
++
++            if (dirty) {
++                render();
++                dirty = false;
++            }
++
++            /* Wait for input or the next sample. Wake up periodically to notice window size changes and
++               interrupts. */
++            auto timeout = std::clamp(
++                std::chrono::duration_cast<std::chrono::milliseconds>(nextSample - Clock::now()),
++                std::chrono::milliseconds(0),
++                std::chrono::milliseconds(250));
++            struct pollfd pfd{.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
++            auto res = poll(&pfd, 1, timeout.count());
++            if (res == -1) {
++                if (errno == EINTR)
++                    continue;
++                throw SysError("waiting for terminal input");
++            }
++            if (res == 0)
++                continue;
++
++            char buf[256];
++            auto n = read(STDIN_FILENO, buf, sizeof(buf));
++            if (n == -1) {
++                if (errno == EINTR || errno == EAGAIN)
++                    continue;
++                throw SysError("reading from the terminal");
++            }
++            if (n == 0) {
++                /* The terminal has gone away. */
++                if (pfd.revents & (POLLHUP | POLLERR))
++                    return;
++                continue;
++            }
++
++            auto pageSize = std::max<size_t>(getWindowSize().first, 4) - 3;
++
++            std::string_view input(buf, n);
++            while (!input.empty()) {
++                switch (parseKey(input)) {
++                case Key::None:
++                    break;
++                case Key::Quit:
++                    return;
++                case Key::Up:
++                    scroll = scroll > 0 ? scroll - 1 : 0;
++                    break;
++                case Key::Down:
++                    scroll++;
++                    break;
++                case Key::PageUp:
++                    scroll = scroll > pageSize ? scroll - pageSize : 0;
++                    break;
++                case Key::PageDown:
++                    scroll += pageSize;
++                    break;
++                case Key::Home:
++                    scroll = 0;
++                    break;
++                case Key::End:
++                    scroll = std::numeric_limits<size_t>::max() / 2;
++                    break;
++                case Key::ToggleTree:
++                    showTree = !showTree;
++                    break;
++                case Key::Sort:
++                    sortOrder = static_cast<SortOrder>((static_cast<int>(sortOrder) + 1) % 3);
++                    break;
++                case Key::Slower:
++                    refreshInterval += std::chrono::milliseconds(500);
++                    nextSample = lastSample.value_or(Clock::now()) + refreshInterval;
++                    break;
++                case Key::Faster:
++                    refreshInterval =
++                        std::max(refreshInterval - std::chrono::milliseconds(500), std::chrono::milliseconds(500));
++                    nextSample = lastSample.value_or(Clock::now()) + refreshInterval;
++                    break;
++                case Key::Refresh:
++                    nextSample = Clock::now();
++                    break;
++                case Key::Redraw:
++                    clearScreen = true;
++                    break;
++                }
++            }
++
++            dirty = true;
+         }
+-
+-        auto width = isTTY() && isatty(STDOUT_FILENO) ? getWindowWidth() : std::numeric_limits<unsigned int>::max();
+-
+-        printTable(std::cout, table, width);
+     }
+ };
+ 
+-static auto rCmdPs = registerCommand2<CmdPs>({"ps"});
++static auto rCmdTop = registerCommand2<CmdTop>({"top"});
++
++#endif
+diff --git a/src/nix/top.md b/src/nix/top.md
+--- /dev/null
++++ b/src/nix/top.md
+@@ -0,0 +1,47 @@
++R"(
++
++# Examples
++
++* Show the active builds:
++
++  ```console
++  # nix top
++  nix top - 14:02:17  2 builds, 6 processes, 812.4% CPU
++  USER          PID   %CPU    TIME  WALL  DERIVATION/COMMAND
++  nixbld11  3534394  790.3  110.2s   48s  /nix/store/lzvdxlbr6xjd9w8py4nd2y2nnqb9gz7p-nix-util-tests-3.13.2.drv
++  nixbld11  3534394    0.0    0.8s        └───bash -e /nix/store/jwqf79v5p51x9mv8vx20fv9mzm2x7kig-source-stdenv.sh
++  nixbld11  3534751    1.5   36.3s            └───ninja -j24
++  nixbld11  3535637   98.0    4.1s                ├───/nix/store/0v2jfvx71l1zn14l97pznvbqnhiq3pyd-gcc-14.3.0/bin/g++ -fPIC
++  nixbld11  3535658   99.5    3.0s                └───/nix/store/0v2jfvx71l1zn14l97pznvbqnhiq3pyd-gcc-14.3.0/bin/g++ -fPIC
++  nixbld1   3534377   22.1    1.8s    5s  /nix/store/nh2dx9cqcy9lw4d4rvd0dbsflwdsbzdy-patchelf-0.18.0.drv
++  nixbld1   3534377    0.0    1.8s        └───bash -e /nix/store/xk05lkk4ij6pc7anhdbr81appiqbcb01-default-builder.sh
++  ```
++
++# Description
++
++This command shows the currently running Nix builds in a continuously updating full-screen view, similar to
++`top`. It shows the same information as [`nix ps`](./nix3-ps.md), plus the CPU usage of each build and
++process since the previous update.
++
++The columns are:
++
++* `USER`: The user that the process runs as.
++* `PID`: The process ID.
++* `%CPU`: CPU usage since the previous update. 100% corresponds to one fully used CPU core.
++* `TIME`: Total CPU time consumed. For a process, this includes the CPU time of its reaped children.
++* `WALL`: How long the build has been running.
++* `DERIVATION/COMMAND`: The derivation being built, or the command line of a process in the build.
++
++The following keys are supported:
++
++* `q`, `Ctrl-C`: Quit.
++* `↑`/`↓`, `k`/`j`: Scroll one line.
++* `PgUp`/`PgDn`: Scroll one page.
++* `Home`/`End`, `g`/`G`: Scroll to the top or bottom.
++* `t`, `Enter`: Toggle between showing the processes of each build and showing only the builds.
++* `s`: Cycle the sort order of builds: by CPU usage, by wall time, or by name.
++* `+`/`-`: Increase or decrease the refresh interval by 0.5 seconds (default 2 seconds).
++* `Space`: Refresh now.
++* `Ctrl-L`: Redraw the screen.
++
++)"
+diff --git a/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.exp b/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.exp
+--- /dev/null
++++ b/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.exp
+@@ -0,0 +1 @@
++[ 218 111 11 5 ]
+diff --git a/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.flags b/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.flags
+--- /dev/null
++++ b/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.flags
+@@ -0,0 +1 @@
++--eval-attrset-update-layer-rhs-threshold 16
+diff --git a/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.nix b/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.nix
+--- /dev/null
++++ b/tests/functional/lang/eval-okay-update-layer-relative-size-rec-dynamic.nix
+@@ -0,0 +1,25 @@
++# test //-layering with sizes and chains beyond the thresholds as well
++# as dynamic+rec attrsets
++let
++  mkOverlay =
++    i:
++    rec {
++      "dyn${toString i}" = i;
++      base = i * 10;
++      selfRef = base + 1;
++    }
++    // builtins.listToAttrs (
++      map (j: {
++        name = "pad${toString i}_${toString j}";
++        value = j;
++      }) (builtins.genList (j: j) 17)
++    );
++
++  final = builtins.foldl' (acc: i: acc // (mkOverlay i)) { } (builtins.genList (i: i) 12);
++in
++[
++  (builtins.length (builtins.attrNames final))
++  final.selfRef
++  final.dyn11
++  final.pad11_5
++]
+diff --git a/tests/functional/ps.sh b/tests/functional/ps.sh
+--- a/tests/functional/ps.sh
++++ b/tests/functional/ps.sh
+@@ -49,6 +49,20 @@
+ echo "$json" | jq -e '[.[0].processes[].argv | join(" ")] | any(. | test("sleep 600"))' >/dev/null
+ echo "$json" | jq -e '.[0].processes | length == 2' >/dev/null
+ 
++# `nix top` requires a terminal.
++expectStderr 1 nix top < /dev/null | grepQuiet "requires a terminal"
++
++# Run `nix top` on a pseudo-terminal, quitting it after a few seconds.
++if type -p script >/dev/null && script -q -c true /dev/null; then
++  out=$( (sleep 3; printf q) | timeout 60 script -e -q -c 'stty cols 300 rows 50; nix top' /dev/null)
++  echo "$out"
++  echo "$out" | grepQuiet 'nix-ps-test.drv'
++  echo "$out" | grepQuiet 'sleep 600'
++  echo "$out" | grepQuiet '%CPU'
++else
++  echo "script is not available or not GNU-like, so we skip testing 'nix top'"
++fi
++
+ # Release the build and wait for it to finish successfully.
+ echo "done" > "$finish"
+ wait "$buildPid"

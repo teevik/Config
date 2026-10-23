@@ -893,7 +893,7 @@ index f4eacb6f7..e43fced54 100644
                  break;
              }
  
-@@ -574,20 +598,30 @@ void Executor::worker(Worker & self)
+@@ -574,19 +598,29 @@ void Executor::worker(Worker & self)
                  /* Fail queued work items that haven't started, so that
                     threads blocked on their futures are unblocked
                     promptly. */
@@ -905,8 +905,7 @@ index f4eacb6f7..e43fced54 100644
                  if (self.nrLiveFibers == 0)
                      return;
              } else if (!state->queue.empty() && canStartFiber(self)) {
--                item = std::move(state->queue.begin()->second);
--                state->queue.erase(state->queue.begin());
+-                item = std::move(state->queue.extract(state->queue.begin()).mapped());
 -                self.nrLiveFibers++;
 -                state->nrLiveFibers++;
 -                if (state->nrLiveFibers > maxLiveFibers)
@@ -919,8 +918,7 @@ index f4eacb6f7..e43fced54 100644
 +                   sort before speculative ones, so if the head is
 +                   speculative, there is nothing else to start. */
 +                if (!head.speculative || canStartSpeculativeFiber(self)) {
-+                    item = std::move(head);
-+                    state->queue.erase(state->queue.begin());
++                    item = std::move(state->queue.extract(state->queue.begin()).mapped());
 +                    if (!item->speculative)
 +                        nrQueuedDemand--;
 +                    self.nrLiveFibers++;

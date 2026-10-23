@@ -39,5 +39,10 @@
   environment.etc = {
     "noctalia/plugins".source = "${perSystem.self.noctalia}/share/noctalia/plugins";
     "noctalia/wallpaper.png".source = ./hyprland/background.png;
+    # Host-specific settings for the shared Noctalia config.
+    "noctalia/host.toml".text = ''
+      [plugin_settings."mindnbytes/nix-status"]
+      nixos_configuration = "${config.networking.hostName}"
+    '';
   };
 }

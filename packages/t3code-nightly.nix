@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.1.1-nightly.20261020.3411";
+  version = "0.1.2-nightly.20261021.3457";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-2VTtUgGHv90noh5YtdqIPip0XgP87cjr9SVJbBAVD90=";
+    hash = "sha256-h/XY4IT+pECr51Ti4zk0oT8riBT4x3ccjXmXLxlEDLg=";
   };
 
   # Codex follow-up chips from pingdotgg/t3code#15252, pinned to its reviewed
@@ -92,7 +92,7 @@ let
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     inherit patches;
     fetcherVersion = 4;
-    hash = "sha256-witoens1UicKE+SIQCrRk9YtbAVIW5x+2MqDrFh4F0s=";
+    hash = "sha256-orGBM0sIMm5jJpXvWE91+jFu/ZtI9nllT+Fxd3t3kyI=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {

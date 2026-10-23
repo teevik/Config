@@ -1,0 +1,32 @@
+--- a/lib/NOM/NixMessage/JSON.hs
++++ b/lib/NOM/NixMessage/JSON.hs
+@@ -71,6 +71,7 @@
+   SetExpected :: ActivityType -> Int -> ActivityResult
+   PostBuildLogLine :: Text -> ActivityResult
+   FetchStatus :: Text -> ActivityResult
++  UnknownResult :: Int -> ActivityResult
+   deriving stock (Show, Eq)
+ 
+ data ActivityProgress = MkActivityProgress
+--- a/lib/NOM/Parser/JSON.hs
++++ b/lib/NOM/Parser/JSON.hs
+@@ -45,7 +45,9 @@
+   110 -> pure PostBuildHookType
+   111 -> pure BuildWaitingType
+   112 -> pure FetchTreeType
+-  other -> fail ("invalid activity type: " <> show other)
++  -- Newer Nix versions add activity types (e.g. actStringly = 10113) that nom
++  -- has no use for; treat them as unknown instead of rejecting the line.
++  _ -> pure UnknownType
+ 
+ parseAction :: JSON.Decoder NixJSONMessage
+ parseAction = JSON.object $ do
+@@ -121,7 +123,7 @@
+       pure $ SetExpected activityType number
+     107 -> PostBuildLogLine <$> one txt
+     108 -> FetchStatus <$> one txt
+-    other -> fail ("invalid activity result type: " <> show other)
++    other -> pure (UnknownResult other)
+   pure MkResultAction{id = idField, result}
+ 
+ parseStopAction :: JSON.FieldsDecoder StopAction

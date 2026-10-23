@@ -1,0 +1,97 @@
+--- a/agent-glow/activity.py
++++ b/agent-glow/activity.py
+@@ -1,9 +1,11 @@
+ #!/usr/bin/env python3
+ """Agent Glow session probe — real agent data, not guesswork.
+ 
+-Claude Code: live `claude --resume <uuid>` processes are joined to their
+-transcripts (~/.claude/projects/*/<uuid>.jsonl). The transcript mtime is the
+-activity signal (every reply, tool result, and compaction appends to it);
++Claude Code: live `claude --resume <uuid>` / `--session-id <uuid>` processes
++are joined to their transcripts (~/.claude/projects/*/<uuid>.jsonl); a bare
++`claude` falls back to the newest transcript of its working directory. The
++transcript mtime is the activity signal (every reply, tool result, and
++compaction appends to it);
+ the first user message becomes the session name; the process cwd is the
+ project. No hooks required, works for already-running sessions.
+ 
+@@ -71,11 +73,11 @@
+         return None
+ 
+ 
+-def read_cmdline(pid):
++def read_cmdline(pid, limit=MAX_CMDLINE):
+     try:
+         with open(f"/proc/{pid}/cmdline", "rb") as handle:
+             raw = handle.read().replace(b"\0", b" ").decode("utf-8", "replace").strip()
+-        return raw[:MAX_CMDLINE]
++        return raw[:limit]
+     except OSError:
+         return None
+ 
+@@ -203,7 +205,8 @@
+ 
+ # ── Claude transcripts ──────────────────────────────────────────────────────
+ 
+-RESUME_RE = re.compile(r"--resume\s+([0-9a-fA-F-]{8,})")
++# SDK hosts such as T3 Code start sessions with `--session-id=<uuid>`.
++SESSION_RE = re.compile(r"--(?:resume|session-id)[=\s]+([0-9a-fA-F-]{8,})")
+ 
+ 
+ def extract_prompt_text(obj):
+@@ -272,17 +275,40 @@
+     return matches[0] if matches else None
+ 
+ 
++def newest_transcript(cwd):
++    """The most recently written transcript of a project directory."""
++    if not cwd:
++        return None
++    project = os.path.join(CLAUDE_PROJECTS, re.sub(r"[^a-zA-Z0-9]", "-", cwd))
++    try:
++        paths = glob.glob(os.path.join(project, "*.jsonl"))
++        return max(paths, key=os.path.getmtime) if paths else None
++    except (OSError, ValueError):
++        return None
++
++
+ def collect_claude(procs, cpu, names_cache):
+     """Live claude processes joined to transcripts -> session dicts."""
+     sessions = []
++    seen = set()
+     for pid, entry in procs.items():
+-        cmdline = entry[2]
+-        if "claude" not in cmdline.lower():
++        # The snapshot keeps only the matched family, so re-read the full
++        # cmdline: SDK hosts put the session flag past MAX_CMDLINE.
++        if entry[2] != "claude":
++            continue
++        cmdline = read_cmdline(pid, limit=None)
++        if not cmdline:
+             continue
+-        match = RESUME_RE.search(cmdline)
++        match = SESSION_RE.search(cmdline)
+         uuid = match.group(1) if match else None
+         if uuid is None:
++            path = newest_transcript(read_cwd(pid))
++            if path is None:
++                continue
++            uuid = os.path.basename(path)[: -len(".jsonl")]
++        if uuid in seen:
+             continue
++        seen.add(uuid)
+         cached = names_cache.get(uuid, {})
+         path = find_transcript(uuid, cached.get("path"))
+         if path is None:
+--- a/agent-glow/README.md
++++ b/agent-glow/README.md
+@@ -78,7 +78,8 @@
+ - Session titles and working directories are kept in the plugin's in-memory
+   shared state and the cache above so the bar tooltip and panel can show them.
+   Nothing leaves the machine.
+-- `claude` detection joins live `claude --resume <uuid>` processes to their
++- `claude` detection joins live `claude --resume <uuid>` or `--session-id <uuid>`
++  processes (bare `claude` uses the newest transcript of its cwd) to their
+   transcript; the session name is the first user message of that transcript.
+ - An agent family can also report activity by touching
+   `$XDG_RUNTIME_DIR/agent-glow.<family>.hb` (for example from an agent hook);

@@ -8,6 +8,10 @@ let
     nh-unwrapped = pkgs.nh-unwrapped.overrideAttrs (old: {
       patches = (old.patches or [ ]) ++ [ ./source-hook.patch ];
     });
+    # Determinate Nix logs activity/result types nom rejects as parse errors.
+    nix-output-monitor = pkgs.nix-output-monitor.override {
+      extraComposeFunctions = [ (pkgs.haskell.lib.compose.appendPatch ./nom-unknown-types.patch) ];
+    };
   };
   prepareSource = pkgs.writeShellScript "nh-prepare-source" ''
     exec ${pkgs.bash}/bin/bash ${./prepare-source} ${pkgs.lib.escapeShellArg flake} "$@"

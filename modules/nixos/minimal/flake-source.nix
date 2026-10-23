@@ -17,6 +17,7 @@ lib.fileset.toSource {
     (root + "/hosts")
     (root + "/modules")
     (root + "/packages")
+    (root + "/patches")
     (root + "/scripts")
     (root + "/tests")
   ];

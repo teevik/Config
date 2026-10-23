@@ -1,7 +1,7 @@
 # Base settings live here; changes made in Noctalia's GUI live in
 # ~/.local/state/noctalia/settings.toml and take precedence.
 [include]
-files = ["/run/secrets-rendered/noctalia-school-calendar.toml"]
+files = ["/run/secrets-rendered/noctalia-school-calendar.toml", "/etc/noctalia/host.toml"]
 
 [shell]
 setup_wizard_enabled = false
@@ -9,6 +9,12 @@ launch_apps_as_systemd_services = true
 clipboard_enabled = false # cliphist already records clipboard history
 polkit_agent = false # the session already runs the GNOME polkit agent
 font_family = "Google Sans Flex"
+
+# Twice Hyprland's gaps_out: rounds the display without reaching window or bar
+# corners, which only clip beyond ~44 px.
+[shell.screen_corners]
+enabled = true
+size = 24
 
 # A quiet application list; plugin providers remain available by typing /.
 [shell.launcher]
@@ -93,7 +99,7 @@ font_weight = 500
 font_scale = 1.1
 start = ["launcher", "workspaces", "bongocat"]
 center = ["date", "clock"]
-end = ["media", "screen-recorder", "timer", "tailnet", "tray", "keyboard_layout", "notifications", "sony-headphones", "volume", "battery", "control-center"]
+end = ["media", "agent-glow", "screen-recorder", "timer", "tailnet", "nix-status", "tray", "keyboard_layout", "notifications", "sony-headphones", "volume", "battery", "control-center"]
 
 # Keep the smaller desktop display focused on workspaces and quick controls.
 [bar.main.monitor."HDMI-A-2"]
@@ -149,6 +155,9 @@ enabled = [
   "cleboost/ssh-launcher",
   "knyrps/nix-search",
   "estvoid/sony_headphones",
+  "mindnbytes/nix-status",
+  "umedbazarov/crashes",
+  "fel/agent-glow",
 ]
 
 [[plugins.source]]
@@ -172,6 +181,17 @@ show_idle_on_horizontal = false
 [widget.tailnet]
 type = "rylos/tailnet:bar"
 show_count = false
+
+[widget.agent-glow]
+type = "fel/agent-glow:indicator"
+show_when_idle = false
+
+[widget.nix-status]
+type = "mindnbytes/nix-status:status"
+
+# nixos_configuration comes from the host-specific include.
+[plugin_settings."mindnbytes/nix-status"]
+flake_dir = "/home/teevik/Documents/Config"
 
 [widget.sony-headphones]
 type = "estvoid/sony_headphones:sony_headphones"
