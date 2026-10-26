@@ -31,7 +31,7 @@ jobs:
         # Best effort: forks have no OIDC token or variables, and a tailnet
         # outage must not block lint. Without it the checks build from source.
         continue-on-error: true
-        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
+        uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf # v4
         with:
           oauth-client-id: ${{ vars.NIX_CACHE_TS_CLIENT_ID }}
           audience: ${{ vars.NIX_CACHE_TS_AUDIENCE }}
@@ -49,7 +49,7 @@ jobs:
             bash .github/ci/nix-conf.sh --github-output --public-only
           fi
       - name: Install Nix
-        uses: DeterminateSystems/determinate-nix-action@d0c908e6cbe9f89f36ed8205a3ab6f092636916a # v3.23.1
+        uses: DeterminateSystems/determinate-nix-action@f296148a827001a9a82d3685b53210c06e5d3b67 # v3.24.0
         with:
           extra-conf: ${{ steps.nix-conf.outputs.conf }}
       - name: Build every checks/*.nix check
