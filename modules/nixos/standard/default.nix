@@ -47,11 +47,8 @@
     tmp.useTmpfs = true;
     tmp.tmpfsSize = "150%";
 
-    initrd.systemd.enable = true;
-
     # Silent boot
     consoleLogLevel = 3;
-    initrd.verbose = false;
     kernelParams = [
       "quiet"
       "splash"

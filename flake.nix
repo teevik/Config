@@ -104,11 +104,7 @@
     let
       # Patches applied to nixpkgs before anything evaluates it. Building the
       # patched source fails once a patch is already upstream, so drop it then.
-      nixpkgsPatches = [
-        # Temporary: nvidia-x11 bin/ tools segfault in ld.so since patchelf
-        # 0.19.2 (NixOS/nixpkgs#576412). Backport of NixOS/nixpkgs#576397.
-        ./patches/nixpkgs/576397-nvidia-split-patchelf.patch
-      ];
+      nixpkgsPatches = [ ];
 
       nixpkgs =
         let

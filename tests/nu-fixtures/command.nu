@@ -19,7 +19,6 @@ def t3-declared [file: path] {
     {
         version: ($source | parse --regex 'version = "(?<version>[^"]+)";' | first).version
         src: (do $field '(?s)fetchFromGitHub \{.*?hash = "(?<hash>[^"]+)"')
-        licenseNotices: (do $field '(?s)licenseNotices = .*?outputHash = "(?<hash>[^"]+)"')
         pnpmDeps: (do $field '(?s)fetchPnpmDeps \{.*?hash = "(?<hash>[^"]+)"')
     }
 }
@@ -43,7 +42,6 @@ def t3-expected [attr: string, version: string] {
     match $attr {
         src => (fixture-hash $"src:($version)")
         pnpmDeps => (fixture-hash ('pnpmDeps:' + (open --raw ($source | path join pnpm-lock.yaml))))
-        licenseNotices => (fixture-hash ('licenseNotices:' + (open --raw ($source | path join third-party-licenses.config.json))))
     }
 }
 
@@ -76,7 +74,7 @@ def t3-nix [args: list<string>] {
                 {
                     version: $declared.version
                     srcPath: (t3-out-path $declared src)
-                    hashes: ($declared | select src pnpmDeps licenseNotices)
+                    hashes: ($declared | select src pnpmDeps)
                 } | to json | print
             } else {
                 let attrs = ($apply | parse --regex '"(?<attr>[A-Za-z]+)"' | get attr)

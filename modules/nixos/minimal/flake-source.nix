@@ -17,7 +17,8 @@ lib.fileset.toSource {
     (root + "/hosts")
     (root + "/modules")
     (root + "/packages")
-    (root + "/patches")
+    # Absent while no nixpkgs patches are pending.
+    (lib.fileset.maybeMissing (root + "/patches"))
     (root + "/scripts")
     (root + "/tests")
   ];

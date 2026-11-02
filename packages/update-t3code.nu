@@ -8,12 +8,6 @@ const tag_pattern = '^\S+\s+refs/tags/v(?<version>[0-9]+\.[0-9]+\.[0-9]+-nightly
 # Source paths that determine each dependency's contents, besides its recipe.
 const dependency_inputs = {
     pnpmDeps: [package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc]
-    licenseNotices: [
-        third-party-licenses.config.json
-        scripts/sync-third-party-license-notices.ts
-        scripts/lib
-        .generated/third-party-licenses
-    ]
 }
 
 # Tags are cheap to list and, unlike the releases API, not rate limited.
@@ -32,7 +26,6 @@ def current-state [targets: path] {
         hashes = {
             src = p.src.outputHash;
             pnpmDeps = p.pnpmDeps.outputHash;
-            licenseNotices = p.licenseNotices.outputHash;
         };
     }' | from json)
 }

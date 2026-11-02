@@ -23,12 +23,10 @@ export def fixture-hash [text: string] {
 }
 
 # A fake T3 Code source tree served by the offline Nix model.
-export def t3-source [root: path, version: string, lock: string, licenses: string] {
+export def t3-source [root: path, version: string, lock: string] {
     let source = ($root | path join sources $version)
-    mkdir ($source | path join scripts/lib)
+    mkdir $source
     $lock | save --force ($source | path join pnpm-lock.yaml)
-    $licenses | save --force ($source | path join third-party-licenses.config.json)
-    'export {}' | save --force ($source | path join scripts/lib/third-party-licenses.ts)
 }
 
 # `git ls-remote --tags --refs` output for the given tags.

@@ -41,7 +41,7 @@ def main [source: path] {
         $env.MOCK_LOG = ($scratch | path join calls.jsonl)
         $env.MOCK_T3 = ($scratch | path join t3-fixture)
         $env.MOCK_TAGS = (t3-tags [v0.0.99-nightly.20261001.42])
-        t3-source $env.MOCK_T3 0.0.99-nightly.20261001.42 'fixture lock' 'fixture licenses'
+        t3-source $env.MOCK_T3 0.0.99-nightly.20261001.42 'fixture lock'
         let baseline = ($scratch | path join 'starting checkout')
         mkdir $baseline
         cp --recursive ($source | path join packages) $baseline
@@ -61,7 +61,7 @@ def main [source: path] {
             [flake update]
             [build --no-link --print-build-logs --file packages/nu-scripts/update-targets.nix roc-nightly t3code-nightly]
         ])
-        assert equal (calls | where tool == fetch | get args | flatten) [src pnpmDeps licenseNotices]
+        assert equal (calls | where tool == fetch | get args | flatten) [src pnpmDeps]
         let after = (contents $checkout)
         assert ($after != $before)
         let t3 = (open --raw ($checkout | path join packages/t3code-nightly.nix))

@@ -31,40 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.1.3-nightly.20261023.3566";
+  version = "0.1.5-nightly.20261029.3873";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-kpNnb9MU0Xl8OuE1741NUzHjPLGEeme4udi4200yxzU=";
-  };
-
-  # Upstream generates notices from a pinned SPDX revision. Fetch its cache
-  # separately so the application build stays offline. The name omits the
-  # version so nightlies with unchanged license inputs reuse the same output;
-  # update-t3code.nu refreshes the hash when those inputs change.
-  licenseNotices = pkgs.stdenvNoCC.mkDerivation {
-    name = "t3code-license-notices";
-    inherit src;
-    nativeBuildInputs = [
-      pkgs.nodejs_24
-      pkgs.cacert
-    ];
-    buildPhase = ''
-      runHook preBuild
-      node scripts/sync-third-party-license-notices.ts
-      runHook postBuild
-    '';
-    installPhase = ''
-      runHook preInstall
-      cp -r .generated/third-party-licenses "$out"
-      runHook postInstall
-    '';
-    dontFixup = true;
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-    outputHash = "sha256-17UgEQnakrM5bTjfpZBWWYex/odEVWV+qSYykbppRgw=";
+    hash = "sha256-/FPTRk85ze1EanuHOnzJySq2Ql5r9+HEV/9AQQQgNaM=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -87,7 +60,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-xRmOrOZbBljaF1IJr0JFUFzdhkld6+ehLIlpVOg/J3E=";
+    hash = "sha256-ePHBnnDdBnkoiU8y3NY1u04Ez97zKNv5ZcIRvy8hhJ4=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
@@ -97,14 +70,6 @@ let
       pnpmDeps
       resourceMonitor
       ;
-
-    postPatch = (oldAttrs.postPatch or "") + ''
-      # Upstream seeds this cache with SPDX symlinks into the Nix store.
-      # Replace it with the nightly cache instead of copying over those links.
-      rm -rf .generated/third-party-licenses
-      mkdir -p .generated/third-party-licenses
-      cp -r ${licenseNotices}/. .generated/third-party-licenses/
-    '';
 
     # New nightlies build a libsecret helper that the inherited stable
     # derivation neither has build inputs for nor installs.
@@ -173,7 +138,7 @@ let
     passthru = (oldAttrs.passthru or { }) // {
       inherit electron hyprlandCapture;
       # Exposed so update-t3code.nu can refresh the dependency hashes.
-      inherit licenseNotices resourceMonitor;
+      inherit resourceMonitor;
     };
 
     meta = oldAttrs.meta // {
@@ -193,7 +158,6 @@ let
           passthru = (oldAttrs.passthru or { }) // {
             inherit (nightlyUnwrapped)
               hyprlandCapture
-              licenseNotices
               pnpmDeps
               resourceMonitor
               src

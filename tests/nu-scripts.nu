@@ -53,36 +53,35 @@ def main [source: path, probe: path] {
             '' | save --force $env.MOCK_LOG
             ^$nu.current-exe --no-config-file $t3code ...$args | complete
         }
-        let assert_declared = {|version lock licenses|
+        let assert_declared = {|version lock|
             let source = (open --raw $file)
             assert ($source | str contains $'version = "($version)";')
             assert ($source | str contains (fixture-hash $"src:($version)"))
             assert ($source | str contains (fixture-hash $"pnpmDeps:($lock)"))
-            assert ($source | str contains (fixture-hash $"licenseNotices:($licenses)"))
         }
 
         # Newest by date and build, not tag order; stable releases are ignored.
         # The previous source is not in the store, so every input is refetched.
-        t3-source $env.MOCK_T3 0.0.47-nightly.20261007.2701 'lock a' 'licenses a'
+        t3-source $env.MOCK_T3 0.0.47-nightly.20261007.2701 'lock a'
         $env.MOCK_TAGS = (t3-tags [v0.0.47 v0.0.47-nightly.20261007.2701 v0.0.47-nightly.20261006.2690 v0.0.46-nightly.20261005.2667])
         assert-success (do $t3_run '--no-build')
-        do $assert_declared 0.0.47-nightly.20261007.2701 'lock a' 'licenses a'
-        assert equal (do $fetches) [src pnpmDeps licenseNotices]
+        do $assert_declared 0.0.47-nightly.20261007.2701 'lock a'
+        assert equal (do $fetches) [src pnpmDeps]
         let calls = (open --raw $env.MOCK_LOG | lines | each { from json } | where tool == nix)
         # Each corrected hash gets a confirming build, which reuses the output.
         let src = [build --no-link --keep-going --file $targets t3code-nightly.src]
-        let dependencies = [build --no-link --keep-going --file $targets t3code-nightly.pnpmDeps t3code-nightly.licenseNotices]
+        let dependencies = [build --no-link --keep-going --file $targets t3code-nightly.pnpmDeps]
         assert equal ($calls | where {|call| $call.args.0 == build } | get args) [$src $src $dependencies $dependencies]
         print 'PASS: T3 nightly selection and hash refresh from mismatch reports'
 
         # Only inputs whose source files changed get a placeholder and refetch.
-        t3-source $env.MOCK_T3 0.0.47-nightly.20261008.2710 'lock a' 'licenses b'
+        t3-source $env.MOCK_T3 0.0.47-nightly.20261008.2710 'lock a'
         $env.MOCK_TAGS = (t3-tags [v0.0.47-nightly.20261008.2710 v0.0.47-nightly.20261007.2701])
         let result = (do $t3_run '--no-build')
         assert-success $result
         assert ($result.stdout =~ 'reusing: pnpmDeps')
-        do $assert_declared 0.0.47-nightly.20261008.2710 'lock a' 'licenses b'
-        assert equal (do $fetches) [src licenseNotices]
+        do $assert_declared 0.0.47-nightly.20261008.2710 'lock a'
+        assert equal (do $fetches) [src]
 
         let current = (open --raw $file)
         assert-success (do $t3_run '--no-build')
@@ -94,7 +93,7 @@ def main [source: path, probe: path] {
         ]
         print 'PASS: T3 unchanged inputs are reused and current nightlies are left alone'
 
-        t3-source $env.MOCK_T3 0.0.47-nightly.20261009.2720 'lock b' 'licenses b'
+        t3-source $env.MOCK_T3 0.0.47-nightly.20261009.2720 'lock b'
         $env.MOCK_TAGS = (t3-tags [v0.0.47-nightly.20261009.2720])
         $env.MOCK_FAILURE = 'fetch'
         assert ((do $t3_run '--no-build').exit_code != 0)

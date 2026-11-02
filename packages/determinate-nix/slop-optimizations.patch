@@ -1013,7 +1013,7 @@ index f4eacb6f7..e43fced54 100644
 +            break;
 +}
 +
- FiberNoSuspend::FiberNoSuspend()
+ FiberSuspendHook::FiberSuspendHook()
      : fiber(currentFiber)
  {
 @@ -945,6 +1015,153 @@ static RegisterPrimOp r_parallel({
