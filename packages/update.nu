@@ -18,6 +18,18 @@ def export-update [root: path, destination: path, files: list<string>, failures:
     }
 }
 
+# Inputs that move the kernel, its drivers or the Nix daemon. An app update
+# keeps them locked, so it can switch without a reboot. llm-agents evaluates
+# against its own nixpkgs, so the agent CLIs need none of these.
+const system_inputs = [nixpkgs nixos-hardware determinate-nix]
+
+# Every root input of the lock except the system inputs. An input that is not
+# locked yet is added by the next update that includes it.
+def app-inputs [root: path] {
+    let lock = (open --raw ($root | path join flake.lock) | from json)
+    $lock.nodes | get $lock.root | get inputs | columns | where {|name| $name not-in $system_inputs }
+}
+
 # Run one update script with its output streamed. Returns null on success, or
 # the end of its stderr, where Nix and Nu report what went wrong.
 def run-step [step: record] {
@@ -38,6 +50,7 @@ def run-step [step: record] {
 }
 
 # Refresh every flake input and maintained package, then validate them together.
+# With --apps, the system inputs stay locked: see system_inputs.
 #
 # Each update step leaves its files either fully updated or untouched. A failed
 # step skips the rest of its chain; the other chains still run, and whatever
@@ -49,6 +62,7 @@ def run-step [step: record] {
 #   updates were validated, because the exit status is then the only report.
 # Completed edits are kept for inspection and reruns in every case.
 def main [
+    --apps # Keep the system inputs locked, for an update that needs no reboot.
     --no-build # Refresh sources without validation builds.
     --skip-inputs # Reuse flake.lock after an input update already completed.
     --export: path # Write validated files to a new directory for CI handoff.
@@ -64,7 +78,13 @@ def main [
     # T3 Code builds against the locked llm-agents input, so it waits for the
     # input refresh. Roc only queries release metadata and runs alongside.
     # Each step writes disjoint files: flake.lock, or its catalog package.
-    let inputs = if $skip_inputs { [] } else { [{label: 'all flake inputs', script: update-inputs.nu, args: [], package: null}] }
+    let inputs = if $skip_inputs {
+        []
+    } else if $apps {
+        [{label: 'app flake inputs', script: update-inputs.nu, args: (app-inputs $root), package: null}]
+    } else {
+        [{label: 'all flake inputs', script: update-inputs.nu, args: [], package: null}]
+    }
     let chains = [
         ($inputs | append {label: 'T3 Code nightly', script: update-t3code.nu, args: [--no-build], package: t3code-nightly})
         [{label: 'Roc nightly', script: update-roc.nu, args: [], package: roc-nightly}]

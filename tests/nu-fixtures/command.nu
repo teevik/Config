@@ -127,6 +127,10 @@ def update-command [tool: string, args: list<string>] {
             } else if $args == [flake update] {
                 if (failing flake) { fail flake }
                 {fixture: updated} | to json | save --force flake.lock
+            } else if ($args | first 2) == [flake update] {
+                # A targeted update keeps the other locked inputs.
+                if (failing flake) { fail flake }
+                open --raw flake.lock | from json | upsert fixture updated | to json | save --force flake.lock
             } else if $args.0 == 'build' {
                 # Validation sees every requested package already updated;
                 # T3 Code also needs the refreshed lock it was built against.

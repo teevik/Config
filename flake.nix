@@ -41,6 +41,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # The homelab host and its cluster live in their own repository. Build the
+    # host from this lock so its T3 Code and agent CLIs match the desktop's.
+    homelab = {
+      url = "github:teevik/homelab";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        blueprint.follows = "blueprint";
+        disko.follows = "disko";
+        llm-agents.follows = "llm-agents";
+        sops-nix.follows = "sops-nix";
+      };
+    };
+
     # Packages
     noctalia-official-plugins = {
       url = "github:noctalia-dev/official-plugins";

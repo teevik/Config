@@ -113,6 +113,16 @@ def main [source: path] {
         assert equal (contents $skipped | skip 1) ($after | skip 1)
         print 'PASS: --skip-inputs keeps the existing lock and still refreshes package sources'
 
+        let apps = ($scratch | path join 'app inputs only')
+        cp --recursive $baseline $apps
+        let inputs = {nixpkgs: nixpkgs, llm-agents: llm-agents, nixos-hardware: nixos-hardware, determinate-nix: determinate-nix, sops-nix: sops-nix}
+        {root: root, nodes: {root: {inputs: $inputs}}} | to json | save --force ($apps | path join flake.lock)
+        assert-success (run-update $apps [--apps --no-build])
+        assert equal (nix-actions) [[flake update llm-agents sops-nix]]
+        assert equal (open --raw ($apps | path join flake.lock) | from json | get nodes.root.inputs) $inputs
+        assert equal (contents $apps | skip 1) ($after | skip 1)
+        print 'PASS: --apps updates every locked input except the system ones and still refreshes package sources'
+
         # Chains run in parallel and each step leaves its files updated or
         # untouched. T3 Code waits for the input refresh, so an input failure
         # fails its chain too. Whatever succeeded is validated and exported.

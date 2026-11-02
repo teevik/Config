@@ -1,6 +1,6 @@
 --- a/sony_headphones/scripts/sony_ctl.py
 +++ b/sony_headphones/scripts/sony_ctl.py
-@@ -367,11 +367,11 @@
+@@ -411,11 +411,11 @@
          on_off: 0x00 = off, else on; ambient_flag 0x01 = ambient sound.
      The subtype (0x17 for XM5, 0x19 for XM6) is remembered so the matching
      set payload uses the same one the device answered to.
@@ -15,7 +15,7 @@
              on_off = p[3]
              ambient_flag = p[4]
              if on_off == 0x00:
-@@ -401,6 +401,7 @@
+@@ -487,6 +487,7 @@
          "noise_mode": prev.get("noise_mode", "unknown"),
          "ambient_level": prev.get("ambient_level", 0),
          "focus_voice": prev.get("focus_voice", False),
@@ -23,15 +23,15 @@
          "battery": prev.get("battery", -1),
          "battery_left": prev.get("battery_left", -1),
          "battery_right": prev.get("battery_right", -1),
-@@ -447,15 +448,23 @@
+@@ -544,15 +545,23 @@
              state["battery_right"] = level
              state["charging"] = charging
-
+ 
 -        nc = sess.transact(P_NC_GET, expect_prefixes=(bytes([0x67]), bytes([0x69])))
 -        if not nc:
 -            nc = sess.transact(P_NC_GET_ALT, expect_prefixes=(bytes([0x67]), bytes([0x69])))
 +        # XM6 answers the XM5 query with a dummy disabled reply; query 0x19 first.
-+        primary, fallback = (P_NC_GET_ALT, P_NC_GET) if canonical == "WH-1000XM6" else (P_NC_GET, P_NC_GET_ALT)
++        primary, fallback = (P_NC_GET_ALT, P_NC_GET) if _canonical_model(state["model_name"]) == "WH-1000XM6" else (P_NC_GET, P_NC_GET_ALT)
 +        nc = sess.transact(primary, expect_prefixes=(bytes([0x67]), bytes([0x69])))
 +        if _parse_nc(nc)[0] is None:
 +            nc = sess.transact(fallback, expect_prefixes=(bytes([0x67]), bytes([0x69])))
@@ -49,21 +49,21 @@
 +                        state["ambient_level"] = p[6]
 +                        state["auto_ambient"] = bool(p[7])
 +                        break
-
+ 
          state["connected"] = True
          state.pop("error", None)
-@@ -465,8 +474,8 @@
+@@ -562,8 +571,8 @@
          sess.close()
-
-
+ 
+ 
 -def _nc_payload(mode: str, level: int = 0, subtype: int = 0x17) -> bytes:
 -    """8-byte XM5-verified NC/ASM set payload (MamaJo3 golden bytes).
 +def _nc_payload(mode: str, level: int = 0, subtype: int = 0x17, focus_voice=False, auto_ambient=False) -> bytes:
 +    """NC/ASM set payload: eight bytes for XM5, nine bytes for XM6.
-
+ 
      `subtype` defaults to 0x17 (XM5) and is 0x19 on XM6; it is taken from the
      cached value the device last answered a GET on.
-@@ -474,6 +483,11 @@
+@@ -571,6 +580,11 @@
      if subtype not in (0x17, 0x19):
          subtype = 0x17
      level = max(0, min(20, int(level)))
@@ -75,7 +75,7 @@
      if mode == MODE_ANC:
          return bytes([0x68, subtype, 0x01, 0x01, 0x00, 0x02, 0x00, 0x00])
      if mode == MODE_TRANSPARENCY:
-@@ -491,7 +505,8 @@
+@@ -596,7 +610,8 @@
      if not sess.open():
          return {"success": False, "error": "Could not connect to Sony RFCOMM"}
      try:

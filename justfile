@@ -20,6 +20,22 @@ stow-adopt:
     stow -v -t ~ --adopt dotfiles
     @echo "Files adopted. Run 'git diff dotfiles/' to review changes."
 
+# Daily: refresh agents, T3 Code, Roc and all inputs but nixpkgs, then apply
+update-apps: (refresh "--apps" "--no-build") apply
+
+# Full: refresh everything including nixpkgs, then apply; may need a reboot
+update: (refresh "--no-build") apply
+
+# Refresh sources without applying them (options: packages/update.nu)
 [positional-arguments]
-update *args:
+refresh *args:
     @nix run --impure --expr 'import ./packages/nu-scripts {}' . -- packages/update.nu "$@"
+
+# Build this host, then switch, or stage for next boot if the kernel changed
+apply:
+    @nix run --impure --expr 'import ./packages/nu-scripts {}' . -- scripts/apply.nu
+
+# Deploy the homelab; add --override-input homelab PATH to test a local checkout
+[positional-arguments]
+deploy-homelab *args:
+    nixos-rebuild switch --flake .#homelab --target-host homelab --sudo --no-reexec "$@"

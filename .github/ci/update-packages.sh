@@ -9,7 +9,7 @@ export_dir="$1"
 nixpkgs_rev=$(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)
 python3 .github/ci/build.py updater "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -- \
   nix shell "github:NixOS/nixpkgs/$nixpkgs_rev#just" \
-  -c just update --export "$export_dir"
+  -c just refresh --export "$export_dir"
 echo "Updated nixpkgs rev: $(jq -r '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev' flake.lock)"
 
 # Labels of the updates that failed and were left out, comma separated and
