@@ -106,6 +106,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprsession = {
+      url = "github:teevik/hyprsession";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     split-monitor-workspaces = {
       url = "github:zjeffer/split-monitor-workspaces";
       flake = false;

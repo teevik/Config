@@ -50,7 +50,10 @@ let
   '';
 in
 {
-  imports = [ ./hypridle.nix ];
+  imports = [
+    ./hypridle.nix
+    ./hyprsession.nix
+  ];
 
   programs.hyprland = {
     enable = true;

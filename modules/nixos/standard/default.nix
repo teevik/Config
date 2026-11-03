@@ -19,6 +19,7 @@
     ./polkit.nix
     ./shells.nix
     ./tailscale.nix
+    ./eduvpn.nix
     ./rustdesk.nix
     ./agent-skills.nix
     ./dotfiles.nix
@@ -97,6 +98,14 @@
   # gsettings set org.gnome.desktop.interface color-scheme prefer-dark
   # gsettings set org.gnome.desktop.interface cursor-theme catppuccin-mocha-dark-cursors
   programs.dconf.enable = true;
+
+  # Sets AT-SPI's IsEnabled, without which Firefox and Qt apps don't expose
+  # accessibility trees (T3 Code SnapShots and Codex Computer Use read them).
+  # Chromium/Electron apps also need --force-renderer-accessibility, left off.
+  services.gnome.at-spi2-core.enable = true;
+  programs.dconf.profiles.user.databases = [
+    { settings."org/gnome/desktop/interface".toolkit-accessibility = true; }
+  ];
 
   environment.localBinInPath = true;
 

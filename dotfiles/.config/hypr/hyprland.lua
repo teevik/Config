@@ -9,8 +9,11 @@ dofile(config_dir .. "/workspaces.lua")
 
 hl.on("hyprland.start", function()
   hl.exec_cmd("uwsm app -- 1password --silent")
-  hl.exec_cmd("uwsm app -- firefox http://glance/")
   hl.exec_cmd("hyprland-lid-handler")
+  -- Reopens the windows from the last session, then saves them as they change.
+  -- Apps autostarted here as well can open twice, since hyprsession may start
+  -- before their windows appear.
+  hl.exec_cmd("uwsm app -- hyprsession")
 end)
 
 hl.config({
