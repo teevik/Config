@@ -133,7 +133,7 @@
             // outputs
             // {
               inherit outputs;
-              outPath = src.outPath;
+              inherit (src) outPath;
             };
         in
         if nixpkgsPatches == [ ] then unpatched else patched;
