@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.1.7-nightly.20261103.4106";
+  version = "0.1.7-nightly.20261103.4119";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-P7hx2p75NB6CX83USneuv7X5P3X6u9LAwcTfwDxwCho=";
+    hash = "sha256-YRev7tM1JRoH84a2J4Qk+adSiT2P23msf8wffwid7Bg=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
@@ -60,7 +60,7 @@ let
     inherit version src;
     inherit (upstreamUnwrapped) pnpmWorkspaces;
     fetcherVersion = 4;
-    hash = "sha256-VNx6kPEtupK2+7zTbMA8Vb++R4xibMfLlCDMnBB4DtU=";
+    hash = "sha256-yxzsBEIs3za2Si8X+XJKJ8O9rhDCxmMcGcP4D92Vc5I=";
   };
 
   nightlyUnwrapped = upstreamUnwrapped.overrideAttrs (oldAttrs: {
