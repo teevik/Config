@@ -138,11 +138,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794167889,
-        "narHash": "sha256-Wkf9RSBw2oTYr+y+Q7Wx5tS/nc3EDgi4RhI4j9zInFk=",
+        "lastModified": 1794222721,
+        "narHash": "sha256-XnIaN5J9dKj5X41Cw7rCbPwxl9iFbcOdf/xuF5252Uo=",
         "owner": "ilysenko",
         "repo": "codex-desktop-linux",
-        "rev": "cce9dd8844c3e61ba444b01c5e405529a4e790aa",
+        "rev": "a99cbc9591c44d8c1c511c77757e5c7948d74a16",
         "type": "github"
       },
       "original": {
@@ -154,11 +154,11 @@
     "cursor-plugins": {
       "flake": false,
       "locked": {
-        "lastModified": 1794026470,
-        "narHash": "sha256-TDuZ1v+taPdqyvvCs1VHUjtpSy8zHxhQKJv/kIPTpK8=",
+        "lastModified": 1794273011,
+        "narHash": "sha256-F1WCTE/AITVBkhYsuUEKIYT8bvPJe2i1JBwhYFjO7ME=",
         "owner": "cursor",
         "repo": "plugins",
-        "rev": "6b0300214a09fd6029cfb7077043125758cd1fd2",
+        "rev": "1e9c3f49094e0d4da0d7835915599fc4209d1311",
         "type": "github"
       },
       "original": {
@@ -403,11 +403,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794137701,
-        "narHash": "sha256-gdi9yNfD3yXgLBsf63C9K2Qyh9wKuBrxNVjLRdBzhe4=",
+        "lastModified": 1794250510,
+        "narHash": "sha256-V887HO0HrEHOJkxpoRII7hI4FeimWUJniOqzK13pJco=",
         "owner": "GunduLabs",
         "repo": "gaze",
-        "rev": "1c09560f58fe39f44c74e7ccca8bf82b4313a98d",
+        "rev": "dd39d92fa9131e74a281353eb4ac291d6701ddbc",
         "type": "github"
       },
       "original": {
@@ -503,11 +503,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793712708,
-        "narHash": "sha256-OQTEN3DZug22wiOKiEEXHyP8AJkBIXMtkvesfyLSfZU=",
+        "lastModified": 1794239164,
+        "narHash": "sha256-l+/JPDe8AGJAF1DNXR1X9w6LFuwmjwnt0WLXqmnptuI=",
         "owner": "teevik",
         "repo": "homelab",
-        "rev": "ed8637793bf24ce34419c2f561ce38c69061a071",
+        "rev": "0a1adefc015b384ee67751fee73c41603e786bfb",
         "type": "github"
       },
       "original": {
@@ -619,11 +619,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1794178147,
-        "narHash": "sha256-RDWuueNfF5JxlTDQUpZfDmpsiG2kXvTW4Cw8COvKJmQ=",
+        "lastModified": 1794277792,
+        "narHash": "sha256-sjytOnBfBG0BTJUongIbNAT3Xxlkou7OnlfWUjWB21M=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "e7ec2cef4fda261e0f92e65ea55ac54948ca3a40",
+        "rev": "5cf73febc46a1251854b305a44916b60022cc319",
         "type": "github"
       },
       "original": {
@@ -898,11 +898,11 @@
     "noctalia-community-plugins": {
       "flake": false,
       "locked": {
-        "lastModified": 1794189560,
-        "narHash": "sha256-4eXfB3ZFeWHhBJ9v6/XVYhJBXVFj99HZ8oxooQNkUwo=",
+        "lastModified": 1794265305,
+        "narHash": "sha256-55QyZt1TfbbdSd6LjI8wpRCikx2ApVZKPTF5kDjgDOc=",
         "owner": "noctalia-dev",
         "repo": "community-plugins",
-        "rev": "e6453e8f016270aa92e913202d96546683bcd20b",
+        "rev": "f1d61716fa21cf8c91f86491e8fea43d13e69058",
         "type": "github"
       },
       "original": {
@@ -914,11 +914,11 @@
     "noctalia-official-plugins": {
       "flake": false,
       "locked": {
-        "lastModified": 1793996893,
-        "narHash": "sha256-BM6/TC2jI1jf/NL5DGA3zrWrEaWFTwm7e3GHfT6NKLI=",
+        "lastModified": 1794244202,
+        "narHash": "sha256-g/TGt9o44TtqLc2hCuREOyFlJIY297vOqjMuBrTFKHI=",
         "owner": "noctalia-dev",
         "repo": "official-plugins",
-        "rev": "68d491f4633ba61bc9ead01a3f0ecb499d4d9af4",
+        "rev": "78dda05830933d296a870413367f0c4fa42cfb9c",
         "type": "github"
       },
       "original": {
@@ -1073,11 +1073,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793995029,
-        "narHash": "sha256-ZlE4BtMjWhfC6rFXLO9Qimn36Ene1INqCgKDDvazjhc=",
+        "lastModified": 1794261845,
+        "narHash": "sha256-Ivif/kuD68yEOKcZZG3zSwNMFUuIgzUgeJuzcHrQy+8=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "89a234ce2daf6e568a7d4b4fe250afdd23d84e20",
+        "rev": "fe7b4228405aeac2ce7192c2049a6e2bc8637082",
         "type": "github"
       },
       "original": {
