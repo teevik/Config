@@ -96,6 +96,10 @@
       url = "github:cursor/plugins";
       flake = false;
     };
+    caldo-skills = {
+      url = "github:caldoai/skills";
+      flake = false;
+    };
     impeccable-rust = {
       url = "github:hexuria/impeccable-rust";
       flake = false;

@@ -24,6 +24,10 @@ let
       path = inputs.cursor-plugins;
       subdir = "cursor-team-kit/skills";
     };
+    caldo = {
+      path = inputs.caldo-skills;
+      subdir = "skills";
+    };
     impeccable-rust = {
       path = inputs.impeccable-rust;
       subdir = ".";
@@ -75,6 +79,7 @@ let
       "writing-shape"
     ]
     // fromDir "cursor" "." [ "deslop" ]
+    // fromDir "caldo" "." [ "untangle-codebase" ]
     // {
       frontend-design = {
         from = "anthropic";

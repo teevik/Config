@@ -130,6 +130,22 @@
         "type": "github"
       }
     },
+    "caldo-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793905642,
+        "narHash": "sha256-FY4dg5Pm/rpg3oWarfCDTneA1qZ6v6GIQhalEsvgjVY=",
+        "owner": "caldoai",
+        "repo": "skills",
+        "rev": "f3cf47774975a7d9fca45730babf4ff7ad765ada",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caldoai",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "codex-desktop-linux": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -1042,6 +1058,7 @@
         "agent-skills": "agent-skills",
         "anthropic-skills": "anthropic-skills",
         "blueprint": "blueprint",
+        "caldo-skills": "caldo-skills",
         "codex-desktop-linux": "codex-desktop-linux",
         "cursor-plugins": "cursor-plugins",
         "determinate-nix": "determinate-nix",
