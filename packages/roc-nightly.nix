@@ -1,15 +1,15 @@
 { pkgs, ... }:
 let
-  version = "2026-11-15-f25da45";
+  version = "2026-11-18-a520eed";
   release =
     {
       x86_64-linux = {
         arch = "x86_64";
-        hash = "sha256-mGNgNIprv08naW9rPXPwJgKTgTNGcSo/cuc2RSZx6ZQ=";
+        hash = "sha256-2TlUlfndB8OWKcM/FW9/7mjo0i+KdkUi5c3RzDCHm1E=";
       };
       aarch64-linux = {
         arch = "arm64";
-        hash = "sha256-38l8bd+JfXcXy5WhngwKmNHUr65PJZ5pH4lZhw83kXY=";
+        hash = "sha256-Fvsr1azozXjjSFQ2OYBk0svl4o08hOFVskYNMhAXIsM=";
       };
     }
     .${pkgs.stdenv.hostPlatform.system}
