@@ -124,19 +124,18 @@
   outputs =
     unpatchedInputs:
     let
-      # Patches applied to nixpkgs before anything evaluates it. Building the
-      # patched source fails once a patch is already upstream, so drop it then.
-      nixpkgsPatches = [ ];
-
-      nixpkgs =
+      # Patches applied to a flake input before anything evaluates it. Building
+      # the patched source fails once a patch is already upstream, so drop it then.
+      patchInput =
+        name: patches:
         let
-          unpatched = unpatchedInputs.nixpkgs;
-          src = unpatched.legacyPackages.x86_64-linux.applyPatches {
-            name = "nixpkgs-patched";
+          unpatched = unpatchedInputs.${name};
+          src = unpatchedInputs.nixpkgs.legacyPackages.x86_64-linux.applyPatches {
+            name = "${name}-patched";
             src = unpatched;
-            patches = nixpkgsPatches;
+            inherit patches;
           };
-          outputs = (import "${src}/flake.nix").outputs { self = patched; };
+          outputs = (import "${src}/flake.nix").outputs ((unpatched.inputs or { }) // { self = patched; });
           patched =
             unpatched
             // outputs
@@ -145,10 +144,18 @@
               inherit (src) outPath;
             };
         in
-        if nixpkgsPatches == [ ] then unpatched else patched;
+        if patches == [ ] then unpatched else patched;
+
+      nixpkgs = patchInput "nixpkgs" [ ];
 
       inputs = unpatchedInputs // {
         inherit nixpkgs;
+        # Temporary: OpenAI's 26.1117 package adds resources/node, a copy of
+        # cua_node/bin/node, which segfaults unless patchelf adds its rpath
+        # before setting the interpreter, as upstream already does for the copy.
+        codex-desktop-linux = patchInput "codex-desktop-linux" [
+          ./patches/codex-desktop-linux-node-rpath-first.patch
+        ];
         # The public packages set eagerly filters the whole catalog by
         # platform. Use its lazy constructor with the SAME upstream pkgs,
         # not our system pkgs, to preserve all selected package derivations.
