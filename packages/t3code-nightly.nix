@@ -31,13 +31,13 @@ let
   );
   cppRuntime = pkgs.lib.getLib (upstreamUnwrapped.stdenv or pkgs.stdenv).cc.cc;
 
-  version = "0.1.12-nightly.20261123.5124";
+  version = "0.1.12-nightly.20261124.5209";
 
   src = pkgs.fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-H1rTj2Pb1nOolqbQYZQFlWILl++kyv887zgtxcVV6dw=";
+    hash = "sha256-GXRXL5r7QkfOYMjT4aWMRc0wOCmFS9G5Apac6Hd5HGI=";
   };
 
   resourceMonitor = pkgs.rustPlatform.buildRustPackage {
