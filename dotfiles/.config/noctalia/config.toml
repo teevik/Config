@@ -99,13 +99,35 @@ font_weight = 500
 font_scale = 1.1
 start = ["launcher", "workspaces", "bongocat"]
 center = ["date", "clock"]
-end = ["media", "agent-glow", "screen-recorder", "timer", "tailnet", "nix-status", "tray", "keyboard_layout", "notifications", "sony-headphones", "volume", "battery", "control-center"]
+end = [
+  "media",
+  "agent-glow",
+  "screen-recorder",
+  "timer",
+  "tailnet",
+  "nix-status",
+  "tray",
+  "keyboard_layout",
+  "notifications",
+  "sony-headphones",
+  "volume",
+  "battery",
+  "control-center",
+]
 
 # Keep the smaller desktop display focused on workspaces and quick controls.
 [bar.main.monitor."HDMI-A-2"]
 start = ["launcher", "workspaces"]
 center = ["clock"]
-end = ["tray", "keyboard_layout", "notifications", "sony-headphones", "volume", "battery", "control-center"]
+end = [
+  "tray",
+  "keyboard_layout",
+  "notifications",
+  "sony-headphones",
+  "volume",
+  "battery",
+  "control-center",
+]
 
 [widget.launcher.actions]
 left = "exec uwsm app -- tofi-drun --drun-launch=true"
@@ -157,7 +179,6 @@ enabled = [
   "estvoid/sony_headphones",
   "mindnbytes/nix-status",
   "umedbazarov/crashes",
-  "fel/agent-glow",
 ]
 
 [[plugins.source]]
