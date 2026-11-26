@@ -1,5 +1,6 @@
-# Applied on every startup via autoconfig `pref()`, like user.js but
-# independent of which profile Firefox picks.
+# Applied on every startup via autoconfig `defaultPref()`, independent of which
+# profile Firefox picks. Removing a line reverts that pref to Firefox's default;
+# changes made in about:config override these and persist.
 {
   "app.normandy.api_url" = "";
   "app.normandy.enabled" = false;
@@ -9,7 +10,7 @@
   "browser.aboutConfig.showWarning" = false;
   "browser.aboutwelcome.enabled" = false;
   "browser.bookmarks.openInTabClosesMenu" = false;
-  "browser.cache.disk.enable" = false;
+  "browser.cache.disk.enable" = true;
   "browser.cache.memory.capacity" = 131072;
   "browser.cache.memory.max_entry_size" = 20480;
   "browser.compactmode.show" = true;
@@ -33,7 +34,7 @@
   "browser.newtabpage.activity-stream.showSponsoredCheckboxes" = false;
   "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
   "browser.newtabpage.activity-stream.telemetry" = false;
-  "browser.places.speculativeConnect.enabled" = false;
+  "browser.places.speculativeConnect.enabled" = true;
   "browser.preferences.moreFromMozilla" = false;
   "browser.privateWindowSeparation.enabled" = false;
   "browser.privatebrowsing.forceMediaMemoryCache" = true;
@@ -43,7 +44,6 @@
   "browser.search.separatePrivateDefault.ui.enabled" = true;
   "browser.search.suggest.enabled" = false;
   "browser.search.update" = false;
-  "browser.sessionhistory.max_total_viewers" = 4;
   "browser.sessionstore.interval" = 60000;
   "browser.sessionstore.max_tabs_undo" = 10;
   "browser.sessionstore.resume_from_crash" = false;
@@ -55,7 +55,7 @@
   "browser.uitour.enabled" = false;
   "browser.urlbar.groupLabels.enabled" = false;
   "browser.urlbar.quicksuggest.enabled" = false;
-  "browser.urlbar.speculativeConnect.enabled" = false;
+  "browser.urlbar.speculativeConnect.enabled" = true;
   "browser.urlbar.suggest.openpage" = false;
   "browser.urlbar.trending.featureGate" = false;
   "browser.urlbar.trimHttps" = true;
@@ -65,8 +65,6 @@
   "datareporting.policy.dataSubmissionEnabled" = false;
   "datareporting.usage.uploadEnabled" = false;
   "dom.events.asyncClipboard.clipboardItem" = true;
-  "dom.security.https_only_mode" = true;
-  "dom.security.https_only_mode_error_page_user_suggestions" = true;
   "editor.truncate_user_pastes" = false;
   "extensions.enabledScopes" = 5;
   "extensions.getAddons.cache.enabled" = false;
@@ -88,23 +86,19 @@
   "media.cache_readahead_limit" = 600;
   "media.cache_resume_threshold" = 300;
   "media.ffmpeg.vaapi.enabled" = true;
+  "media.hardware-video-decoding.force-enabled" = true;
   "media.memory_cache_max_size" = 262144;
   "media.memory_caches_combined_limit_kb" = 1048576;
   "middlemouse.paste" = false;
   "network.IDN_show_punycode" = true;
   "network.auth.subresource-http-auth-allow" = 1;
-  "network.dns.disablePrefetch" = true;
-  "network.dns.disablePrefetchFromHTTPS" = true;
+  "network.dns.disablePrefetch" = false;
+  "network.dns.disablePrefetchFromHTTPS" = false;
   "network.dnsCacheEntries" = 10000;
-  "network.dnsCacheExpiration" = 3600;
-  "network.http.max-connections" = 1800;
-  "network.http.max-persistent-connections-per-server" = 10;
   "network.http.max-urgent-start-excessive-connections-per-host" = 5;
-  "network.http.pacing.requests.enabled" = false;
   "network.http.referer.XOriginTrimmingPolicy" = 2;
-  "network.http.request.max-start-delay" = 5;
-  "network.http.speculative-parallel-limit" = 0;
-  "network.prefetch-next" = false;
+  "network.http.speculative-parallel-limit" = 20;
+  "network.prefetch-next" = true;
   "network.ssl_tokens_cache_capacity" = 10240;
   "pdfjs.enableScripting" = false;
   "permissions.default.desktop-notification" = 2;
@@ -134,4 +128,5 @@
   "toolkit.telemetry.unified" = false;
   "toolkit.telemetry.updatePing.enabled" = false;
   "webgl.max-size" = 16384;
+  "widget.dmabuf.force-enabled" = true;
 }
